@@ -1,0 +1,2 @@
+# tuttifru_easypos
+lite
