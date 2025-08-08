@@ -278,7 +278,7 @@ const BoxTop = () => {
               }}>
               <VentasOffline
                 openDialog={showSalesOffline}
-                setOpenDialog={(x) => {
+                setOpenDialog={(v) => {
                   setShowSalesOffline(v)
 
                   if (!v) {
