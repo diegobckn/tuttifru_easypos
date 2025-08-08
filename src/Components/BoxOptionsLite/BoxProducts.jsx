@@ -350,10 +350,23 @@ const BoxProducts = ({ }) => {
     var codigoCliente = 0
     if (cliente) codigoCliente = cliente.codigoCliente
 
+
+
+    // CHECK PREVENTA
+    const largoHash = 46
+    const txtPreventa = "@preventa"
+    var len = textSearchProducts.length
+
+    // console.log("")
+    // console.log("len ", len)
+    // console.log("largoHash", largoHash)
+    // console.log("len == largoHash - 1", len == largoHash - 1)
+    // console.log("textSearchProducts.substr(0, txtPreventa.length)", textSearchProducts.substr(0, txtPreventa.length))
+    if (len == largoHash - 1 && textSearchProducts.substr(0, txtPreventa.length) == "PREVENTA-") {
+      setTextSearchProducts("@" + textSearchProducts)
+      return;
+    }
     if (textSearchProducts.indexOf("@") > -1) {
-      const largoHash = 46
-      const txtPreventa = "@preventa"
-      const len = textSearchProducts.length
       const txtCortado = txtPreventa.substring(0, textSearchProducts.length)
       // console.log("txtCortado:")
       // console.log(txtCortado)
@@ -412,52 +425,52 @@ const BoxProducts = ({ }) => {
       // return
     }
 
-    console.log('textSearchProducts.indexOf("@@offlinepreventa")', textSearchProducts.indexOf("@@offlinepreventa"))
+    // console.log('textSearchProducts.indexOf("@@offlinepreventa")', textSearchProducts.indexOf("@@offlinepreventa"))
     if (textSearchProducts.length > 23 && textSearchProducts.indexOf("@@offlinepreventa") === 0) {
-      console.log("entro")
+      // console.log("entro")
       var buscado = textSearchProducts.substr(-3)
       if (buscado != "-p-") return
       var buscado = textSearchProducts + ""
-      console.log("buscado:", buscado)
+      // console.log("buscado:", buscado)
       if (buscado.indexOf("'") > -1) {
         buscado = buscado.replaceAll("'", "-")
       }
-      console.log("buscado:", buscado)
+      // console.log("buscado:", buscado)
       if (buscado.indexOf("´") > -1) {
         buscado = buscado.replaceAll("´", "-")
       }
-      console.log("buscado:", buscado)
+      // console.log("buscado:", buscado)
       setTextSearchProducts("")
       const prodsTxtArr = buscado.split("@@offlinepreventa")
-      console.log("prodsTxtArr:", prodsTxtArr)
+      // console.log("prodsTxtArr:", prodsTxtArr)
 
       if (prodsTxtArr.length == 2) {
-        console.log("prodsTxtArr tiene :", prodsTxtArr.length)
+        // console.log("prodsTxtArr tiene :", prodsTxtArr.length)
 
         const prodsTxt = prodsTxtArr[1]
-        console.log("prodsTxt:", prodsTxt)
+        // console.log("prodsTxt:", prodsTxt)
 
         const preprods = prodsTxt.split("-p-")
-        console.log("preprods:", preprods)
+        // console.log("preprods:", preprods)
 
         if (preprods.length >= 2) {
           const preprodsConPunYCom = preprods[1]
-          console.log("preprodsConPunYCom:", preprodsConPunYCom)
+          // console.log("preprodsConPunYCom:", preprodsConPunYCom)
 
           const prodsStr = preprodsConPunYCom.split(";;")
-          console.log("prodsStr:", prodsStr)
+          // console.log("prodsStr:", prodsStr)
 
           if (prodsStr.length > 0) {
             prodsStr.forEach(async (prosStr, ix) => {
               const infArr = prosStr.split(",")
-              console.log("infArr:", infArr)
+              // console.log("infArr:", infArr)
               if (infArr.length > 0) {
                 const codBarra = infArr[0] + ""
                 const cantidad = parseFloat(infArr[1])
 
-                console.log("vamos a buscar con estos datos:")
-                console.log("codBarra:", codBarra)
-                console.log("cantidad:", cantidad)
+                // console.log("vamos a buscar con estos datos:")
+                // console.log("codBarra:", codBarra)
+                // console.log("cantidad:", cantidad)
 
                 setTimeout(() => {
                   Product.getInstance().findByCodigoBarras({
@@ -490,7 +503,7 @@ const BoxProducts = ({ }) => {
       return
     }
 
-    if (textSearchProducts.indexOf("@@") > -1) {
+    if (textSearchProducts.indexOf("@@") > -1 || textSearchProducts.indexOf("PREVENTA") > -1) {
       return
     }
     Product.getInstance().findByDescriptionPaginado({ description: textSearchProducts, codigoCliente: codigoCliente }, (products, response) => {
