@@ -331,10 +331,12 @@ const BoxBoleta = ({
 
     pagos.forEach((pago, ix) => {
       if (pago.metodoPago == "CUENTACORRIENTE") {
+        console.log("es cuenta corrientes..cliente", cliente)
+        console.log("pago", pago)
         if (pago.data && pago.data.codigoUsuario) {
           requestBody.codigoUsuarioVenta = pago.data.codigoUsuario
         } else if (pago.data && pago.data.codigoCliente) {
-          requestBody.codigoCliente = cliente.codigoCliente
+          requestBody.codigoCliente = pago.data.codigoCliente
         }
       }
     })
@@ -501,7 +503,7 @@ const BoxBoleta = ({
         LastSale.prepare(requestBody)
         LastSale.confirm(response)
 
-        
+
         limpiarYCerrar()
         imprimirOffline()
         setUltimoVuelto(vuelto)

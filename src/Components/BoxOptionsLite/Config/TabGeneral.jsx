@@ -34,7 +34,7 @@ import ModelConfig from "../../../Models/ModelConfig";
 import SmallButton from "../../Elements/SmallButton";
 import Sucursal from "../../../Models/Sucursal";
 import TiposPasarela from "../../../definitions/TiposPasarela";
-import { ModosTrabajoConexion, OrdenListado } from "../../../definitions/BaseConfig";
+import BaseConfig, { ModosTrabajoConexion, OrdenListado } from "../../../definitions/BaseConfig";
 import BoxOptionList from "../BoxOptionList";
 import InputCheckbox from "../../Elements/Compuestos/InputCheckbox";
 import InputCheckboxAutorizar from "../../Elements/Compuestos/InputCheckboxAutorizar";
@@ -46,6 +46,7 @@ import InputFile from "../../Elements/Compuestos/InputFile";
 import ProductFastSearch from "../../../Models/ProductFastSearch";
 import Product from "../../../Models/Product";
 import AdminStorage from "../../ScreenDialog/AdminStorage";
+import TouchInputName from "../../TouchElements/TouchInputName";
 
 const TabGeneral = ({
   onFinish = () => { }
@@ -92,6 +93,7 @@ const TabGeneral = ({
   } = useContext(SelectedOptionsContext);
 
   const [urlBase, setUrlBase] = useState("");
+  const [licencia, setLicencia] = useState("");
 
   const [puntoVenta, setPuntoVenta] = useState("-1")
   const [sucursal, setSucursal] = useState("-1")
@@ -226,6 +228,7 @@ const TabGeneral = ({
   const loadConfigSesion = () => {
     // console.log("loadConfigSesion")
     setUrlBase(ModelConfig.get("urlBase"))
+    setLicencia(ModelConfig.get("licencia"))
 
     // setSucursal(ModelConfig.get("sucursal"))
     // setPuntoVenta(ModelConfig.get("puntoVenta"))
@@ -244,6 +247,7 @@ const TabGeneral = ({
 
   const handlerSaveAction = () => {
     ModelConfig.change("urlBase", urlBase);
+    ModelConfig.change("licencia", licencia);
 
     ModelConfig.change("pedirDatosTransferencia", pedirDatosTransferencia)
     ModelConfig.change("pagarConCuentaCorriente", pagarConCuentaCorriente)
@@ -481,6 +485,20 @@ const TabGeneral = ({
         <br />
         <br />
         <br />
+      </Grid>
+
+      <Grid item xs={12} sm={12} md={12} lg={12}>
+        <TouchInputName
+          inputState={[licencia, setLicencia]}
+          label="Licencia"
+          onEnter={() => {
+            handlerSaveAction()
+          }}
+        />
+
+        <SmallButton textButton={"Resetear licencia"} actionButton={() => {
+          setLicencia(BaseConfig.licencia)
+        }} />
       </Grid>
 
       <Grid item xs={12} sm={12} md={12} lg={12}>

@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import BaseConfig from "../definitions/BaseConfig.ts";
 import EndPoint from './EndPoint.ts';
+import ModelConfig from './ModelConfig.ts';
 
 
 class Licencia {
@@ -66,12 +67,13 @@ class Licencia {
     }
 
     static async checkCiclo(showMessageUser, callbackLicenciaVencida) {
-        // console.log("licencias..checkCiclo")
+        console.log("licencias..checkCiclo")
+
         const data = {
-            "clientName": import.meta.env.VITE_CLIENTE,
+            "clientName": ModelConfig.get("licencia"),
             "unitName": import.meta.env.VITE_UNIDAD_NEGOCIO
         }
-        // console.log("data a enviar", data)
+        console.log("licencia, data a enviar", data)
         const url = "https://softus.com.ar/easypos/get-licence"
         EndPoint.sendPost(url, data, (responseData, response) => {
             if (responseData.license) {

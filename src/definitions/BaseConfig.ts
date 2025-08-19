@@ -43,6 +43,7 @@ export const TiposProductos = [
 
 const BaseConfig = {
     urlBase: (import.meta.env.VITE_URL_BASE),
+    licencia: (import.meta.env.VITE_CLIENTE),
     sesionStart: dayjs().format('DD/MM/YYYY-HH:mm:ss'),
     sesionExprire: 2 * 60 * 1000, //en milisegundos
 
