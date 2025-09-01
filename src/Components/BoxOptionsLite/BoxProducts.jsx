@@ -82,6 +82,9 @@ const BoxProducts = ({ }) => {
   const [products, setProducts] = useState([]);
   const [cargado, setCargado] = useState(null);
 
+  const [paginaBusqueda, setPaginaBusqueda] = useState(0);
+  const [cantidadPaginasBusqueda, setCantidadPaginasBusqueda] = useState(0);
+
   useEffect(() => {
     if (textSearchProducts.trim() == "") {
       // console.log("esta vacio")
@@ -338,7 +341,7 @@ const BoxProducts = ({ }) => {
 
 
 
-  const handleDescripcionSearchButtonClick = async () => {
+  const handleDescripcionSearchButtonClick = async (resetearPagina = true) => {
     if (parseInt(textSearchProducts.trim()) || 0) return //si es numero sale
     // console.log("handleDescripcionSearchButtonClick")
     // console.log("textSearchProducts")
@@ -514,21 +517,109 @@ const BoxProducts = ({ }) => {
         // console.log("el producto " + produ.nombre + ", #"+produ.idProducto + " tiene precio 0")
         // }
         // })
-
+        setCantidadPaginasBusqueda(Math.ceil(response.data.cantidadRegistros / 10))
         setProducts(products);
       } else {
         // console.log("Producto no encontrado.");
+        setCantidadPaginasBusqueda(0)
         setProducts([]);
         showMessage("Descripción o producto no encontrado");
       }
       setProducts(products)
+
+      if (resetearPagina) {
+        setPaginaBusqueda(1)
+      }
     },
       () => {
+        if (resetearPagina) {
+          setPaginaBusqueda(1)
+        }
+        setCantidadPaginasBusqueda(0)
         setProducts([])
       })
 
 
   };
+
+  const verProximaPagina = () => {
+    var codigoCliente = 0
+    if (cliente) codigoCliente = cliente.codigoCliente
+
+
+    Product.getInstance().findByDescriptionPaginado({
+      description: textSearchProducts,
+      codigoCliente: codigoCliente,
+      pagina: (paginaBusqueda + 1)
+    }, (products, response) => {
+      if (response.data.cantidadRegistros > 0) {
+
+        // products.forEach((produ)=>{
+        // if(parseFloat(produ.precioVenta) <=0){
+        // console.log("el producto " + produ.nombre + ", #"+produ.idProducto + " tiene precio 0")
+        // }
+        // })
+        setCantidadPaginasBusqueda(Math.ceil(response.data.cantidadRegistros / 10))
+        setProducts(products);
+      } else {
+        // console.log("Producto no encontrado.");
+        setCantidadPaginasBusqueda(0)
+        setProducts([]);
+        showMessage("Descripción o producto no encontrado");
+      }
+      setProducts(products)
+
+      setPaginaBusqueda(paginaBusqueda + 1)
+    },
+      () => {
+        setPaginaBusqueda(paginaBusqueda + 1)
+        setCantidadPaginasBusqueda(0)
+        setProducts([])
+      })
+  }
+
+  const verPaginaAnterior = () => {
+    var codigoCliente = 0
+    if (cliente) codigoCliente = cliente.codigoCliente
+
+    Product.getInstance().findByDescriptionPaginado({
+      description: textSearchProducts,
+      codigoCliente: codigoCliente,
+      pagina: (paginaBusqueda - 1)
+    }, (products, response) => {
+      if (response.data.cantidadRegistros > 0) {
+
+        // products.forEach((produ)=>{
+        // if(parseFloat(produ.precioVenta) <=0){
+        // console.log("el producto " + produ.nombre + ", #"+produ.idProducto + " tiene precio 0")
+        // }
+        // })
+        setCantidadPaginasBusqueda(Math.ceil(response.data.cantidadRegistros / 10))
+        setProducts(products);
+      } else {
+        // console.log("Producto no encontrado.");
+        setCantidadPaginasBusqueda(0)
+        setProducts([]);
+        showMessage("Descripción o producto no encontrado");
+      }
+      setProducts(products)
+
+      setPaginaBusqueda(paginaBusqueda - 1)
+    },
+      () => {
+        setPaginaBusqueda(paginaBusqueda - 1)
+        setCantidadPaginasBusqueda(0)
+        setProducts([])
+      })
+  }
+
+  useEffect(() => {
+    console.log("cambio paginaBusqueda", paginaBusqueda)
+  }, [paginaBusqueda])
+
+  useEffect(() => {
+    console.log("cambio cantidadPaginasBusqueda", cantidadPaginasBusqueda)
+  }, [cantidadPaginasBusqueda])
 
 
   useEffect(() => {
@@ -563,6 +654,10 @@ const BoxProducts = ({ }) => {
 
 
   const validateChangeSearchInput = (e) => {
+    if (textSearchProducts.length == 0) {
+      setPaginaBusqueda(0)
+      setCantidadPaginasBusqueda(0)
+    }
     if (Validator.isSearch(e.target.value)) {
       setTextSearchProducts(e.target.value)
     } else if (e.target.value.indexOf("@") > -1) {
@@ -707,6 +802,7 @@ const BoxProducts = ({ }) => {
             <Table sx={{ background: "white", height: "30%" }}>
               <TableBody style={{ maxHeight: "100px", overflowY: "auto" }}>
                 {textSearchProducts.trim() !== "" && products.length > 0 ? (
+
                   products.map((product, index) => (
                     <SearchProductItem
                       key={index}
@@ -717,6 +813,25 @@ const BoxProducts = ({ }) => {
                     />
                   ))
                 ) : null}
+
+                {textSearchProducts.trim() !== "" && products.length > 0 && cantidadPaginasBusqueda > 1 && (
+                  <TableRow sx={{ height: "15%" }}>
+                    <TableCell colSpan={10}>
+                      <SmallButton
+                        textButton={"Ver anterior"}
+                        actionButton={verPaginaAnterior}
+                        isDisabled={paginaBusqueda < 2}
+                      />
+                      <SmallButton
+                        textButton={"Ver mas"}
+                        actionButton={verProximaPagina}
+                        isDisabled={paginaBusqueda >= cantidadPaginasBusqueda}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+
+
               </TableBody>
             </Table>
           </TableContainer>
