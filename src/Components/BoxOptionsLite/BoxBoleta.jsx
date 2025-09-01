@@ -177,49 +177,52 @@ const BoxBoleta = ({
     Model.getOfertas((ofertas) => {
       if (ofertas.length > 0) {
         ofertas.forEach((ofer) => {
-          if (ofer.tipo === 5) {
+          // if (ofer.tipo === 5) {//temporalmente, luego activar
 
 
-            var copiaProductos = salesData
+          var copiaProductos = salesData
 
-            Oferta5.setInfo(ofer)
-            var resultadoOfertas = {
-              productosQueAplican: [],
-              productosQueNoAplican: copiaProductos
-            }
-
-            while (Oferta5.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-              const resultadoAplicar = Oferta5.aplicar(resultadoOfertas.productosQueNoAplican)
-              // console.log("luego de aplicar queda asi", resultadoAplicar)
-
-              resultadoOfertas.productosQueAplican =
-                resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
-              resultadoOfertas.productosQueNoAplican =
-                resultadoAplicar.productosQueNoAplican
-
-            }
-            // console.log("")
-            // console.log("")
-            // console.log("")
-            // console.log("resultado final", resultadoOfertas)
-
-            var totalVentasx = 0
-            var productosVendidosx = []
-
-            resultadoOfertas.productosQueAplican.forEach((prod) => {
-              totalVentasx += prod.total
-              productosVendidosx.push(prod)
-            })
-
-            resultadoOfertas.productosQueNoAplican.forEach((prod) => {
-              totalVentasx += prod.total
-              productosVendidosx.push(prod)
-            })
-
-            // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
-            setTotalVentas(totalVentasx)
-            setProductosVendidos(productosVendidosx)
+          Oferta5.setInfo(ofer)
+          var resultadoOfertas = {
+            productosQueAplican: [],
+            productosQueNoAplican: copiaProductos
           }
+
+          while (Oferta5.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
+            const resultadoAplicar = Oferta5.aplicar(resultadoOfertas.productosQueNoAplican)
+            // console.log("luego de aplicar queda asi", resultadoAplicar)
+
+            resultadoOfertas.productosQueAplican =
+              resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
+            resultadoOfertas.productosQueNoAplican =
+              resultadoAplicar.productosQueNoAplican
+
+          }
+          // console.log("")
+          // console.log("")
+          // console.log("")
+          // console.log("resultado final", resultadoOfertas)
+
+          var totalVentasx = 0
+          var productosVendidosx = []
+
+          resultadoOfertas.productosQueAplican.forEach((prod) => {
+            totalVentasx += prod.total
+            productosVendidosx.push(prod)
+          })
+
+          resultadoOfertas.productosQueNoAplican.forEach((prod) => {
+            totalVentasx += prod.total
+            productosVendidosx.push(prod)
+          })
+
+          // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
+          setTotalVentas(totalVentasx)
+          setProductosVendidos(productosVendidosx)
+          // }else{//temporalmente, luego activar
+          // setProductosVendidos(salesData)//temporalmente, luego activar
+          // setTotalVentas(grandTotal)//temporalmente, luego activar
+          // }
         })
       } else {
         setProductosVendidos(salesData)
