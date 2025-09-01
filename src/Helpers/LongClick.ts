@@ -44,7 +44,7 @@ class LongClick {
     onStart(touchOrMouse = "") {
         const tlc = touchOrMouse.toLocaleLowerCase()
 
-        console.log("onStart")
+        // console.log("onStart")
         // console.log("touchOrMouse", tlc)
         // console.log("LongClick.isTouch",LongClick.isTouch)
         if (tlc != "" && tlc != "touch" && LongClick.isTouch) {
@@ -63,15 +63,15 @@ class LongClick {
     }
 
     onEnd(touchOrMouse = "") {
-        console.log("LongClick.onEnd")
+        // console.log("LongClick.onEnd")
         const tlc = touchOrMouse.toLocaleLowerCase()
 
         if (LongClick.ocupado) {
-            console.log("LongClick.ocupado true")
+            // console.log("LongClick.ocupado true")
             return
         }
         LongClick.ocupado = true
-        console.log("cambio LongClick.ocupado a true")
+        // console.log("cambio LongClick.ocupado a true")
         // setTimeout(() => {
         //     LongClick.ocupado = false
         // }, 1000);
@@ -82,7 +82,7 @@ class LongClick {
         if (tlc != "" && tlc != "touch" && LongClick.isTouch) {
             LongClick.isTouch = false
             LongClick.ocupado = false
-            console.log("cambio LongClick.ocupado a false")
+            // console.log("cambio LongClick.ocupado a false")
             // console.log("sale1")
             return false
         }
@@ -99,22 +99,22 @@ class LongClick {
         me.myInterval = null
         if (me.longActionDone) {
             // console.log("longActionDone")
-            console.log("cambio LongClick.ocupado a false")
+            // console.log("cambio LongClick.ocupado a false")
             LongClick.ocupado = false
             return
         }
         if (me.canceled) {
             // console.log("canceled")
-            console.log("cambio LongClick.ocupado a false")
+            // console.log("cambio LongClick.ocupado a false")
             LongClick.ocupado = false
             return
         }
         if (me.clickAction) me.clickAction()
         setTimeout(() => {
-            console.log("cambio LongClick.ocupado a false")
+            // console.log("cambio LongClick.ocupado a false")
             LongClick.ocupado = false
         }, 300);
-        console.log("paso de largo")
+        // console.log("paso de largo")
     }
 
     cancel() {

@@ -151,7 +151,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   }
 
   const checkInternet = () => {
-    console.log("checkInternet")
+    // console.log("checkInternet")
     Model.getConexion(() => {
       setTieneInternet(true)
       setConexionesOkInternet((prev) => { return prev + 1 })

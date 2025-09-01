@@ -17,37 +17,48 @@ export interface ResultadoAplicarOferta {
 }
 
 class Oferta5 {
-  static info: any = null
-  static codigosAplicables: any[] = []
+  info: any = null
+  codigosAplicables: any[] = []
 
-  static setInfo(infoOferta) {
+  setInfo(infoOferta) {
     this.info = infoOferta
   }
 
-  static llegoACantidadRequerida(cantidad) {
+  llegoACantidadRequerida(cantidad) {
     var signo = this.info.signo === "=" ? ">=" : this.info.signo
+    if (this.info.signo === ">") signo = ">="
+
+    const el = cantidad + signo + this.info.cantidad
+    // console.log("eval", el)
     return eval(cantidad + signo + this.info.cantidad)
   }
 
-  static debeAplicar(productos) {
+  debeAplicar(productos) {
     // console.log("debeAplicar...para", productos)
+    // console.log("this.info.products", this.info.products)
+
     if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr) => pr.codbarra)
 
-    var cuantosAplican = 0
+    // console.log("this.codigosAplicables", this.codigosAplicables)
+    var cuantosHay = 0
     productos.forEach(prod => {
-      if (this.aplicaProducto(prod)) {
-        cuantosAplican += prod.quantity
+      if (this.estaEnAplicables(prod)) {
+        cuantosHay += parseFloat(prod.quantity)
       }
     });
 
-    return this.llegoACantidadRequerida(cuantosAplican)
+    // console.log("cuantosHay", cuantosHay)
+
+    const rs = this.llegoACantidadRequerida(cuantosHay)
+    // console.log("debeAplicar devuelve ", rs)
+    return rs
   }
 
-  static aplicaProducto(producto) {
+  estaEnAplicables(producto) {
     return this.codigosAplicables.indexOf(producto.idProducto) > -1
   }
 
-  static aplicar(productos): ResultadoAplicarOferta {
+  aplicar(productos): ResultadoAplicarOferta {
 
     if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr) => pr.codbarra)
 
@@ -57,20 +68,19 @@ class Oferta5 {
       productosQueNoAplican: []
     }
 
-    var reempladoDePrecioUnidad = this.info.monto / this.info.cantidad
+    var precioEnOferta = this.info.monto / this.info.cantidad
     var cantidadAcumulada = 0
     var seAplico = false
 
     productos.forEach(prod => {
-      if (!seAplico && this.aplicaProducto(prod)) {
-
+      if (!seAplico && this.estaEnAplicables(prod)) {
         if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.quantity)) {
           const copiaProd = System.clone(prod)
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
           copiaAplica.quantity = this.info.cantidad//porque tiene igual o mas
-          copiaAplica.price = reempladoDePrecioUnidad
+          copiaAplica.price = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
@@ -100,7 +110,7 @@ class Oferta5 {
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
           copiaAplica.quantity = cantidadAplica
-          copiaAplica.price = reempladoDePrecioUnidad
+          copiaAplica.price = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
@@ -129,7 +139,7 @@ class Oferta5 {
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.price = reempladoDePrecioUnidad
+          copiaAplica.price = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
@@ -137,7 +147,7 @@ class Oferta5 {
         }
 
       } else {
-        resul.productosQueNoAplican.push( System.clone(prod) )
+        resul.productosQueNoAplican.push(System.clone(prod))
       }
 
     })

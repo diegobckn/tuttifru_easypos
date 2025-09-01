@@ -23,7 +23,7 @@ const BuscarUsuario = ({
   const [usuarios, setUsuarios] = useState([])
 
   useEffect(()=>{
-    console.log("buscando trabajadores del servidor");
+    // console.log("buscando trabajadores del servidor");
     User.getInstance().getAllFromServer((all)=>{
       setUsuarios(all)
     },()=>{

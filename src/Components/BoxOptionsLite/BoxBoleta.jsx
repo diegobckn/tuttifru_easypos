@@ -176,20 +176,23 @@ const BoxBoleta = ({
 
     Model.getOfertas((ofertas) => {
       if (ofertas.length > 0) {
-        ofertas.forEach((ofer) => {
+
+        var copiaProductos = salesData
+        var resultadoOfertas = {
+          productosQueAplican: [],
+          productosQueNoAplican: copiaProductos
+        }
+
+        ofertas.forEach((ofer, ix) => {
           // if (ofer.tipo === 5) {//temporalmente, luego activar
 
 
-          var copiaProductos = salesData
+          var of = new Oferta5();
+          of.setInfo(ofer)
 
-          Oferta5.setInfo(ofer)
-          var resultadoOfertas = {
-            productosQueAplican: [],
-            productosQueNoAplican: copiaProductos
-          }
 
-          while (Oferta5.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-            const resultadoAplicar = Oferta5.aplicar(resultadoOfertas.productosQueNoAplican)
+          while (of.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
+            const resultadoAplicar = of.aplicar(resultadoOfertas.productosQueNoAplican)
             // console.log("luego de aplicar queda asi", resultadoAplicar)
 
             resultadoOfertas.productosQueAplican =
