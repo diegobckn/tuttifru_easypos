@@ -20,8 +20,15 @@ class Oferta5 {
   info: any = null
   codigosAplicables: any[] = []
 
+  static session = new StorageSesion("ofertas")
+
   setInfo(infoOferta) {
     this.info = infoOferta
+
+  }
+
+  static guardarOffline(info) {
+    this.session.guardar(info)
   }
 
   llegoACantidadRequerida(cantidad) {

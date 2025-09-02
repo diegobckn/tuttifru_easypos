@@ -165,6 +165,64 @@ const BoxBoleta = ({
 
   }, [])
 
+  const revisarOfertas = (ofertas) => {
+    if (ofertas.length > 0) {
+      var copiaProductos = salesData
+      var resultadoOfertas = {
+        productosQueAplican: [],
+        productosQueNoAplican: copiaProductos
+      }
+
+      ofertas.forEach((ofer, ix) => {
+        // if (ofer.tipo === 5) {//temporalmente, luego activar
+
+
+        var of = new Oferta5();
+        of.setInfo(ofer)
+
+
+        while (of.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
+          const resultadoAplicar = of.aplicar(resultadoOfertas.productosQueNoAplican)
+          // console.log("luego de aplicar queda asi", resultadoAplicar)
+
+          resultadoOfertas.productosQueAplican =
+            resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
+          resultadoOfertas.productosQueNoAplican =
+            resultadoAplicar.productosQueNoAplican
+
+        }
+        // console.log("")
+        // console.log("")
+        // console.log("")
+        // console.log("resultado final", resultadoOfertas)
+
+        var totalVentasx = 0
+        var productosVendidosx = []
+
+        resultadoOfertas.productosQueAplican.forEach((prod) => {
+          totalVentasx += prod.total
+          productosVendidosx.push(prod)
+        })
+
+        resultadoOfertas.productosQueNoAplican.forEach((prod) => {
+          totalVentasx += prod.total
+          productosVendidosx.push(prod)
+        })
+
+        // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
+        setTotalVentas(totalVentasx)
+        setProductosVendidos(productosVendidosx)
+        // }else{//temporalmente, luego activar
+        // setProductosVendidos(salesData)//temporalmente, luego activar
+        // setTotalVentas(grandTotal)//temporalmente, luego activar
+        // }
+      })
+    } else {
+      setProductosVendidos(salesData)
+      setTotalVentas(grandTotal)
+    }
+  }
+
   const aplicarOfertas = () => {
     // console.log("aplicando ofertas")
 
@@ -175,65 +233,23 @@ const BoxBoleta = ({
     }
 
     Model.getOfertas((ofertas) => {
-      if (ofertas.length > 0) {
+      Oferta5.guardarOffline(ofertas)
+      revisarOfertas(ofertas)
+    }, () => {
 
-        var copiaProductos = salesData
-        var resultadoOfertas = {
-          productosQueAplican: [],
-          productosQueNoAplican: copiaProductos
-        }
-
-        ofertas.forEach((ofer, ix) => {
-          // if (ofer.tipo === 5) {//temporalmente, luego activar
+      const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
 
 
-          var of = new Oferta5();
-          of.setInfo(ofer)
-
-
-          while (of.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-            const resultadoAplicar = of.aplicar(resultadoOfertas.productosQueNoAplican)
-            // console.log("luego de aplicar queda asi", resultadoAplicar)
-
-            resultadoOfertas.productosQueAplican =
-              resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
-            resultadoOfertas.productosQueNoAplican =
-              resultadoAplicar.productosQueNoAplican
-
-          }
-          // console.log("")
-          // console.log("")
-          // console.log("")
-          // console.log("resultado final", resultadoOfertas)
-
-          var totalVentasx = 0
-          var productosVendidosx = []
-
-          resultadoOfertas.productosQueAplican.forEach((prod) => {
-            totalVentasx += prod.total
-            productosVendidosx.push(prod)
-          })
-
-          resultadoOfertas.productosQueNoAplican.forEach((prod) => {
-            totalVentasx += prod.total
-            productosVendidosx.push(prod)
-          })
-
-          // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
-          setTotalVentas(totalVentasx)
-          setProductosVendidos(productosVendidosx)
-          // }else{//temporalmente, luego activar
-          // setProductosVendidos(salesData)//temporalmente, luego activar
-          // setTotalVentas(grandTotal)//temporalmente, luego activar
-          // }
-        })
+      if (
+        (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
+          || modoTrabajoConexion == ModosTrabajoConexion.SOLO_OFFLINE)
+        && Oferta5.session.hasOne()
+      ) {
+        revisarOfertas(Oferta5.session.cargar(1))
       } else {
         setProductosVendidos(salesData)
         setTotalVentas(grandTotal)
       }
-    }, () => {
-      setProductosVendidos(salesData)
-      setTotalVentas(grandTotal)
     })
 
 
