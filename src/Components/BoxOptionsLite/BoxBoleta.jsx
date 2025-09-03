@@ -232,12 +232,23 @@ const BoxBoleta = ({
       return
     }
 
+    const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
+
+
+    if (
+      (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
+        || modoTrabajoConexion == ModosTrabajoConexion.SOLO_OFFLINE)
+      && Oferta5.session.hasOne()
+    ) {
+      revisarOfertas(Oferta5.session.cargar(1))
+      return
+    }
+
     Model.getOfertas((ofertas) => {
       Oferta5.guardarOffline(ofertas)
       revisarOfertas(ofertas)
     }, () => {
 
-      const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
 
 
       if (
