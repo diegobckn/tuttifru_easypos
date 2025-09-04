@@ -67,13 +67,13 @@ class Licencia {
     }
 
     static async checkCiclo(showMessageUser, callbackLicenciaVencida) {
-        console.log("licencias..checkCiclo")
+        // console.log("licencias..checkCiclo")
 
         const data = {
             "clientName": ModelConfig.get("licencia"),
             "unitName": import.meta.env.VITE_UNIDAD_NEGOCIO
         }
-        console.log("licencia, data a enviar", data)
+        // console.log("licencia, data a enviar", data)
         const url = "https://softus.com.ar/easypos/get-licence"
         EndPoint.sendPost(url, data, (responseData, response) => {
             if (responseData.license) {

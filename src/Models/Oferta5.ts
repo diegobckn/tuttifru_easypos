@@ -150,7 +150,8 @@ class Oferta5 {
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
-          cantidadAcumulada += prod.quantity
+          cantidadAcumulada += parseFloat(prod.quantity)
+
         }
 
       } else {
