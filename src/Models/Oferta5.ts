@@ -86,12 +86,12 @@ class Oferta5 {
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.quantity = this.info.cantidad//porque tiene igual o mas
+          copiaAplica.quantity = parseFloat(this.info.cantidad)//porque tiene igual o mas
           copiaAplica.price = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
-          var cantidadRestante = prod.quantity - this.info.cantidad
+          var cantidadRestante = parseFloat(prod.quantity) - this.info.cantidad
           if (cantidadRestante > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
@@ -100,10 +100,10 @@ class Oferta5 {
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
           seAplico = true
-        } else if (this.llegoACantidadRequerida(prod.quantity + cantidadAcumulada)) {
+        } else if (this.llegoACantidadRequerida(parseFloat(prod.quantity) + cantidadAcumulada)) {
           // revisar si sobre paso 
-          var cantidadAplica = this.info.cantidad - cantidadAcumulada
-          var cantidadSobra = cantidadAcumulada + prod.quantity - this.info.cantidad
+          var cantidadAplica = parseFloat(this.info.cantidad) - cantidadAcumulada
+          var cantidadSobra = cantidadAcumulada + parseFloat(prod.quantity) - this.info.cantidad
           /*
           llegar a 7
           viene con 3
