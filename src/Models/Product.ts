@@ -208,11 +208,10 @@ class Product extends ModelSingleton {
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
         // console.log("findByDescriptionPaginado")
 
-        EndPoint.sendGet(url, (responseData, response) => {
-            callbackOk(response.data.productos, response);
-        }, (err) => {
+        const modo = ModelConfig.get("modoTrabajoConexion")
+
+        const revisarOff = (err) => {
             // buscamos offline
-            const modo = ModelConfig.get("modoTrabajoConexion")
             console.log("modo", modo)
 
             if (
@@ -232,7 +231,29 @@ class Product extends ModelSingleton {
             } else {
                 callbackWrong(err)
             }
-        })
+        }
+
+        if (modo == ModosTrabajoConexion.SOLO_OFFLINE) {
+            console.log("buscar offline")
+            this.buscarPorNombreOffline(description, (dataProds) => {
+                callbackOk(dataProds, {
+                    data: {
+                        cantidadRegistros: dataProds.length,
+                        productos: dataProds
+                    }
+                })
+            }, (err) => {
+                EndPoint.sendGet(url, (responseData, response) => {
+                    callbackOk(response.data.productos, response);
+                }, revisarOff)
+            })
+        } else {
+            EndPoint.sendGet(url, (responseData, response) => {
+                callbackOk(response.data.productos, response);
+            }, (err) => {
+                revisarOff(err)
+            })
+        }
     }
 
     async findPreVenta(data, callbackOk, callbackWrong) {
