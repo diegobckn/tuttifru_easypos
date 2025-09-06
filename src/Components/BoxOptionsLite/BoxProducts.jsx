@@ -360,11 +360,14 @@ const BoxProducts = ({ }) => {
     const txtPreventa = "@preventa"
     var len = textSearchProducts.length
 
+    
     // console.log("")
     // console.log("len ", len)
     // console.log("largoHash", largoHash)
     // console.log("len == largoHash - 1", len == largoHash - 1)
     // console.log("textSearchProducts.substr(0, txtPreventa.length)", textSearchProducts.substr(0, txtPreventa.length))
+
+    //correccion lector laser
     if (len == largoHash - 1 && textSearchProducts.substr(0, txtPreventa.length) == "PREVENTA-") {
       setTextSearchProducts("@" + textSearchProducts)
       return;
@@ -426,6 +429,12 @@ const BoxProducts = ({ }) => {
 
       }
       // return
+    }
+
+    //correccion lector laser
+    if (textSearchProducts == "offlinepreventa") {
+      setTextSearchProducts("@@" + textSearchProducts)
+      return;
     }
 
     // console.log('textSearchProducts.indexOf("@@offlinepreventa")', textSearchProducts.indexOf("@@offlinepreventa"))
