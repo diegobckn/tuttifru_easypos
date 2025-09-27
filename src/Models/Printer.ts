@@ -9,6 +9,8 @@ import PrinterPaper from './PrinterPaper.ts';
 import PagoBoleta from './PagoBoleta.ts';
 import PrinterServer from './PrinterServer.ts';
 
+import Logo from './../assets/logo-print.png'
+
 
 class Printer {
     static arrPrints = []
@@ -35,6 +37,8 @@ class Printer {
         if (imprimirTxt === "") return
         // console.log("print simple")
         // console.log(imprimirTxt)
+        imprimirTxt = imprimirTxt.replace("./EasyPosLogo3.png", Logo)
+
         let simplePrintWindow: any = window.open("about:blank", "printsimple", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no` +
             `,width=` + ModelConfig.get("widthPrint") + `,left=0,top=0`);
 
@@ -99,7 +103,10 @@ class Printer {
 
     static printFlat(imprimirTxt) {
         if (imprimirTxt.trim() == "") return
+
         // console.log("va a imprimir esto:")
+
+        imprimirTxt = imprimirTxt.replace("./EasyPosLogo3.png", Logo)
         // console.log(imprimirTxt)
         // console.log("fin de imprimir")
         if (!Printer.popupwindow) {
