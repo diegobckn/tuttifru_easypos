@@ -21,7 +21,6 @@ import LastSale from "../../Models/LastSale";
 import ModelConfig from "../../Models/ModelConfig";
 import PrinterPaper from "../../Models/PrinterPaper";
 import PrinterServer from "../../Models/PrinterServer";
-import { EmitirDetalle, ModosImpresion } from "../../definitions/BaseConfig";
 
 const ItemVentaOffline = ({
   sale,

@@ -56,9 +56,10 @@ import Comercio from "../../Models/Comercio";
 import Retiro from "../../Models/Retiro";
 import SalesOffline from "../../Models/SalesOffline";
 import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
-import { ModosTrabajoConexion } from "../../definitions/BaseConfig";
 import PrinterPaper from "../../Models/PrinterPaper";
 import Descuento from "../ScreenDialog/Descuento";
+import ModosTrabajoConexion from "../../definitions/ModosConexion";
+import ParaEnviar from "../../Models/ParaEnviar";
 
 const BoxBoleta = ({
   onClose,
@@ -231,9 +232,7 @@ const BoxBoleta = ({
       setTotalVentas(grandTotal)
       return
     }
-
     const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
-
 
     if (
       (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
@@ -248,8 +247,6 @@ const BoxBoleta = ({
       Oferta5.guardarOffline(ofertas)
       revisarOfertas(ofertas)
     }, () => {
-
-
 
       if (
         (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
@@ -498,6 +495,8 @@ const BoxBoleta = ({
       OfflineAutoIncrement.getInstance().actualizarEnSesion(debeActualizar, () => {
         console.log("luego de actualizar en sesion")
         setListSalesOffline(SalesOffline.add(requestBody))
+        // ParaEnviar.agregar("", requestBody, "", ParaEnviar.TIPO.VENTA_TICKET)
+
         setUltimoVuelto(vuelto)
 
         const response = {}
@@ -527,6 +526,8 @@ const BoxBoleta = ({
       console.log("debeActualizar", debeActualizar)
       OfflineAutoIncrement.getInstance().actualizarEnSesion(debeActualizar, () => {
         setListSalesOffline(SalesOffline.add(requestBody))
+        // ParaEnviar.agregar("", requestBody, "", ParaEnviar.TIPO.VENTA_TICKET)
+
 
         const response = {}
         if (response.imprimirResponse == undefined) {

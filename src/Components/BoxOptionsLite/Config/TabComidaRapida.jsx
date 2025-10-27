@@ -38,8 +38,9 @@ import IngresarNumeroORut from "../../ScreenDialog/IngresarNumeroORut";
 import BoxOptionListMulti from "../BoxOptionListMulti";
 import System from "../../../Helpers/System";
 import MetodosPago from "../../../definitions/MetodosPago";
-import { EmitirDetalle, ModosImpresion } from "../../../definitions/BaseConfig";
 import BoxOptionList from "../BoxOptionList";
+import EmitirDetalle from "../../../definitions/EmisionesDetalle";
+import ModosImpresion from "../../../definitions/ModosImpresion";
 
 const TabComidaRapida = ({
   onFinish = () => { }

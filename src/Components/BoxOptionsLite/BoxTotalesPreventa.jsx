@@ -44,7 +44,7 @@ import LastSale from "../../Models/LastSale";
 
 import UltimaVenta from "../ScreenDialog/UltimaVenta";
 import LecturaFolioPreventa from "../ScreenDialog/LecturaFolioPreventa";
-import { ModosTrabajoConexion } from "../../definitions/BaseConfig";
+import ModosTrabajoConexion from "../../definitions/ModosConexion";
 
 
 const BoxTotales = () => {
@@ -76,6 +76,10 @@ const BoxTotales = () => {
   const [showScreenLastSale, setShowScreenLastSale] = useState(false)
 
   const [showPreventa, setShowPreventa] = useState(false)
+
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
 
   const navigate = useNavigate();
 
@@ -165,9 +169,7 @@ const BoxTotales = () => {
       setSelectedUser(null);
       setUltimoFolioPreventa("")
 
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
 
       return
     }
@@ -194,17 +196,13 @@ const BoxTotales = () => {
       Printer.preguntaFuncion = showConfirm
       Printer.printAll(response, cantAImprimir)
       setTextSearchProducts("")
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     }, (error) => {
       console.error("Error al realizar el ticket:", error);
       showMessage("Error al realizar el ticket");
       hideLoading()
 
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     })
   }
 
@@ -219,7 +217,12 @@ const BoxTotales = () => {
       }}
     >
 
-      <LecturaFolioPreventa openDialog={showPreventa} setOpenDialog={setShowPreventa} />
+      <LecturaFolioPreventa openDialog={showPreventa} setOpenDialog={(v) => {
+        setShowPreventa(v)
+        if (!v) {
+          focusSearchInput()
+        }
+      }} />
 
       <Grid container spacing={2} >
         <Grid item xs={12}>
@@ -275,9 +278,7 @@ const BoxTotales = () => {
                 openDialog={showScreenLastSale}
                 setOpenDialog={(val) => {
                   if (!val) {
-                    setTimeout(() => {
-                      searchInputRef.current.focus()
-                    }, 500);
+                    focusSearchInput()
                   }
                   setShowScreenLastSale(val)
                 }}

@@ -30,13 +30,15 @@ import dayjs from "dayjs";
 import Comercio from "../Models/Comercio";
 import PrinterPaper from "../Models/PrinterPaper";
 import Printer from "../Models/Printer";
+import Sales from "../Models/Sales";
 
 const PuntoVenta = () => {
   const {
     userData,
-    searchInputRef,
+    focusSearchInput,
     showAlert,
-    getUserData
+    getUserData,
+    salesData
   } = useContext(SelectedOptionsContext);
 
 
@@ -52,7 +54,7 @@ const PuntoVenta = () => {
 
 
   useEffect(() => {
-    System.intentarFoco(searchInputRef)
+    focusSearchInput()
 
     UserEvent.send({
       name: "carga pantalla Punto Venta",
@@ -115,6 +117,17 @@ const PuntoVenta = () => {
   }, [userData])
 
 
+  useEffect(() => {
+    console.log("cambio salesData", salesData)
+
+    //para que lo vea el espejo
+    const sl = new Sales()
+    sl.sendToMirror(salesData, () => {
+      console.log("enviado a espejo")
+    }, (err) => { })
+
+  }, [salesData])
+
 
 
 
@@ -136,9 +149,7 @@ const PuntoVenta = () => {
           setOpenDialog={(val) => {
             setShowAbrirCaja(val)
             if (!val) {
-              setTimeout(() => {
-                searchInputRef.current.focus()
-              }, 500);
+              focusSearchInput()
             }
           }}
         />

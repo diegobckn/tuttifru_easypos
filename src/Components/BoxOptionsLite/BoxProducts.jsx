@@ -44,7 +44,7 @@ import ProductCodeStack from "../../Models/ProductCodeStack";
 import Balanza from "../../Models/Balanza";
 import BalanzaUnidad from "../../Models/BalanzaUnidad";
 import dayjs from "dayjs";
-import { OrdenListado } from "../../definitions/BaseConfig";
+import OrdenListado from "../../definitions/OrdenesListado";
 
 const BoxProducts = ({ }) => {
   const {
@@ -84,6 +84,10 @@ const BoxProducts = ({ }) => {
 
   const [paginaBusqueda, setPaginaBusqueda] = useState(0);
   const [cantidadPaginasBusqueda, setCantidadPaginasBusqueda] = useState(0);
+
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
 
   useEffect(() => {
     if (textSearchProducts.trim() == "") {
@@ -314,7 +318,7 @@ const BoxProducts = ({ }) => {
         // setProductByCodigo(productoEncontrado);
         // setTextSearchProducts("");
         setShowTecladoBuscar(false)
-        searchInputRef.current.focus()
+        focusSearchInput()
       } else {
 
         buscarValoresBalanza(codigoBusqueda)
@@ -360,14 +364,11 @@ const BoxProducts = ({ }) => {
     const txtPreventa = "@preventa"
     var len = textSearchProducts.length
 
-
     // console.log("")
     // console.log("len ", len)
     // console.log("largoHash", largoHash)
     // console.log("len == largoHash - 1", len == largoHash - 1)
     // console.log("textSearchProducts.substr(0, txtPreventa.length)", textSearchProducts.substr(0, txtPreventa.length))
-
-    //correccion lector laser
     if (len == largoHash - 1 && textSearchProducts.substr(0, txtPreventa.length) == "PREVENTA-") {
       setTextSearchProducts("@" + textSearchProducts)
       return;
@@ -431,15 +432,9 @@ const BoxProducts = ({ }) => {
       // return
     }
 
-    //correccion lector laser
-    if (textSearchProducts.indexOf("offlinepreventa") > -1 && textSearchProducts.indexOf("@") < 0) {
-      setTextSearchProducts("@@" + textSearchProducts)
-      return;
-    }
-
     // console.log('textSearchProducts.indexOf("@@offlinepreventa")', textSearchProducts.indexOf("@@offlinepreventa"))
     if (textSearchProducts.length > 23 && textSearchProducts.indexOf("@@offlinepreventa") === 0) {
-      console.log("entro preventa offline")
+      // console.log("entro")
       var buscado = textSearchProducts.substr(-3)
       if (buscado != "-p-") return
       var buscado = textSearchProducts + ""
@@ -658,7 +653,7 @@ const BoxProducts = ({ }) => {
     setTextSearchProducts("")
     setShowTecladoBuscar(false)
 
-    searchInputRef.current.focus()
+    focusSearchInput()
   };
 
 
@@ -745,6 +740,9 @@ const BoxProducts = ({ }) => {
             <div style={{ display: "flex" }}>
               <Grid item xs={12} md={12} lg={12} sx={{ margin: "1px" }}>
                 <TextField
+                  inputProps={{
+                    "data-id": "searchinput"
+                  }}
                   sx={{
                     backgroundColor: "white",
                     borderRadius: "5px",

@@ -12,7 +12,7 @@ import System from '../Helpers/System.ts';
 class ProductCodeStack extends Model {
 
     static interval: any = null
-    static list: ProductSold[] = []
+    static list: any = []
     static processFunction: any = null
 
     static instance: ProductCodeStack | null = null;
@@ -37,7 +37,7 @@ class ProductCodeStack extends Model {
         }
     }
 
-    static addProductCode(codigo) {
+    static addProductCode(codigo:string) {
         // console.log("addProductCode.. de ProductStack..")
         // console.log("codigo", codigo)
         const largo = codigo.length

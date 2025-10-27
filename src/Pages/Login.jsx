@@ -37,9 +37,16 @@ import TiposPasarela from "../definitions/TiposPasarela";
 import Logo from '../assets/logo-principal.jpg'
 import Comercio from "../Models/Comercio";
 import PrinterPaper from "../Models/PrinterPaper";
-import { ModosTrabajoConexion } from "../definitions/BaseConfig";
 import UsersOffline from "../Models/UsersOffline";
 import OfflineAutoIncrement from "../Models/OfflineAutoIncrement";
+import Shop from "../Models/Shop";
+import StorageSesion from "../Helpers/StorageSesion";
+import Atudepa from "../Models/Atudepa";
+import LoopProperties from "../Helpers/LoopProperties";
+import EstadosPedidosApp from "../definitions/EstadosPedidosApp";
+import ModosTrabajoConexion from "../definitions/ModosConexion";
+import ReconectarBalanza from "../Components/ScreenDialog/ReconectarBalanza";
+import Balanza from "../Models/Balanza";
 
 const Login = () => {
   const {
@@ -47,7 +54,23 @@ const Login = () => {
     showAlert,
     showMessage,
     showLoading,
-    hideLoading
+    hideLoading,
+    showConfirm,
+
+
+    userData,
+    salesData,
+    clearSessionData,
+    clearSalesData,
+    getUserData,
+    setShowLoadingDialogWithTitle,
+    setShowLoadingDialog,
+
+    suspenderYRecuperar,
+    listSalesOffline,
+    setListSalesOffline,
+    createQrString,
+
   } = useContext(SelectedOptionsContext);
 
 
@@ -72,6 +95,9 @@ const Login = () => {
 
   const [reintentarPorSesionActiva, setReintentarPorSesionActiva] = useState(false);
 
+  const [verPantallaReconectar, setverPantallaReconectar] = useState(false)
+
+
   const setFocus = (inputToFocus) => {
     if (inputToFocus == "rutOrCode") {
       setShowTecladoUsuario(true)
@@ -95,8 +121,24 @@ const Login = () => {
 
     Licencia.check(showAlert, () => { navigate("/sin-licencia"); })
 
+    if (ModelConfig.get("detectarPeso")) {
+      revisarBalanza()
+    }
+
   }, [])
 
+  const revisarBalanza = () => {
+    console.log("revisarBalanza")
+    Balanza.detectandoConexion = true
+    Balanza.onNeedReconect = () => {
+      console.log("se necesita reconectar...")
+      setverPantallaReconectar(true)
+    }
+
+    Balanza.getInstance().deteccionPeso(() => {
+      console.log("balanza ok")
+    })
+  }
 
   const [footerTextSupport, setFooterTextSupport] = useState("Version 1.0.0");
   const navigate = useNavigate();
@@ -110,10 +152,65 @@ const Login = () => {
       "Sucursal " + ModelConfig.get("sucursalNombre") +
       " - PV " + ModelConfig.get("puntoVentaNombre")
     )
+
+    loadComercioApp()
   }
   useEffect(() => {
     cargaInicial()
   }, [])
+
+
+
+
+  // PARTE APP COMERCIO
+
+  const showMessageLoading = (err) => {
+    showMessage(err)
+    hideLoading()
+  }
+
+  const achicarInfo = (infoCompleta) => {
+    const infoMin = {}
+    infoCompleta.forEach((con, ix) => {
+      if (con.grupo == "ImpresionTicket") {
+        infoMin[con.entrada] = con.valor
+      }
+    })
+    return infoMin
+  }
+
+  const getInfoComercio = (callbackOk) => {
+    var comSes = new StorageSesion("comercio")
+    if (!comSes.hasOne()) {
+      // showLoading("Cargando info del comercio...")
+      ModelConfig.getAllComercio((info) => {
+        const infoMin = achicarInfo(info.configuracion)
+        hideLoading()
+        comSes.guardar(infoMin)
+        callbackOk(infoMin)
+      }, showMessageLoading)
+    } else {
+      callbackOk(comSes.cargar(1))
+    }
+  }
+
+
+  const loadComercioApp = () => {
+    getInfoComercio((infoCom) => {
+      console.log("info de comercio", infoCom)
+      infoCom.url_base = ModelConfig.get("urlBase")
+      // showLoading("Buscando informacion del servidor...")
+      Shop.prepare(infoCom, (response) => {
+        hideLoading()
+        // console.log("respuesta de softus", response)
+        // console.log("respuesta de softus..guarda en sesion", System.clone(response.info))
+        var appSes = new StorageSesion("app_shop")
+        appSes.guardar(System.clone(response.info))
+      }, showMessageLoading)
+    })
+
+  }
+  // FIN PARTE APP COMERCIO
 
 
   const cargarSucursales = () => {
@@ -122,6 +219,7 @@ const Login = () => {
 
     var unicaCaja = null
     Sucursal.getAll((responseData) => {
+      // console.log("responseData", responseData)
       responseData.forEach((sucItem, ix) => {
         cantSuc++
 
@@ -222,8 +320,13 @@ const Login = () => {
         callbackWrong(info.descripcion)
         return
       }
+
+
       // Actualizar userData después del inicio de sesión exitoso
       updateUserData(info.responseUsuario);
+
+
+
       OfflineAutoIncrement.saveIfNotHasInSesion(info.responseUsuario)
       UsersOffline.add({ ...info.responseUsuario, clave: password })
 
@@ -232,6 +335,94 @@ const Login = () => {
         navigate("/pre-venta");
       } else {
         navigate("/punto-venta");
+
+
+        // CHEQUEAR TURNO DE LA APP
+        var appSes = new StorageSesion("app_shop")
+
+        if (appSes.hasOne()) {
+          Atudepa.preparar(() => {
+
+
+            const asignaFuncionPedidos = () => {
+              Atudepa.nuevoPedidoFuncion = (peds) => {
+                console.log("check nuevos pedidos login", peds)
+                Atudepa.checkNuevosPedidos = false
+
+                new LoopProperties(peds, (prop, value, looper) => {
+                  // console.log("pedido..", peds[prop])
+                  if (peds[prop].status_id == EstadosPedidosApp.COMPRADO) {
+                    Atudepa.imprimir(peds[prop], createQrString, info.responseUsuario, showAlert, showConfirm, () => {
+                      // alert("siguiente");
+                      setTimeout(() => {
+                        looper.next()
+                      }, 1000);
+                    })
+
+                    Atudepa.cambiarEstadosPedidos([
+                      peds[prop].id
+                    ], EstadosPedidosApp.PREPARANDO, () => {
+                    }, () => { })
+                  } else {
+                    looper.next()
+                  }
+
+                }, () => {
+                  // console.log("termino el ciclo")
+                  Atudepa.checkNuevosPedidos = true
+                  // cargarPedidos()
+                })
+              }
+            }
+            Atudepa.checkTurno((resp) => {
+              showMessage("Turno de la app ya iniciado")
+              // if (resp.info.paused) {
+              //   setPaused(true)
+              // }
+              hideLoading()
+              asignaFuncionPedidos()
+              Atudepa.checkNuevosPedidos = true
+              Atudepa.iniciarCiclo()
+            }, () => {
+              showConfirm("Abrir Turno de la app?", () => {
+                // console.log("abiendo turno")
+
+                const infoComApp = appSes.cargarGuardados()[0]
+                // console.log("infoComApp", infoComApp)
+                var desde = dayjs().format("YYYY-MM-DD") + " " + infoComApp.time_start
+
+                var hasta = dayjs()
+                if (infoComApp.time_start > infoComApp.time_end) {
+                  const horaActual = dayjs().format("HH:mm")
+                  if (horaActual < infoComApp.time_start) {
+                    var desde = dayjs().subtract(1, 'day')
+                    var desde = desde.format("YYYY-MM-DD") + " " + infoComApp.time_start
+                  } else {
+                    hasta = hasta.add(1, 'day')
+                  }
+                }
+                hasta = hasta.format("YYYY-MM-DD") + " " + infoComApp.time_end
+
+                // console.log("desde", desde)
+                // console.log("hasta", hasta)
+                Atudepa.abrirTurno(
+                  desde,
+                  hasta,
+                  1,
+                  (resp) => {
+                    showMessage("Turno abierto correctamente")
+                    asignaFuncionPedidos()
+                    Atudepa.checkNuevosPedidos = true
+                    Atudepa.iniciarCiclo()
+                  }, showMessage)
+
+              })
+            })
+          }, showMessageLoading)
+
+        }
+
+
       }
       hideLoading()
     }
@@ -457,6 +648,10 @@ const Login = () => {
 
 
 
+        <ReconectarBalanza
+          openDialog={verPantallaReconectar}
+          setOpenDialog={setverPantallaReconectar}
+        />
 
 
 

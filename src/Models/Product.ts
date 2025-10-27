@@ -1,22 +1,22 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import IProduct from '../Types/IProduct.ts';
 import Model from './Model';
-import BaseConfig, { ModosTrabajoConexion } from "../definitions/BaseConfig.ts";
+import BaseConfig from "../definitions/BaseConfig.ts";
 import axios from 'axios';
 import ModelConfig from './ModelConfig.ts';
 import EndPoint from './EndPoint.ts';
 import ModelSingleton from './ModelSingleton.ts';
 import ParaEnviar from './ParaEnviar.ts';
 import System from '../Helpers/System.ts';
+import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
 
 
 class Product extends ModelSingleton {
-
-    idProducto: number
-    description: string | null
-    nombre: string | null
-    price: number | undefined
-    priceVenta: number | undefined
+    idProducto: number = 0
+    description: string | null = ""
+    nombre: string | null = ""
+    price: number | undefined = 0
+    priceVenta: number | undefined = 0
 
     precioCosto: string | null | undefined;
 
@@ -24,7 +24,7 @@ class Product extends ModelSingleton {
 
     productosOffline: Product[] = []
 
-    static logicaRedondeoUltimoDigito(valor) {
+    static logicaRedondeoUltimoDigito(valor: number) {
         const totalStr = valor + ""
         var ultTotalStr = ""
         if (totalStr.indexOf(".") > -1) {
@@ -49,7 +49,7 @@ class Product extends ModelSingleton {
     }
 
     //para redondear el vuelto por ejemplo
-    static logicaInversaRedondeoUltimoDigito(valor) {
+    static logicaInversaRedondeoUltimoDigito(valor: number) {
         const totalStr = valor + ""
         var ultTotalStr = ""
         if (totalStr.indexOf(".") > -1) {
@@ -71,17 +71,17 @@ class Product extends ModelSingleton {
         }
     }
 
-    async getAll(callbackOk, callbackWrong) {
+    async getAll(callbackOk: any, callbackWrong: any) {
         var url = ModelConfig.get("urlBase") + "/api/ProductosTmp/GetProductos"
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productos, response);
         }, callbackWrong)
     }
 
-    async almacenarParaOffline(callbackOk, callbackWrong) {
+    async almacenarParaOffline(callbackOk: any, callbackWrong: any) {
         var me = this
-        this.getAll((prods, resp) => {
+        this.getAll((prods: any, resp: any) => {
             me.sesion.guardar({
                 id: 1,
                 productos: prods
@@ -100,7 +100,7 @@ class Product extends ModelSingleton {
         return []
     }
 
-    async buscarPorNombreOffline(nombreBuscar, callbackOk, callbackWrong) {
+    async buscarPorNombreOffline(nombreBuscar: any, callbackOk: any, callbackWrong: any) {
         if (nombreBuscar.length < 3) {
             callbackOk([])
             return
@@ -137,7 +137,7 @@ class Product extends ModelSingleton {
         }
     }
 
-    async buscarPorCodBarraOffline(codigoBuscar, callbackOk, callbackWrong) {
+    async buscarPorCodBarraOffline(codigoBuscar: number, callbackOk: any, callbackWrong: any) {
         // console.log("buscarPorCodBarraOffline")
         // console.log("Product.enviando", Product.enviando)
         if (Product.enviando) {
@@ -175,7 +175,7 @@ class Product extends ModelSingleton {
     }
 
 
-    async findByDescription({ description, codigoCliente }, callbackOk, callbackWrong) {
+    async findByDescription({ description, codigoCliente }: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase +
             "/api/ProductosTmp/GetProductosByDescripcion?descripcion=" + (description + "")
@@ -185,7 +185,7 @@ class Product extends ModelSingleton {
         url += "&codigoSucursal=" + ModelConfig.get("sucursal")
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(response.data.productos, response);
         }, callbackWrong)
     }
@@ -195,7 +195,7 @@ class Product extends ModelSingleton {
         codigoCliente,
         canPorPagina = 10,
         pagina = 1
-    }, callbackOk, callbackWrong) {
+    }: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase +
             "/api/ProductosTmp/GetProductosByDescripcionPaginado?descripcion=" + (description + "")
@@ -210,7 +210,7 @@ class Product extends ModelSingleton {
 
         const modo = ModelConfig.get("modoTrabajoConexion")
 
-        const revisarOff = (err) => {
+        const revisarOff = (err: any) => {
             // buscamos offline
             console.log("modo", modo)
 
@@ -220,7 +220,7 @@ class Product extends ModelSingleton {
                 || modo == ModosTrabajoConexion.PREGUNTAR
             ) {
                 console.log("buscar offline")
-                this.buscarPorNombreOffline(description, (dataProds) => {
+                this.buscarPorNombreOffline(description, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
                             cantidadRegistros: dataProds.length,
@@ -235,28 +235,28 @@ class Product extends ModelSingleton {
 
         if (modo == ModosTrabajoConexion.SOLO_OFFLINE) {
             console.log("buscar offline")
-            this.buscarPorNombreOffline(description, (dataProds) => {
+            this.buscarPorNombreOffline(description, (dataProds: any) => {
                 callbackOk(dataProds, {
                     data: {
                         cantidadRegistros: dataProds.length,
                         productos: dataProds
                     }
                 })
-            }, (err) => {
-                EndPoint.sendGet(url, (responseData, response) => {
+            }, (err: any) => {
+                EndPoint.sendGet(url, (responseData: any, response: any) => {
                     callbackOk(response.data.productos, response);
                 }, revisarOff)
             })
         } else {
-            EndPoint.sendGet(url, (responseData, response) => {
+            EndPoint.sendGet(url, (responseData: any, response: any) => {
                 callbackOk(response.data.productos, response);
-            }, (err) => {
+            }, (err: any) => {
                 revisarOff(err)
             })
         }
     }
 
-    async findPreVenta(data, callbackOk, callbackWrong) {
+    async findPreVenta(data: any, callbackOk: any, callbackWrong: any) {
         if (Product.enviando) return
 
         Product.enviando = true
@@ -268,20 +268,20 @@ class Product extends ModelSingleton {
         if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
 
-        EndPoint.sendPost(url, data, (responseData, response) => {
+        EndPoint.sendPost(url, data, (responseData: any, response: any) => {
             if (response.data.preventa.length > 0) {
                 callbackOk(response.data.preventa[0].products, response.data);
             } else {
                 callbackWrong("respuesta incorrecta del servidor")
             }
             Product.enviando = false
-        }, (err) => {
+        }, (err: any) => {
             Product.enviando = false
             callbackWrong(err)
         })
     }
 
-    async findByCodigo({ codigoProducto, codigoCliente }, callbackOk, callbackWrong) {
+    async findByCodigo({ codigoProducto, codigoCliente }: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase +
             "/api/ProductosTmp/GetProductosByCodigo?idproducto=" + codigoProducto
@@ -301,7 +301,7 @@ class Product extends ModelSingleton {
             || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
         ) {
             console.log("buscar offline")
-            this.buscarPorCodBarraOffline(codigoProducto, (dataProds) => {
+            this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                 callbackOk(dataProds, {
                     data: {
                         cantidadRegistros: dataProds.length,
@@ -311,9 +311,9 @@ class Product extends ModelSingleton {
             }, () => { })
         }
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(response.data.productos, response);
-        }, (err) => {
+        }, (err: any) => {
             // buscamos offline
             const modo = ModelConfig.get("modoTrabajoConexion")
             console.log("modo", modo)
@@ -323,7 +323,7 @@ class Product extends ModelSingleton {
                 || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
             ) {
                 console.log("buscar offline")
-                this.buscarPorCodBarraOffline(codigoProducto, (dataProds) => {
+                this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
                             cantidadRegistros: dataProds.length,
@@ -337,7 +337,7 @@ class Product extends ModelSingleton {
         })
     }
 
-    async findByCodigoBarras({ codigoProducto, codigoCliente }, callbackOk, callbackWrong, soloOnline = false) {
+    async findByCodigoBarras({ codigoProducto, codigoCliente }: any, callbackOk: any, callbackWrong: any, soloOnline = false) {
         console.log("findByCodigoBarras codigoProducto", codigoProducto + "")
         if (Product.enviando) {
             console.log("saliendo porque ya esta enviando")
@@ -369,7 +369,7 @@ class Product extends ModelSingleton {
             ) {
                 console.log("buscar offline")
                 var encontroOffline = false
-                await this.buscarPorCodBarraOffline(codigoProducto, (dataProds) => {
+                await this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
                             cantidadRegistros: dataProds.length,
@@ -392,10 +392,10 @@ class Product extends ModelSingleton {
 
         console.log("sigo con busqueda con conexion")
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productos, response);
             Product.enviando = false
-        }, (err) => {
+        }, (err: any) => {
             // buscamos offline
             Product.enviando = false
             const modo = ModelConfig.get("modoTrabajoConexion")
@@ -406,7 +406,7 @@ class Product extends ModelSingleton {
                 || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
             ) {
                 console.log("buscar offline")
-                this.buscarPorCodBarraOffline(codigoProducto, (dataProds) => {
+                this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
                             cantidadRegistros: dataProds.length,
@@ -421,7 +421,7 @@ class Product extends ModelSingleton {
     }
 
 
-    async getCategories(callbackOk, callbackWrong) {
+    async getCategories(callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/NivelMercadoLogicos/GetAllCategorias"
@@ -430,13 +430,13 @@ class Product extends ModelSingleton {
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(response.data.categorias, response);
         }, callbackWrong)
     }
 
 
-    async getSubCategories(categoriaId, callbackOk, callbackWrong) {
+    async getSubCategories(categoriaId: number, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/NivelMercadoLogicos/GetSubCategoriaByIdCategoria?CategoriaID=" + categoriaId
@@ -447,7 +447,7 @@ class Product extends ModelSingleton {
             url
         );
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.subCategorias, response);
         }, callbackWrong)
 
@@ -457,7 +457,7 @@ class Product extends ModelSingleton {
     async getFamiliaBySubCat({
         categoryId,
         subcategoryId
-    }, callbackOk, callbackWrong) {
+    }: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/NivelMercadoLogicos/GetFamiliaByIdSubCategoria?" +
@@ -468,7 +468,7 @@ class Product extends ModelSingleton {
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.familias, response);
         }, callbackWrong)
     }
@@ -477,7 +477,7 @@ class Product extends ModelSingleton {
         categoryId,
         subcategoryId,
         familyId
-    }, callbackOk, callbackWrong) {
+    }: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/NivelMercadoLogicos/GetSubFamiliaByIdFamilia?" +
@@ -488,7 +488,7 @@ class Product extends ModelSingleton {
         url += "&codigoSucursal=" + ModelConfig.get("sucursal")
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(response.data.subFamilias, response);
         }, callbackWrong)
     }
@@ -498,7 +498,7 @@ class Product extends ModelSingleton {
         subcatId,
         famId,
         subFamId
-    }, callbackOk, callbackWrong) {
+    }: any, callbackOk: any, callbackWrong: any) {
 
         if (!catId) catId = 1
         if (!subcatId) subcatId = 1
@@ -512,12 +512,12 @@ class Product extends ModelSingleton {
         url += "&codigoSucursal=" + ModelConfig.get("sucursal")
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productos, response);
         }, callbackWrong)
     }
 
-    async assignPrice(product, callbackOk, callbackWrong) {
+    async assignPrice(product: any, callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/ProductosTmp/UpdateProductoPrecio"
@@ -525,13 +525,13 @@ class Product extends ModelSingleton {
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
 
-        EndPoint.sendPut(url, product, (responseData, response) => {
+        EndPoint.sendPut(url, product, (responseData: any, response: any) => {
             callbackOk(responseData, response);
         }, callbackWrong)
 
     }
 
-    async newProductFromCode(product, callbackOk, callbackWrong) {
+    async newProductFromCode(product: any, callbackOk: any, callbackWrong: any) {
         var url = ModelConfig.get("urlBase")
             + "/api/ProductosTmp/AddProductoNoEncontrado"
 
@@ -559,7 +559,7 @@ class Product extends ModelSingleton {
                     precioVenta: product.precioVenta + ""
                 },
                 "post",
-                "nuevoProductoExpress"
+                ParaEnviar.TIPO.NUEVO_PRODUCTO_EXPRESS
             )
 
             setTimeout(() => {
@@ -574,13 +574,13 @@ class Product extends ModelSingleton {
             }
             callbackOk(response.data, response)
         } else {
-            EndPoint.sendPost(url, product, (responseData, response) => {
+            EndPoint.sendPost(url, product, (responseData: any, response: any) => {
                 callbackOk(responseData, response);
             }, callbackWrong)
         }
     }
 
-    async getTipos(callbackOk, callbackWrong) {
+    async getTipos(callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/ProductosTmp/GetProductoTipos"
@@ -589,7 +589,7 @@ class Product extends ModelSingleton {
 
 
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productoTipos, response);
         }, callbackWrong)
     }
@@ -598,7 +598,7 @@ class Product extends ModelSingleton {
     async getCriticosPaginate({
         pageNumber = 1,
         rowPage = 10
-    }, callbackOk, callbackWrong) {
+    }, callbackOk: any, callbackWrong: any) {
         try {
             const configs = ModelConfig.get()
             var url = configs.urlBase + "/api/ProductosTmp/GetProductosStockCriticoPaginados"

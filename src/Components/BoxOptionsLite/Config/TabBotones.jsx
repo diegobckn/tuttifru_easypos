@@ -34,7 +34,6 @@ import ModelConfig from "../../../Models/ModelConfig";
 import SmallButton from "../../Elements/SmallButton";
 import Sucursal from "../../../Models/Sucursal";
 import TiposPasarela from "../../../definitions/TiposPasarela";
-import { OrdenListado } from "../../../definitions/BaseConfig";
 import BoxOptionList from "../BoxOptionList";
 import InputCheckbox from "../../Elements/Compuestos/InputCheckbox";
 import InputCheckboxAutorizar from "../../Elements/Compuestos/InputCheckboxAutorizar";

@@ -23,6 +23,7 @@ import UserEvent from "../../Models/UserEvent";
 import BoxProductoFamilia from "./BoxProductoFamilia";
 import BoxBusquedaRapida from "./BoxBusquedaRapida";
 import ModelConfig from "../../Models/ModelConfig";
+import System from "../../Helpers/System";
 
 
 const BoxBotones = () => {
@@ -55,6 +56,10 @@ const BoxBotones = () => {
   const [showProductoAbierto, setShowProductoAbierto] = useState(false);
   const [showScreenCierreCaja, setShowScreenCierreCaja] = useState(false)
 
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
+
   return (
     <Paper
       elevation={3}
@@ -77,7 +82,7 @@ const BoxBotones = () => {
 
               if (salesData.length < 1) {
                 showAlert("No hay ventas")
-                searchInputRef.current.focus()
+                focusSearchInput()
                 return
               }
 
@@ -87,14 +92,9 @@ const BoxBotones = () => {
                 setShowLoadingDialogWithTitle("Borrando...", true);
                 clearSalesData();
                 hideLoadingDialog()
-
-                setTimeout(() => {
-                  searchInputRef.current.focus()
-                }, 500);
+                focusSearchInput()
               }, () => {
-                setTimeout(() => {
-                  searchInputRef.current.focus()
-                }, 500);
+                focusSearchInput()
               })
             }} />
 
@@ -103,9 +103,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowFamiliasDialog(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -117,9 +115,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenSuspend(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -129,9 +125,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenRecuperar(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -139,9 +133,7 @@ const BoxBotones = () => {
             <MainButton textButton="Suspender Venta" actionButton={() => {
               if (salesData.length < 1) {
                 showMessage("No hay ventas")
-                setTimeout(() => {
-                  searchInputRef.current.focus()
-                }, 500);
+                focusSearchInput()
                 return
               }
               setShowScreenSuspend(true)
@@ -161,9 +153,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenDevolucion(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -180,9 +170,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenCierreCaja(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Cerrar caja'",
@@ -208,9 +196,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenIngreso(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Ingresos'",
@@ -226,9 +212,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenRetiro(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Retiros'",
@@ -244,9 +228,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowFastSearchDialog(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -258,9 +240,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowProductoAbierto(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -272,9 +252,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setOpenScreenCreateClient(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
               }}
             />
@@ -284,9 +262,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenConfig(val)
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Config'",

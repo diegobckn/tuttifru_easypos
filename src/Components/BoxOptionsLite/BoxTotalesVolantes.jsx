@@ -79,6 +79,10 @@ const BoxTotalesVolantes = () => {
 
   const [showFastSearchDialog, setShowFastSearchDialog] = useState(false);
 
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
+
   const onTicketClick = () => {
     if (!userData) {
       showAlert("Seleccionar usuario")
@@ -127,17 +131,13 @@ const BoxTotalesVolantes = () => {
       const cantAImprimir = parseInt(ModelConfig.get("cantidadTicketImprimir"))
       Printer.printAll(response, cantAImprimir)
       setTextSearchProducts("")
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     }, (error) => {
       console.error("Error al realizar el ticket:", error);
       showMessage("Error al realizar el ticket");
       hideLoading()
 
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     })
   }
 
@@ -203,9 +203,7 @@ const BoxTotalesVolantes = () => {
             openDialog={showScreenLastSale}
             setOpenDialog={(val) => {
               if (!val) {
-                setTimeout(() => {
-                  searchInputRef.current.focus()
-                }, 500);
+                focusSearchInput()
               }
               setShowScreenLastSale(val)
             }}
@@ -236,6 +234,7 @@ const BoxTotalesVolantes = () => {
 
               if (salesData.length < 1) {
                 showMessage("El listado esta vacio")
+                focusSearchInput()
                 return
               }
 

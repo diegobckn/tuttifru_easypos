@@ -55,7 +55,6 @@ const LecturaFolioPreventa = ({
     showTecladoBuscar,
     setShowTecladoBuscar,
     addNewProductFromCode,
-    searchInputRef,
   } = useContext(SelectedOptionsContext);
 
   const [folio, setFolio] = useState(0)

@@ -22,16 +22,16 @@ class Oferta5 {
 
   static session = new StorageSesion("ofertas")
 
-  setInfo(infoOferta) {
+  setInfo(infoOferta:any) {
     this.info = infoOferta
 
   }
 
-  static guardarOffline(info) {
+  static guardarOffline(info:any) {
     this.session.guardar(info)
   }
 
-  llegoACantidadRequerida(cantidad) {
+  llegoACantidadRequerida(cantidad:number) {
     var signo = this.info.signo === "=" ? ">=" : this.info.signo
     if (this.info.signo === ">") signo = ">="
 
@@ -40,15 +40,15 @@ class Oferta5 {
     return eval(cantidad + signo + this.info.cantidad)
   }
 
-  debeAplicar(productos) {
+  debeAplicar(productos:any) {
     // console.log("debeAplicar...para", productos)
     // console.log("this.info.products", this.info.products)
 
-    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr) => pr.codbarra)
+    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr:any) => pr.codbarra)
 
     // console.log("this.codigosAplicables", this.codigosAplicables)
     var cuantosHay = 0
-    productos.forEach(prod => {
+    productos.forEach((prod:any) => {
       if (this.estaEnAplicables(prod)) {
         cuantosHay += parseFloat(prod.quantity)
       }
@@ -61,13 +61,13 @@ class Oferta5 {
     return rs
   }
 
-  estaEnAplicables(producto) {
+  estaEnAplicables(producto:any) {
     return this.codigosAplicables.indexOf(producto.idProducto) > -1
   }
 
-  aplicar(productos): ResultadoAplicarOferta {
+  aplicar(productos:any): ResultadoAplicarOferta {
 
-    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr) => pr.codbarra)
+    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr:any) => pr.codbarra)
 
 
     const resul: ResultadoAplicarOferta = {
@@ -79,7 +79,7 @@ class Oferta5 {
     var cantidadAcumulada = 0
     var seAplico = false
 
-    productos.forEach(prod => {
+    productos.forEach((prod:any) => {
       if (!seAplico && this.estaEnAplicables(prod)) {
         if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.quantity)) {
           const copiaProd = System.clone(prod)

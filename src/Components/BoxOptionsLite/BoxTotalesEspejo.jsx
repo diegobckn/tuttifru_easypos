@@ -68,92 +68,10 @@ const BoxTotalesEspejo = () => {
 
     ultimoVuelto,
     setUltimoVuelto,
-    searchInputRef
   } = useContext(SelectedOptionsContext);
+
   const [vendedor, setVendedor] = useState(null);
-  const [recargos, setRecargos] = useState(0);
-  const [descuentos, setDescuentos] = useState(0);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [showScreenPagoFactura, setShowScreenPagoFactura] = useState(false)
-  const [showScreenPagoBoleta, setShowScreenPagoBoleta] = useState(false)
-  const [showScreenEnvases, setShowScreenEnvases] = useState(false)
-
-  const [openSpecialPrint, setOpenSpecialPrint] = useState(false)
-  const [showScreenLastSale, setShowScreenLastSale] = useState(false)
-
-  const [showPreventa, setShowPreventa] = useState(false)
-
-  const [verBotonPreventa, setVerBotonPreventa] = useState(false)
-  const [verBotonEnvases, setVerBotonEnvases] = useState(false)
-  const [verBotonPagarFactura, setVerBotonPagarFactura] = useState(false)
-
-
-  const longBoleta = new LongClick(2);
-  longBoleta.onClick(() => {
-    if (salesData.length < 1) {
-      showMessage("No hay ventas")
-      return
-    }
-
-    if(!System.configBoletaOk()){
-      showAlert("Se debe configurar emision de boleta")
-      return
-    }
-
-    setShowScreenPagoBoleta(true)
-  })
-  longBoleta.onLongClick(() => {
-    if (modoAvion) {
-      showMessage("Cambiado a modo normal")
-    } else {
-      showMessage("Cambiado a modo avion")
-    }
-    setModoAvion(!modoAvion)
-
-  })
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setVerBotonPreventa(ModelConfig.get("verBotonPreventa"))
-    setVerBotonEnvases(ModelConfig.get("verBotonEnvases"))
-    setVerBotonPagarFactura(ModelConfig.get("verBotonPagarFactura"))
-  }, [])
-
-
-  useEffect(() => {
-    // Simulación de obtención de datos del usuario después de un tiempo de espera
-    const fetchData = () => {
-      if (!userData) {
-        getUserData();
-        return
-      }
-
-      if (userData == null) {
-        alert("Usuario no logueado");
-        clearSessionData();
-        navigate("/login");
-        return
-      }
-      // setVendedor({
-      //   codigo: userData.codigoUsuario || "21",
-      //   nombre:
-      //     userData.nombres + " " + userData.apellidos || "Nombre Apellido",
-      //   caja: "1",
-      //   rol: userData.rol || "Rol del usuario",
-      //   boleta: "323232321",
-      //   operacion: "12123141",
-      // });
-    };
-
-    fetchData();
-  }, [userData]);
-
-  const abrirLecturaPreventa = () => {
-    setShowPreventa(true)
-  }
+  
 
   return (
     <Paper

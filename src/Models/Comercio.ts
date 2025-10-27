@@ -14,13 +14,13 @@ class Comercio {
   static sesionServerImpresion: StorageSesion = new StorageSesion("ComercioServerImpresion")
   static sesionServerAnchos: StorageSesion = new StorageSesion("ComercioServerAnchos")
 
-  static async getServerImpresionConfigs(callbackOk, callbackWrong) {
+  static async getServerImpresionConfigs(callbackOk: any, callbackWrong: any) {
     var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionImpresion"
-    EndPoint.sendGet(url, (responseData, response) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       me.sesionServerImpresion.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er) => {
+    }, (er:any) => {
       if (me.sesionServerImpresion.hasOne()) {
         callbackOk(me.sesionServerImpresion.cargar(1), {})
         return
@@ -29,13 +29,13 @@ class Comercio {
     })
   }
 
-  static async getServerAllConfigs(callbackOk, callbackWrong) {
+  static async getServerAllConfigs(callbackOk: any, callbackWrong: any) {
     var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionCliente"
-    EndPoint.sendGet(url, (responseData, response) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       me.sesionServerAllConfig.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er) => {
+    }, (er:any) => {
       if (me.sesionServerAllConfig.hasOne()) {
         callbackOk(me.sesionServerAllConfig.cargar(1), {})
         return
@@ -44,19 +44,30 @@ class Comercio {
     })
   }
 
-  static async getServerAnchosTickets(callbackOk, callbackWrong) {
+  static async getServerAnchosTickets(callbackOk: any, callbackWrong: any) {
     var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionTamañoImpresion"
-    EndPoint.sendGet(url, (responseData, response) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       me.sesionServerAnchos.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er) => {
+    }, (er:any) => {
       if (me.sesionServerAnchos.hasOne()) {
         callbackOk(me.sesionServerAnchos.cargar(1), {})
         return
       }
       callbackWrong(er)
     })
+  }
+
+  static buscarConfig(grupo: string, entrada: string, configs: any) {
+    var found = null;
+    configs.forEach((element: any) => {
+      if (element.grupo == grupo && element.entrada == entrada) {
+        found = element
+      }
+    });
+
+    return found;
   }
 
 };

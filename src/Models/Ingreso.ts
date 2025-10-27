@@ -9,23 +9,23 @@ import EndPoint from './EndPoint.ts';
 
 
 class Ingreso extends Model implements MovimientoCaja{
-  codigoUsuario: number;
-  codigoSucursal: number;
-  puntoVenta: string;
-  fechaIngreso: string;
-  idTurno: number;
-  tipo: string;
-  detalleTipo: string;
-  observacion: string;
-  monto: number;
+  codigoUsuario: number = 0;
+  codigoSucursal: number = 0;
+  puntoVenta: string = "";
+  fechaIngreso: string = "";
+  idTurno: number = 0;
+  tipo: string = "";
+  detalleTipo: string = "";
+  observacion: string = "";
+  monto: number = 0;
 
-  motivo: string | null | undefined;
-  rutProveedor: string | null | undefined;
-  idUsuario: string | null | undefined;
+  motivo: string | null  = "";
+  rutProveedor: string | null = "";
+  idUsuario: string | null  = "";
   
   static TIPO = "INGRESO"
 
-  async otros(callbackOk, callbackWrong){
+  async otros(callbackOk:any, callbackWrong:any){
     if(!this.motivo){
       console.log("Ingreso. Otros ingresos. Falta motivo");
       return
@@ -34,7 +34,7 @@ class Ingreso extends Model implements MovimientoCaja{
     this.detalleTipo = "OTROSINGRESOS"
     this.observacion = this.motivo
 
-    const data = this.getFillables()
+    const data:any = this.getFillables()
     delete data.motivo
 
     const configs = ModelConfig.get()
@@ -44,7 +44,7 @@ class Ingreso extends Model implements MovimientoCaja{
     if(!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if(!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url,data,(responseData, response)=>{
+    EndPoint.sendPost(url,data,(responseData:any, response:any)=>{
       callbackOk(responseData,response);
     },callbackWrong)
   }

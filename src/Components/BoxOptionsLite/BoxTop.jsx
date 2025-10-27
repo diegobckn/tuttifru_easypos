@@ -11,7 +11,7 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Autorenew, BuildCircle, Circle, Inventory, Margin, PointOfSale, ProductionQuantityLimits, ProductionQuantityLimitsRounded, Settings, Traffic, WifiOff } from "@mui/icons-material";
+import { Autorenew, BuildCircle, Circle, GMobiledata, Inventory, Margin, MobileFriendly, PointOfSale, ProductionQuantityLimits, ProductionQuantityLimitsRounded, Settings, Traffic, WifiOff } from "@mui/icons-material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 import dayjs from "dayjs";
 
@@ -23,12 +23,14 @@ import ScreenCloseSession from "../ScreenDialog/CloseSession"
 import User from "../../Models/User";
 import Client from "../../Models/Client";
 import ModelConfig from "../../Models/ModelConfig";
+import Atudepa from "../../Models/Atudepa";
 import VentasOffline from "../ScreenDialog/VentasOffline"
 import PrinterPaper from "../../Models/PrinterPaper";
 import StockCriticos from "../ScreenDialog/StockCriticos";
 import Product from "../../Models/Product";
 import SalesOffline from "../../Models/SalesOffline";
 import IconButtonBadge from "../Elements/IconButtonBadge";
+import AdminApp from "../ScreenDialog/AdminApp";
 
 const BoxTop = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -61,6 +63,7 @@ const BoxTop = () => {
   const navigate = useNavigate();
   const [showCloseSessionDialog, setShowCloseSessionDialog] = useState(false);
   const [showSalesOffline, setShowSalesOffline] = useState(false);
+  const [showAdminApp, setShowAdminApp] = useState(false);
   const [showCritics, setShowCritics] = useState(false);
 
   const [date, setDate] = useState(null);
@@ -70,6 +73,11 @@ const BoxTop = () => {
 
   const [widthPrinter, setWidthPrinter] = useState(null);
   const [stockCriticoSuperados, setStockCriticoSuperados] = useState(0);
+
+
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
 
   const cargarStockCriticoSuperados = () => {
     var superados = 0
@@ -142,6 +150,13 @@ const BoxTop = () => {
     // Simulación de obtención de datos del usuario después de un tiempo de espera
     if (!User.getInstance().sesion.hasOne()) {
       // alert("Usuario no logueado");
+
+      if (Atudepa.intervaloFuncion) {
+        clearInterval(Atudepa.intervaloFuncion)
+      }
+      Atudepa.checkNuevosPedidos = false
+      Atudepa.nuevoPedidoFuncion = null
+
       clearSessionData();
       navigate("/login");
     }
@@ -153,16 +168,12 @@ const BoxTop = () => {
     Product.getInstance().almacenarParaOffline((prods, resp) => {
       hideLoading()
       showAlert("Actualizado correctamente", "", () => {
-        setTimeout(() => {
-          searchInputRef.current.focus()
-        }, 500);
+        focusSearchInput()
       })
     }, () => {
       hideLoading()
       showMessage("No se pudo realizar")
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     })
   }
 
@@ -255,9 +266,7 @@ const BoxTop = () => {
                     position: "relative"
                   }} onClick={() => {
                     showAlert("Impresora de " + widthPrinter, "", () => {
-                      setTimeout(() => {
-                        searchInputRef.current.focus()
-                      }, 500);
+                      focusSearchInput()
                     })
 
                   }}>
@@ -282,9 +291,17 @@ const BoxTop = () => {
                   setShowSalesOffline(v)
 
                   if (!v) {
-                    setTimeout(() => {
-                      searchInputRef.current.focus()
-                    }, 500);
+                    focusSearchInput()
+                  }
+                }}
+              />
+              <AdminApp
+                openDialog={showAdminApp}
+                setOpenDialog={(v) => {
+                  setShowAdminApp(v)
+
+                  if (!v) {
+                    focusSearchInput()
                   }
                 }}
               />
@@ -294,9 +311,7 @@ const BoxTop = () => {
                 setOpenDialog={(x) => {
                   setShowCritics(x)
                   if (!x) {
-                    setTimeout(() => {
-                      searchInputRef.current.focus()
-                    }, 500);
+                    focusSearchInput()
                   }
                 }}
               />
@@ -332,10 +347,17 @@ const BoxTop = () => {
 
                   <IconButtonBadge
                     actionButton={() => {
+                      setShowAdminApp(true)
+                    }}
+                    icon={<MobileFriendly fontSize="medium" />}
+                    style={{
+                      color: "rgb(251 219 18)"
+                    }}
+                  />
+                  <IconButtonBadge
+                    actionButton={() => {
                       descargarProductos()
-                      setTimeout(() => {
-                        searchInputRef.current.focus()
-                      }, 500);
+                      focusSearchInput()
                     }}
                     icon={<Autorenew fontSize="medium" />}
                     style={{
@@ -351,9 +373,7 @@ const BoxTop = () => {
                       txt += " y las incorrectas " + conexionesMalInternet + "."
 
                       showAlert("Estado de conexiones a internet", txt, () => {
-                        setTimeout(() => {
-                          searchInputRef.current.focus()
-                        }, 500);
+                        focusSearchInput()
                       })
                     }}
                     icon={<Circle fontSize="medium" />}

@@ -56,10 +56,10 @@ import Comercio from "../../Models/Comercio";
 import Retiro from "../../Models/Retiro";
 import SalesOffline from "../../Models/SalesOffline";
 import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
-import { ModosTrabajoConexion } from "../../definitions/BaseConfig";
 import PrinterPaper from "../../Models/PrinterPaper";
 import Descuento from "../ScreenDialog/Descuento";
 import PagoFactura from "../../Models/PagoFactura";
+import ModosTrabajoConexion from "../../definitions/ModosConexion";
 
 const BoxFactura = ({
   onClose,

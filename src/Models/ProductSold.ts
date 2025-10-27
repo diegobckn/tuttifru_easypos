@@ -8,9 +8,9 @@ import IProductSold from '../Types/IProductSold.ts';
 
 class ProductSold extends Product implements IProductSold {
     esAgregado: boolean | undefined;
-    quantity: number;
-    cantidad: number;
-    total: number;
+    quantity: number = 0;
+    cantidad: number = 0;
+    total: number = 0;
 
     pesable: undefined | boolean;
     tipoVenta: undefined | number;
@@ -63,7 +63,7 @@ class ProductSold extends Product implements IProductSold {
         return this;
     }
 
-    changeQuantity(quantity){
+    changeQuantity(quantity:number){
         this.quantity = quantity;
         this.updateSubtotal();
     }
@@ -72,7 +72,7 @@ class ProductSold extends Product implements IProductSold {
         return this.total = this.getSubTotal()
     }
 
-    static tieneEnvases(producto){
+    static tieneEnvases(producto:any){
         // console.log("tiene envases?")
         // console.log(producto)
         return(
@@ -96,9 +96,9 @@ class ProductSold extends Product implements IProductSold {
         )
     }
 
-    static getOwnerByEnvase(envase, otherProducts){
+    static getOwnerByEnvase(envase:any, otherProducts:any){
         var owner:any = null
-        otherProducts.forEach((pro)=>{
+        otherProducts.forEach((pro:any)=>{
             if(pro.idProducto == envase.ownerEnvaseId){
                 owner = pro
             }
@@ -106,13 +106,13 @@ class ProductSold extends Product implements IProductSold {
         return owner
     }
 
-    static esEnvase(productData){
+    static esEnvase(productData:any){
         return (productData.ownerEnvaseId!= undefined || productData.isEnvase)
     }
 
-    static getEnvaseByOwner(owner, otherProducts){
+    static getEnvaseByOwner(owner:any, otherProducts:any){
         var envase:any = null
-        otherProducts.forEach((pro)=>{
+        otherProducts.forEach((pro:any)=>{
             if(owner.idProducto == pro.ownerEnvaseId){
                 envase = pro
             }
@@ -128,7 +128,7 @@ class ProductSold extends Product implements IProductSold {
     getAgregadosEnTexto(){
         var txt = ""
         if(!this.tieneExtraAgregar())return txt
-        this.extras.agregar.forEach(agregado => {
+        this.extras.agregar.forEach((agregado:any) => {
             if(txt != "") txt += ", "
             txt += agregado.nombre
         });
@@ -142,7 +142,7 @@ class ProductSold extends Product implements IProductSold {
     getQuitadosEnTexto(){
         var txt = ""
         if(!this.tieneExtraQuitar())return txt
-        this.extras.quitar.forEach(agregado => {
+        this.extras.quitar.forEach((agregado:any) => {
             if(txt != "") txt += ", "
             txt += agregado.nombre
         });

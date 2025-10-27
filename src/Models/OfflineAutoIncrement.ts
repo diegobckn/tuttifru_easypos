@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import ModelSingleton from './ModelSingleton.ts';
-import User from './User.js';
+import User from './User.ts';
 import System from '../Helpers/System.ts';
 import StorageSesion from '../Helpers/StorageSesion.ts';
 
@@ -17,11 +17,11 @@ class OfflineAutoIncrement extends ModelSingleton {
 
   static sesion = new StorageSesion("offlineAutoIncrements")
 
-  static saveInSesion(info) {
+  static saveInSesion(info: any) {
     return this.sesion.guardar(info)
   }
 
-  static saveIfNotHasInSesion(info) {
+  static saveIfNotHasInSesion(info: any) {
     if (!this.getFromSesion()) {
       return this.sesion.guardar(info)
     }
@@ -31,7 +31,7 @@ class OfflineAutoIncrement extends ModelSingleton {
     return this.sesion.cargar(1)
   }
 
-  loadAllFromSesion(callbackOk, callbackWrong, replaceOldIfHasValue = false) {
+  loadAllFromSesion(callbackOk: any, callbackWrong: any, replaceOldIfHasValue = false) {
     if (
       !replaceOldIfHasValue
       && this.idTurno !== null
@@ -69,7 +69,7 @@ class OfflineAutoIncrement extends ModelSingleton {
     callbackOk()
   }
 
-  loadFromSesion(prop, callbackOk, callbackWrong, replaceOldIfHasValue = false) {
+  loadFromSesion(prop: any, callbackOk: any, callbackWrong: any, replaceOldIfHasValue = false) {
     if (
       this.idTurno === null
       || this.nFolioBoleta === null
@@ -90,47 +90,47 @@ class OfflineAutoIncrement extends ModelSingleton {
     if (!infoSesion) return callbackWrong("No se pudo cargar la informacion de la sesion")
 
     if (replaceOldIfHasValue) {
-      this[prop] = infoSesion[prop]
+      System.setProp(this, prop, infoSesion[prop])
     } else {
-      if (this[prop] === null) this[prop] = infoSesion[prop]
+      if (System.getProp(this, prop) === null) System.setProp(this, prop, infoSesion[prop])
     }
 
     // console.log("me esta asi", System.clone(this))
     callbackOk()
   }
 
-  generar(prop: string, callbackOk, callbackWrong, replaceOldIfHasValue = false) {
+  generar(prop: string, callbackOk: any, callbackWrong: any, replaceOldIfHasValue = false) {
     // console.log("generar..", prop)
     var me = this
     if (me.loadFromSesion(prop, () => {
       // console.log("antes de cambiar esta asi", System.clone(me))
-      me[prop] = parseInt(me[prop]) + 1
+      System.setProp(me, prop, parseInt(System.getProp(me, prop)) + 1)
 
       if (prop == "nFolioBoleta") {
         const dsd = me[prop] ?? 0
         me.loadFromSesion("nFolioBoletaHasta", () => {
           // console.log("antes de cambiar esta asi", System.clone(me))
-          const hst = parseFloat(me["nFolioBoletaHasta"])
+          const hst = parseFloat(System.getProp(me, "nFolioBoletaHasta"))
           const df = hst - dsd
           if (df <= OfflineAutoIncrement.DIFERENCIA_SOLICITAR_FOLIOS) {
             //pedir mas folios
-            
+
           }
         }, () => { })
       }
       // console.log("despues de cambiar queda asi", System.clone(me))
-      callbackOk(me[prop])
+      callbackOk(System.getProp(me, prop))
     }, callbackWrong, replaceOldIfHasValue))
       return
   }
 
-  actualizarEnSesion(prop: string, callbackOk, callbackWrong) {
+  actualizarEnSesion(prop: string, callbackOk: any, callbackWrong: any) {
     var me = this
     // console.log("this esta asi", me)
     const infoSesion = OfflineAutoIncrement.getFromSesion()
     console.log("infoSesion", infoSesion)
     if (!infoSesion) return callbackWrong("No se pudo cargar la informacion de la sesion")
-    infoSesion[prop] = me[prop]
+    infoSesion[prop] = System.getProp(me, prop)
     // console.log("infoSesion antes de guardar", System.clone(infoSesion))
     const rs = OfflineAutoIncrement.saveInSesion(infoSesion)
     // console.log("rs", rs)

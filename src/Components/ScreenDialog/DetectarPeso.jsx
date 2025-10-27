@@ -72,6 +72,7 @@ const AsignarPeso = ({
 
     onFinish(parseFloat(peso).toFixed(3))
     setOpenDialog(false)
+    balanza.cancelarCiclo();
   }
 
 
@@ -185,6 +186,8 @@ const AsignarPeso = ({
         <SmallButton textButton="Confirmar" actionButton={handlerSaveAction} />
         <Button onClick={() => {
           setOpenDialog(false)
+          balanza.cancelarCiclo();
+
         }}>Cancelar</Button>
       </DialogActions>
     </Dialog>

@@ -1,49 +1,15 @@
 import dayjs from "dayjs";
 import TiposPasarela from "./TiposPasarela";
 import MetodosPago from "./MetodosPago";
-
-export const OrdenListado = {
-    Ascendente: 1,
-    Descendente: 2
-}
-
-export const EmitirDetalle = {
-    NUNCA: 1,
-    SIEMPRE: 2,
-    PREGUNTAR: 3
-}
-
-export const ModosTrabajoConexion = {
-    SOLO_OFFLINE: 1,
-    SOLO_ONLINE: 3,
-    OFFLINE_INTENTAR_ENVIAR: 2,
-    PREGUNTAR: 4,
-}
-
-export const ModosImpresion = {
-    IMPRESORA_PREDETERMINADA: 1,
-    SERVIDOR: 2,
-}
-
-export const TiposDescuentos = {
-    PORCENTAJE: 1,
-    MONTO: 2,
-}
-
-export const TiposProductos = [
-    {
-        "idTipo": 1,
-        "descripcion": "Normal"
-    },
-    {
-        "idTipo": 2,
-        "descripcion": "Pesable"
-    }
-]
+import ModosTrabajoConexion from "./ModosConexion";
+import OrdenListado from "./OrdenesListado";
+import EmitirDetalle from "./EmisionesDetalle";
+import ModosImpresion from "./ModosImpresion";
+import Env from "./Env";
 
 const BaseConfig = {
-    urlBase: (import.meta.env.VITE_URL_BASE),
-    licencia: (import.meta.env.VITE_CLIENTE),
+    urlBase: Env.urlBase,
+    licencia: Env.licencia,
     sesionStart: dayjs().format('DD/MM/YYYY-HH:mm:ss'),
     sesionExprire: 2 * 60 * 1000, //en milisegundos
 
@@ -118,8 +84,9 @@ const BaseConfig = {
     imprimirPapelComanda: EmitirDetalle.SIEMPRE,
     modoImpresionComanda: ModosImpresion.IMPRESORA_PREDETERMINADA,
 
-    checkOfertas: false
-
+    checkOfertas: false,
+    refreshInfoEspejo: 3,
+    trabajarConApp: false
 };
 
 export default BaseConfig;

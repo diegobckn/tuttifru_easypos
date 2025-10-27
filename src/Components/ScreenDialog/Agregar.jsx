@@ -42,7 +42,6 @@ const Agregar = ({
     setShowPrintButton,
     suspenderYRecuperar,
     setSuspenderYRecuperar,
-    pedirSupervision,
     showAlert,
     showConfirm,
     sales,

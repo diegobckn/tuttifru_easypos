@@ -66,6 +66,11 @@ export const ProviderModales = ({ children }) => {
   const [askLastSaleModal, setAskLastSaleModal] = useState(true)
   const [addToSalesDataModal, setAddToSalesDataModal] = useState(null)
 
+  const [verPedirSupervision, setVerPedirSupervision] = useState(false)
+  const [accionPedirSupervision, setAccionPedirSupervision] = useState("")
+  const [handleConfirmarSupervision, setHandleConfirmarSupervision] = useState(null)
+  const [datosConfirmarSupervision, setDatosConfirmarSupervision] = useState({})
+
   useEffect(() => {
     if (!showConfirmDialog) {
       setTextConfirm("")
@@ -83,6 +88,22 @@ export const ProviderModales = ({ children }) => {
       setTextMsg("")
     }
   }, [showAlertDialog])
+
+
+  const pedirSupervision = (accion, callbackOk, datos) => {
+    const us = User.getInstance().getFromSesion()
+
+    if (us === null) {
+      setTitleMsg("Debe iniciar sesion para realizar esta operacion")
+      setShowAlert(true)
+      return
+    }
+
+    setAccionPedirSupervision(accion)
+    setDatosConfirmarSupervision(datos)
+    setHandleConfirmarSupervision(() => callbackOk)
+    setVerPedirSupervision(true)
+  }
 
   const GeneralElements2 = () => {
     return (
@@ -138,6 +159,17 @@ export const ProviderModales = ({ children }) => {
         />
 
 
+        <PedirSupervision
+          openDialog={verPedirSupervision}
+          accion={accionPedirSupervision}
+          infoEnviar={datosConfirmarSupervision}
+          setOpenDialog={setVerPedirSupervision}
+          onConfirm={() => {
+            if (handleConfirmarSupervision) handleConfirmarSupervision()
+          }}
+        />
+
+
 
       </>
     )
@@ -173,6 +205,8 @@ export const ProviderModales = ({ children }) => {
         setTitleMsg,
         textMsg,
         setTextMsg,
+
+        pedirSupervision,
 
         setShowDialogSelectClientModal,
         showDialogSelectClientModal,

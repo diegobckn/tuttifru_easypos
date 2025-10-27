@@ -10,6 +10,7 @@ import {
   IconButton
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../Context/ProviderModales";
 import ModelConfig from "../../Models/ModelConfig";
 import IngresarNumeroORut from "../ScreenDialog/IngresarNumeroORut";
 import SmallButton from "./SmallButton";
@@ -24,7 +25,9 @@ const SoldProductItem = ({
   itemIndex,
   product,
   products,
-  onClick
+  onClick,
+  canDelete = true,
+  canChangeQuantity = true,
 }) => {
 
   const {
@@ -44,10 +47,12 @@ const SoldProductItem = ({
 
     hideLoading,
     showLoading,
-    searchInputRef,
+    focusSearchInput
 
-    pedirSupervision
   } = useContext(SelectedOptionsContext);
+  const {
+    pedirSupervision
+  } = useContext(ProviderModalesContext);
 
 
 
@@ -71,9 +76,7 @@ const SoldProductItem = ({
     }
     changeQuantity(newQuantity)
 
-    // setTimeout(() => {
-    //   searchInputRef.current.focus()
-    // }, 500);
+    // focusSearchInput()
   }
 
 
@@ -81,31 +84,25 @@ const SoldProductItem = ({
     const newQuantity = parseInt(product.quantity - 1);
     if (newQuantity < 1) return
     changeQuantity(newQuantity)
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
   }
 
   const addQuantity = () => {
     const newQuantity = parseInt(product.quantity + 1);
     changeQuantity(newQuantity)
 
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
   }
 
   const confirmarEliminar = () => {
     removeFromSalesData(itemIndex)
     showMessage("Eliminado " + salesData[itemIndex].description)
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
   }
 
   const handleRemoveFromSalesData = () => {
     console.log("product", product)
-    const debePedirPermiso = (ModelConfig.get("pedirPermisoBorrarLinea"))
+    const debePedirPermiso = (ModelConfig.get("pedirPermisoBorrarProducto"))
     showConfirm("Eliminar " + product.description + "?", () => {
 
       if (debePedirPermiso) {
@@ -124,9 +121,7 @@ const SoldProductItem = ({
       }
 
     }, () => {
-      setTimeout(() => {
-        searchInputRef.current.focus()
-      }, 500);
+      focusSearchInput()
     })
   }
 
@@ -146,9 +141,7 @@ const SoldProductItem = ({
       }
     })
 
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
 
   }
 
@@ -188,9 +181,7 @@ const SoldProductItem = ({
               openDialog={showTecladoQuantity}
               setOpenDialog={(v) => {
                 if (!v) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
                 setShowTecladoQuantity(v)
               }}
@@ -241,7 +232,7 @@ const SoldProductItem = ({
             ) : (
               <div>
 
-                {!product.isEnvase && (
+                {!product.isEnvase && canChangeQuantity && (
                   <>
                     <SmallButton style={{
                       position: "relative",
@@ -301,6 +292,32 @@ const SoldProductItem = ({
                       }}
                       textButton={"+"} />
 
+                  </>
+                )}
+
+
+                {!canChangeQuantity && (
+                  <>
+                    <TextField
+                      value={product.quantity === 0 ? "" : product.quantity}
+                      onChange={(event) => {
+                        handleChangeQuantityProductSold(event)
+                      }}
+
+                      onClick={() => {
+                        if (!product.isEnvase) prepareTecladoChangeQuantity()
+                      }}
+                      style={{
+                        marginLeft: "65px",
+                        width: "33%",
+                        fontSize: 2,
+                        position: "relative",
+                        // top:"2px",
+                        alignContent: "center",
+                        alignItems: "center",
+                        textAign: "center"
+                      }}
+                    />
                   </>
                 )}
 
@@ -372,18 +389,20 @@ const SoldProductItem = ({
         <TableCell sx={{ fontSize: "20px" }}>
           ${System.formatMonedaLocal(product.total, false)}
         </TableCell>
-        <TableCell>
 
-          {!product.isEnvase ? (
+        {canDelete && (
 
-            <IconButton
-              onClick={() => handleRemoveFromSalesData()}
-              color="secondary"
-            >
-              <RemoveIcon />
-            </IconButton>
-          ) : (" ")}
-        </TableCell>
+          <TableCell>
+            {!product.isEnvase ? (
+              <IconButton
+                onClick={() => handleRemoveFromSalesData()}
+                color="secondary"
+              >
+                <RemoveIcon />
+              </IconButton>
+            ) : (" ")}
+          </TableCell>
+        )}
       </TableRow>
     </>
 

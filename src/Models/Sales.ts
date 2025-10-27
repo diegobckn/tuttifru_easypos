@@ -9,22 +9,25 @@ import ModelConfig from './ModelConfig.ts';
 import System from '../Helpers/System.ts';
 import Preventa from './Preventa.ts';
 import { extraDefaultLlevar } from '../Types/TExtra.ts';
+import EndPoint from './EndPoint.ts';
 
 
 class Sales {
   products: ProductSold[] = []
   sesionProducts: StorageSesion;
 
+  lastServerId = 0
+
   constructor() {
     this.sesionProducts = new StorageSesion("salesproducts");
   }
 
   loadFromSesion() {
-    console.log("loadFromSesion..")
+    // console.log("loadFromSesion..")
     if (!this.sesionProducts.hasOne()) return [];
     this.products = [];
     var prodsSession = this.sesionProducts.cargarGuardados()[0];
-    console.log("prodsSession..", prodsSession)
+    // console.log("prodsSession..", prodsSession)
     for (let index = 0; index < prodsSession.length; index++) {
       const prodSold = new ProductSold();
       prodSold.fill(prodsSession[index]);
@@ -84,6 +87,7 @@ class Sales {
   }
 
   getTotal() {
+    // console.log("getTotal..", System.clone(this.products))
     var allTotal = 0;
     var totalExtrasAgregar = 0
     this.products.forEach(function (product: ProductSold) {
@@ -94,6 +98,8 @@ class Sales {
         })
       }
     })
+
+    // console.log("total", allTotal)
     return allTotal + totalExtrasAgregar;
   }
 
@@ -405,6 +411,45 @@ class Sales {
 
     })
     return productosFiltrados
+  }
+
+  async getFromMirror(callbackOk, callbackWrong) {
+    var url = "https://softus.com.ar/easypos/get-mirror"
+
+    url += "?sucursal=" + ModelConfig.get("sucursal")
+    url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
+
+    var uu = window.location.href
+    uu = uu.replace("https://", "")
+    uu = uu.replace("http://", "")
+    uu = uu.split("/")[0]
+
+    url += "&url=" + uu
+
+    EndPoint.sendGet(url, (responseData, response) => {
+      callbackOk(responseData.prods, response);
+    }, callbackWrong)
+  }
+
+  async sendToMirror(prods, callbackOk, callbackWrong) {
+    var url = "https://softus.com.ar/easypos/update-mirror"
+
+    var uu = window.location.href
+    uu = uu.replace("https://", "")
+    uu = uu.replace("http://", "")
+    uu = uu.split("/")[0]
+
+    const data = {
+      "products": prods,
+      "sucursal": ModelConfig.get("sucursal"),
+      "puntoVenta": ModelConfig.get("puntoVenta"),
+      "url": uu,
+    }
+
+
+    EndPoint.sendPost(url, data, (responseData, response) => {
+      callbackOk(responseData.prods, response);
+    }, callbackWrong)
   }
 };
 

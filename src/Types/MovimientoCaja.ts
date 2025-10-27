@@ -9,11 +9,11 @@ interface MovimientoCaja {
     monto: number,
     idTurno: number,
 
-    motivo: string | null | undefined,//retiro
+    motivo: string | null,//retiro
     
-    rutProveedor: string | null | undefined,//retiro
+    rutProveedor: string | null,//retiro
     
-    idUsuario: string | null | undefined,//retiro
+    idUsuario: string | number | null,//retiro
 };
 
 export default MovimientoCaja;

@@ -42,7 +42,7 @@ class SalesOffline extends ModelSingleton {
         var found = -1
         const me = SalesOffline.getInstance()
         me.loadFromSesion()
-        me.listSales.forEach((saleSesion, ix) => {
+        me.listSales.forEach((saleSesion: any, ix: number) => {
             if (saleSesion.fechaIngreso == sale.fechaIngreso) {
                 found = ix
             }
@@ -50,7 +50,7 @@ class SalesOffline extends ModelSingleton {
         return found
     }
 
-    remove(index) {
+    remove(index: number) {
         const queda: any[] = []
         this.listSales.forEach((sale, ix) => {
             if (ix != index) {
@@ -65,7 +65,7 @@ class SalesOffline extends ModelSingleton {
         return this.listSales
     }
 
-    static add(inf) {
+    static add(inf: any) {
         this.getInstance().add(inf)
         return this.getInstance().listSales
     }
@@ -78,14 +78,14 @@ class SalesOffline extends ModelSingleton {
     // //en segundos
     // static reintentoTiempoSincro = 10
 
-    static sincronizar(callbackCadaEnvio, callbackFinalizar) {
+    static sincronizar(callbackCadaEnvio: any, callbackFinalizar: any) {
         SalesOffline.sincronizando = true
         this.sincronizarCiclo(callbackCadaEnvio, callbackFinalizar)
 
-        ParaEnviar.enviar()
+        // ParaEnviar.enviar()
     }
 
-    static sincronizarCiclo(callbackCadaEnvio, callbackFinalizar) {
+    static sincronizarCiclo(callbackCadaEnvio: any, callbackFinalizar: any) {
         if (SalesOffline.enviando) return
         if (!SalesOffline.sincronizando) return
         SalesOffline.enviando = true
@@ -125,16 +125,16 @@ class SalesOffline extends ModelSingleton {
     }
 
 
-    static corregirFolios(tipo, nroFolioInicial, callbackOk) {
+    static corregirFolios(tipo: any, nroFolioInicial: string | number, callbackOk: any) {
         var me = SalesOffline.getInstance()
         if (me.listSales.length < 1) {
             SalesOffline.sincronizando = false
             return
         }
 
-        var nroFolio = parseInt(nroFolioInicial) + 0
+        var nroFolio = parseInt(nroFolioInicial + "") + 0
         var copiaSales: any = []
-        me.listSales.forEach((sale, ix) => {
+        me.listSales.forEach((sale:any) => {
             if (sale.queOperacionHace == tipo) {
                 sale["nFolio" + tipo] = nroFolio + 0
                 nroFolio++
@@ -160,7 +160,7 @@ class SalesOffline extends ModelSingleton {
         ParaEnviar.sincronizando = false
     }
 
-    static reintentarPago(saleInfo, callbackOk, callbackWrong) {
+    static reintentarPago(saleInfo: any, callbackOk: any, callbackWrong: any) {
         var MPago = new PagoBoleta();
         MPago.fill(saleInfo);
         MPago.hacerPago(saleInfo, callbackOk, callbackWrong, true)

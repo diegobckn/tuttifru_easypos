@@ -15,7 +15,7 @@ import {
 
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 
-import Client from "../../Models/Client.js";
+import Client from "../../Models/Client.ts";
 import Validator from "../../Helpers/Validator";
 import IngresarTexto from "../ScreenDialog/IngresarTexto";
 import IngresarNumeroORut from "../ScreenDialog/IngresarNumeroORut";

@@ -10,10 +10,12 @@ class LoopProperties {
     currentProp: any = null
     functionLoop: any = null
     functionEnd: any = null
+    adicionalInfo: any = null
 
-    constructor(objectProperties, functionToLoop, functionToEnd) {
+    constructor(objectProperties, functionToLoop, functionToEnd, adicionalInfo:any = null) {
         this.functionLoop = functionToLoop
         this.functionEnd = functionToEnd
+        this.adicionalInfo = adicionalInfo
         this.myObject = System.clone(objectProperties)
         this.do()
     }

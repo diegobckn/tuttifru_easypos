@@ -1,20 +1,22 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
-import BaseConfig, { EmitirDetalle, ModosImpresion } from "../definitions/BaseConfig.ts";
+import BaseConfig from "../definitions/BaseConfig.ts";
 import MovimientoCaja from "../Types/MovimientoCaja.ts";
 import axios from "axios";
 import Model from './Model';
 import ModelConfig from './ModelConfig.ts';
 import System from '../Helpers/System.ts';
 import LoopProperties from '../Helpers/LoopProperties.ts';
+import EmitirDetalle from '../definitions/EmisionesDetalle.ts';
+import ModosImpresion from '../definitions/ModosImpresion.ts';
 
 
 class PrinterServer {
 
-    static preguntaFuncion = (txt, callyes, callno) => { }
+    static preguntaFuncion = (txt:string, callyes:any, callno:any) => { }
 
 
 
-    static sendInfo(infoToSend, callbackOk, callbackWrong) {
+    static sendInfo(infoToSend:any, callbackOk:any, callbackWrong:any) {
         // console.log("sendInfo")
         // console.log("infoToSend", infoToSend)
         try {
@@ -55,7 +57,7 @@ class PrinterServer {
                 if (response.status) {
                     callbackOk(response);
                 } else {
-                    if(response.message && response.message.message){
+                    if (response.message && response.message.message) {
                         console.log("caso2")
                         response.message = response.message.message
                     }
@@ -78,28 +80,28 @@ class PrinterServer {
         }
     }
 
-    static getPrinters(callbackOk, callbackWrong) {
+    static getPrinters(callbackOk:any, callbackWrong:any) {
         this.sendInfo({
             "accion": "impresoras",
         }, callbackOk, callbackWrong)
     }
 
-    static printTest(callbackOk, callbackWrong) {
+    static printTest(callbackOk:any, callbackWrong:any) {
         this.sendInfo({
             "accion": "imprimirPrueba",
         }, callbackOk, callbackWrong)
     }
 
-    static print(infoToSend, callbackOk, callbackWrong) {
+    static print(infoToSend:any, callbackOk:any, callbackWrong:any) {
         this.sendInfo({
             "accion": "imprimir",
             "datos": infoToSend
         }, callbackOk, callbackWrong)
     }
 
-    static printAll(objectWithContents, callbackOk, callbackWrong) {
+    static printAll(objectWithContents:any, callbackOk:any, callbackWrong:any, adicionalInfo = null) {
 
-        new LoopProperties(objectWithContents, (prop, value, looper) => {
+        new LoopProperties(objectWithContents, (prop:any, value:any, looper:LoopProperties) => {
             // console.log("prop", prop)
             // console.log("value", System.clone(value))
 
@@ -155,7 +157,7 @@ class PrinterServer {
             }
         }, () => {
             callbackOk()
-        })
+        }, adicionalInfo)
     }
 };
 

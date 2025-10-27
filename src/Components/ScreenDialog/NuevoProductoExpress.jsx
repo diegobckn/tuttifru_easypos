@@ -28,7 +28,7 @@ import TecladoPrecio from "../Teclados/TecladoPrecio";
 import Product from "../../Models/Product";
 import Validator from "../../Helpers/Validator";
 import IngresarTexto from "./IngresarTexto";
-import { TiposProductos } from "../../definitions/BaseConfig";
+import TiposProductos from "../../definitions/TiposProductos";
 
 
 const NuevoProductoExpress = ({

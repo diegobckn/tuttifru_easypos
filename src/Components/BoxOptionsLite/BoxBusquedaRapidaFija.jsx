@@ -40,7 +40,6 @@ const BoxBusquedaRapidaFija = ({
     showConfirm,
     showMessage,
     showAlert,
-    searchInputRef,
 
     suspenderYRecuperar,
   } = useContext(SelectedOptionsContext);

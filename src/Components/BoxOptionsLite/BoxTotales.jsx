@@ -100,6 +100,10 @@ const BoxTotales = () => {
 
   const [ingresarNumeroAtencion, setIngresarNumeroAtencion] = useState(false);
 
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
+
   const longBoleta = new LongClick(2);
   longBoleta.onClick(() => {
     if (salesData.length < 1) {
@@ -124,14 +128,12 @@ const BoxTotales = () => {
 
     ModelConfig.change("emitirBoleta", modoAvion)
 
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
 
 
     setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 1500);
+      focusSearchInput()
+    }, 1000);
   })
 
   const navigate = useNavigate();
@@ -336,9 +338,7 @@ const BoxTotales = () => {
               openDialog={showScreenLastSale}
               setOpenDialog={(val) => {
                 if (!val) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
                 setShowScreenLastSale(val)
               }}
@@ -446,9 +446,7 @@ const BoxTotales = () => {
               openDialog={showScreenPagoBoleta}
               setOpenDialog={(v) => {
                 if (!v) {
-                  setTimeout(() => {
-                    searchInputRef.current.focus()
-                  }, 500);
+                  focusSearchInput()
                 }
                 setShowScreenPagoBoleta(v)
               }}
@@ -496,9 +494,7 @@ const BoxTotales = () => {
                 <LecturaFolioPreventa openDialog={showPreventa}
                   setOpenDialog={(v) => {
                     if (!v) {
-                      setTimeout(() => {
-                        searchInputRef.current.focus()
-                      }, 500);
+                      focusSearchInput()
                     }
                     setShowPreventa(v)
                   }}
@@ -527,9 +523,7 @@ const BoxTotales = () => {
                     openDialog={showScreenEnvases}
                     setOpenDialog={(v) => {
                       if (!v) {
-                        setTimeout(() => {
-                          searchInputRef.current.focus()
-                        }, 500);
+                        focusSearchInput()
                       }
                       setShowScreenEnvases(v)
                     }}
@@ -565,9 +559,7 @@ const BoxTotales = () => {
                     openDialog={showScreenEnvases}
                     setOpenDialog={(v) => {
                       if (!v) {
-                        setTimeout(() => {
-                          searchInputRef.current.focus()
-                        }, 500);
+                        focusSearchInput()
                       }
                       setShowScreenEnvases(v)
                     }}

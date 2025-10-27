@@ -3,7 +3,7 @@ import axios from "axios";
 import ModelConfig from './ModelConfig.ts';
 import SoporteTicket from './SoporteTicket.ts';
 import EndPoint from './EndPoint.ts';
-import User from './User.js';
+import User from './User.ts';
 import ModelSingleton from './ModelSingleton.ts';
 
 
@@ -35,7 +35,7 @@ class UsersOffline extends ModelSingleton {
         })
     }
 
-    static doLoginInLocal(user, callbackOk, callbackWrong) {
+    static doLoginInLocal(user:any, callbackOk:any, callbackWrong:any) {
         console.log("doLoginInLocal")
         this.checkLocalUsers()
         var logged: any = null
@@ -57,8 +57,6 @@ class UsersOffline extends ModelSingleton {
             callbackWrong("Usuario incorrecto")
         }
     }
-
-
 };
 
 export default UsersOffline;

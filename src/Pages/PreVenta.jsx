@@ -27,7 +27,7 @@ import PrinterPaper from "../Models/PrinterPaper";
 const PreVenta = () => {
   const {
     GeneralElements,
-    searchInputRef,
+    focusSearchInput,
     showAlert,
     userData
   } = useContext(SelectedOptionsContext);
@@ -41,7 +41,7 @@ const PreVenta = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    System.intentarFoco(searchInputRef)
+    focusSearchInput()
 
     UserEvent.send({
       name: "carga pantalla Pre Venta",

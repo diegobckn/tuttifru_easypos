@@ -23,7 +23,6 @@ import TiposPasarela from "../../definitions/TiposPasarela";
 import BoxBat from "../BoxOptionsLite/BoxBat";
 import IngresarTexto from "./IngresarTexto";
 import IngresarNumeroORut from "./IngresarNumeroORut";
-import { OrdenListado } from "../../definitions/BaseConfig";
 import BoxOptionListMulti from "../BoxOptionsLite/BoxOptionListMulti";
 import MetodosPago from "../../definitions/MetodosPago";
 import System from "../../Helpers/System";
@@ -43,8 +42,12 @@ import TabBoleta from "../BoxOptionsLite/Config/TabEmitirBoleta";
 import TabComidaRapida from "../BoxOptionsLite/Config/TabComidaRapida";
 import TabBotones from "../BoxOptionsLite/Config/TabBotones";
 import TabProductos from "../BoxOptionsLite/Config/TabProductos";
+import OrdenListado from "../../definitions/OrdenesListado";
 
-const AdminConfig = ({ openDialog, setOpenDialog }) => {
+const AdminConfig = ({
+  openDialog,
+  setOpenDialog
+}: any) => {
   const [urlBase, setUrlBase] = useState("");
   const [cantBusqRap, setCantBusqRap] = useState(20);
 
@@ -119,7 +122,6 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     setShowPrintButton,
     suspenderYRecuperar,
     setSuspenderYRecuperar,
-    pedirSupervision,
     showAlert,
     showConfirm,
     setModoAvion
@@ -289,9 +291,9 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     ModelConfig.change("emitirBoleta", emitirBoleta)
   }
 
-  const buscarNombreSucursal = (idSucursal) => {
+  const buscarNombreSucursal = (idSucursal:any) => {
     var nombre = ""
-    sucursalesInfo.forEach((sucItem:any, ix) => {
+    sucursalesInfo.forEach((sucItem: any, ix) => {
       if (sucItem.idSucursal == idSucursal) {
         nombre = sucItem.descripcionSucursal
       }
@@ -300,9 +302,9 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     return nombre
   }
 
-  const buscarNombreCaja = (idCaja) => {
+  const buscarNombreCaja = (idCaja: string) => {
     var nombre = ""
-    cajas.forEach((cajaItem:any, ix) => {
+    cajas.forEach((cajaItem: any, ix) => {
       if (cajaItem.id == idCaja) {
         nombre = cajaItem.value
       }
@@ -312,20 +314,20 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
   }
 
   const cargarSucursales = () => {
-    Sucursal.getAll((responseData) => {
+    Sucursal.getAll((responseData: any) => {
       setSucursalesInfo(responseData)
       separarSucursales(responseData)
-    }, (error) => {
+    }, (error: any) => {
 
     })
   }
 
   const cargarOrdenesListados = () => {
-    var seleccionables:any[] = []
-    const keys = Object.keys(OrdenListado)
+    var seleccionables: any[] = []
+    const keys:string[] = Object.keys(OrdenListado)
 
-    keys.forEach((key, ix) => {
-      var idx = OrdenListado[key]
+    keys.forEach((key:string, ix:number) => {
+      var idx:number = OrdenListado[key]
       if (esSeleccionableTipo(idx)) {
         seleccionables.push({
           id: idx,
@@ -354,9 +356,9 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     setSeleccionables(seleccionables as [])
   }
 
-  const separarSucursales = (info) => {
-    var sucursalesx:any[] = []
-    info.forEach((infoItem, ix) => {
+  const separarSucursales = (info:any) => {
+    var sucursalesx: any[] = []
+    info.forEach((infoItem:any, ix:number) => {
       sucursalesx.push({
         id: infoItem.idSucursal + "",
         value: infoItem.descripcionSucursal
@@ -366,7 +368,7 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     setSucursales(sucursalesx as [])
   }
 
-  const esSeleccionableTipo = (tipo) => {
+  const esSeleccionableTipo = (tipo:any) => {
     return (
       tipo >= TiposPasarela.CAJA &&
       tipo <= TiposPasarela.CONSULTA_PRECIO
@@ -374,12 +376,12 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     )
   }
 
-  const cargarCajas = (idSucursal) => {
-    var cajasx:any[] = []
+  const cargarCajas = (idSucursal:any) => {
+    var cajasx: any[] = []
     if (!sucursalesInfo) return
     sucursalesInfo.forEach((sucursalItem: any, ix) => {
       if (sucursalItem.idSucursal == idSucursal) {
-        sucursalItem.puntoVenta.forEach((cajaItem, ix2) => {
+        sucursalItem.puntoVenta.forEach((cajaItem:any, ix2:number) => {
           if (
             esSeleccionableTipo(cajaItem.idSucursalPvTipo)
 
@@ -396,8 +398,8 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
     setCajas(cajasx as [])
   }
 
-  const checkSeleccionCaja = (caja) => {
-    cajas.forEach((cajaItem:any, ix) => {
+  const checkSeleccionCaja = (caja:any) => {
+    cajas.forEach((cajaItem: any, ix) => {
       if (cajaItem.id == caja) {
         setAfterLogin(cajaItem.tipo)
       }
@@ -415,12 +417,12 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
 
   const [tabNumber, setTabNumber] = useState(0)
   const [info, setInfo] = useState('')
-  const handleChange = (event, newValue) => {
+  const handleChange = (even:any, newValue:number) => {
     setTabNumber(newValue);
   };
 
 
-  const onFinish = ()=>{
+  const onFinish = () => {
     setOpenDialog(false)
   }
 
@@ -439,55 +441,55 @@ const AdminConfig = ({ openDialog, setOpenDialog }) => {
             {
               title: "General",
               content: (
-                <TabGeneral onFinish={onFinish}/>
+                <TabGeneral onFinish={onFinish} />
               )
             } as Tab,
             {
               title: "Impresion",
               content: (
-                <TabImpresion onFinish={onFinish}/>
+                <TabImpresion onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Balanza",
               content: (
-                <TabBalanza onFinish={onFinish}/>
+                <TabBalanza onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Balanza unidad",
               content: (
-                <TabBalanzaUnidad onFinish={onFinish}/>
+                <TabBalanzaUnidad onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Emitir Boleta",
               content: (
-                <TabBoleta onFinish={onFinish}/>
+                <TabBoleta onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Comida Rapida",
               content: (
-                <TabComidaRapida onFinish={onFinish}/>
+                <TabComidaRapida onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Botones",
               content: (
-                <TabBotones onFinish={onFinish}/>
+                <TabBotones onFinish={onFinish} />
               )
             } as Tab,
 
             {
               title: "Productos",
               content: (
-                <TabProductos onFinish={onFinish}/>
+                <TabProductos onFinish={onFinish} />
               )
             } as Tab
 

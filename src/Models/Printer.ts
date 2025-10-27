@@ -1,5 +1,5 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
-import BaseConfig, { EmitirDetalle, ModosImpresion } from "../definitions/BaseConfig.ts";
+import BaseConfig from "../definitions/BaseConfig.ts";
 import MovimientoCaja from "../Types/MovimientoCaja.ts";
 import Model from './Model';
 import ModelConfig from './ModelConfig.ts';
@@ -9,7 +9,9 @@ import PrinterPaper from './PrinterPaper.ts';
 import PagoBoleta from './PagoBoleta.ts';
 import PrinterServer from './PrinterServer.ts';
 
-import Logo from './../assets/logo-print.png'
+import Logo from './../../logo-print.png'
+import EmitirDetalle from '../definitions/EmisionesDetalle.ts';
+import ModosImpresion from '../definitions/ModosImpresion.ts';
 
 
 class Printer {
@@ -23,7 +25,7 @@ class Printer {
     static arrPrintsRepPints = []
 
     static afterPrintFunction = () => { }
-    static preguntaFuncion = (txt, callyes, callno) => { }
+    static preguntaFuncion = (txt:string, callyes:any, callno:any) => { }
 
     static getInstance(): Printer {
         if (Printer.instance == null) {
@@ -33,7 +35,7 @@ class Printer {
         return Printer.instance;
     }
 
-    static printSimple(imprimirTxt) {
+    static printSimple(imprimirTxt:string) {
         if (imprimirTxt === "") return
         // console.log("print simple")
         // console.log(imprimirTxt)
@@ -54,11 +56,11 @@ class Printer {
         );
     }
 
-    static generateQrPreventaOffline(requestInfo, funcionCrearQr) {
+    static generateQrPreventaOffline(requestInfo:any, funcionCrearQr:any) {
         var content = ""
 
         var prodsTxt = "";
-        requestInfo.products.forEach(prod => {
+        requestInfo.products.forEach((prod:any) => {
             if (prodsTxt != "") prodsTxt += ";;"
             prodsTxt += prod.codbarra + "," + prod.cantidad
         })
@@ -101,13 +103,12 @@ class Printer {
         this.printSimple(content)
     }
 
-    static printFlat(imprimirTxt) {
+    static printFlat(imprimirTxt: string) {
         if (imprimirTxt.trim() == "") return
 
         // console.log("va a imprimir esto:")
 
         imprimirTxt = imprimirTxt.replace("./EasyPosLogo3.png", Logo)
-        // console.log(imprimirTxt)
         // console.log("fin de imprimir")
         if (!Printer.popupwindow) {
             let newWin: any = window.open("about:blank", "printx", `scrollbars=no,resizable=no,` +
@@ -127,7 +128,7 @@ class Printer {
         );
     }
 
-    static checkObjectIfNeed(objectInfo, functionAfter) {
+    static checkObjectIfNeed(objectInfo:any, functionAfter:any, adicionalInfo = null) {
         // console.log("checkObjectIfNeed")
         const listadoFiltrado: any = {}
         const listadoPosible: any = {}
@@ -154,27 +155,28 @@ class Printer {
                 const trabajaConComanda = ModelConfig.get("trabajarConComanda")
                 const imprimirPapelComanda = ModelConfig.get("imprimirPapelComanda")
 
-                new LoopProperties(listadoPosible, (prop, value, looper) => {
+                new LoopProperties(listadoPosible, (prop:any, value:any, looper:LoopProperties) => {
                     // console.log("objectInfo[itPrint]", objectInfo[key][itPrint])
-                    console.log("preparando para imprimir ", prop)
+                    // console.log("preparando para imprimir ", prop)
 
 
                     if (prop == "imprimirComanda") {
                         if (
-                            trabajaConComanda
+                            (trabajaConComanda ||
+                                (looper.adicionalInfo && looper.adicionalInfo.esVentaApp)
+                            )
                             && imprimirPapelComanda != EmitirDetalle.NUNCA
                             && impresoraComanda == ModosImpresion.IMPRESORA_PREDETERMINADA
                         ) {
-
                             if (imprimirPapelComanda == EmitirDetalle.SIEMPRE) {
                                 listadoFiltrado[prop] = value
                                 looper.next()
                             } else if (imprimirPapelComanda == EmitirDetalle.PREGUNTAR) {
                                 const txtTipo = (prop + "").replace("imprimir", "")
-                                console.log("caso 3 comanda")
-                                console.log("Printer.preguntaFuncion", Printer.preguntaFuncion)
+                                // console.log("caso 3 comanda")
+                                // console.log("Printer.preguntaFuncion", Printer.preguntaFuncion)
                                 Printer.preguntaFuncion("Emitir " + txtTipo + "?", () => {
-                                    console.log("agrega..", value)
+                                    // console.log("agrega..", value)
                                     listadoFiltrado[prop] = value
                                     setTimeout(() => {
                                         looper.next()
@@ -194,8 +196,8 @@ class Printer {
                             "imprimirBoleta",
                             "imprimirEnvase",
                         ].includes(prop)
-                        console.log("emiteDetalles", emiteDetalles)
-                        console.log("esDetalle", esDetalle)
+                        // console.log("emiteDetalles", emiteDetalles)
+                        // console.log("esDetalle", esDetalle)
                         if (prop == "imprimirBoleta") {
                             listadoFiltrado[prop] = value
                             looper.next()
@@ -204,8 +206,8 @@ class Printer {
                             looper.next()
                         } else if (emiteDetalles == EmitirDetalle.PREGUNTAR && esDetalle) {
                             const txtTipo = (prop + "").replace("imprimir", "")
-                            console.log("caso 3")
-                            console.log("Printer.preguntaFuncion", Printer.preguntaFuncion)
+                            // console.log("caso 3")
+                            // console.log("Printer.preguntaFuncion", Printer.preguntaFuncion)
                             Printer.preguntaFuncion("Emitir detalle para " + txtTipo + "?", () => {
                                 // console.log("agrega..", value)
                                 listadoFiltrado[prop] = value
@@ -224,14 +226,14 @@ class Printer {
                     }
                 }, () => {
                     functionAfter(listadoFiltrado)
-                })
+                }, adicionalInfo)
             }
         }
     }
 
-    static printAll(respuestaServidor, rePrintsTotal = 1) {
-        console.log("printAll de Printer predeterminada")
-        this.checkObjectIfNeed(respuestaServidor, (objFiltred) => {
+    static printAll(respuestaServidor:any, rePrintsTotal = 1, adicionalInfo = null) {
+        // console.log("printAll de Printer predeterminada")
+        this.checkObjectIfNeed(respuestaServidor, (objFiltred:any) => {
             // console.log("despues de checkObjectIfNeed..objFiltred", objFiltred)
             if (Object.keys(objFiltred).length > 0) {
                 Printer.arrPrints = objFiltred
@@ -242,7 +244,7 @@ class Printer {
                 Printer.rePrintsTotal = rePrintsTotal
                 Printer.doPrints()
             }
-        })
+        }, adicionalInfo)
 
 
 
@@ -281,7 +283,7 @@ class Printer {
 
 
 
-        keyItems.forEach((itPrint) => {
+        keyItems.forEach((itPrint:any) => {
             if (itPrint != undefined && !does) {
                 does = true
                 // console.log("do print item: ")
@@ -301,9 +303,9 @@ class Printer {
     }
 
 
-    static prepareContent(requestInfo, createQrString) {
-        console.log("adminContent")
-        console.log("content", requestInfo)
+    static prepareContent(requestInfo:any, createQrString:any) {
+        // console.log("prepareContent")
+        // console.log("content", requestInfo)
         const trabajaConComanda = ModelConfig.get("trabajarConComanda")
         const pp = PrinterPaper.getInstance()
         const esBoleta = PagoBoleta.analizarSiHaceBoleta(requestInfo)
@@ -312,60 +314,71 @@ class Printer {
             imprimir: {
             }
         }
-
-        if (esBoleta) {
+        if (!requestInfo.esVentaApp && esBoleta) {
             pp.infoToFill["Ticket.NFolio"] = requestInfo.nFolioBoleta
             toPrint.imprimir["imprimirBoleta"] = pp.getHtmlDetalles("Boleta", requestInfo)
         } else {
             pp.infoToFill["Ticket.NFolio"] = requestInfo.nFolioTicket
             toPrint.imprimir["imprimirTicket"] = pp.getHtmlDetalles("Ticket", requestInfo)
         }
-
-        if (trabajaConComanda) {
+        console.log("antes de hacer la comanda", System.clone(toPrint))
+        if (
+            trabajaConComanda
+            || requestInfo.esVentaApp
+        ) {
             pp.infoToFill["Ticket.NombreComanda"] = requestInfo.nombreClienteComanda
+
+            if (requestInfo.esVentaApp) {
+                pp.infoToFill["Ticket.NFolio"] = "AP-" + requestInfo.pedidoId
+            }
+
             toPrint.imprimir["imprimirComanda"] = pp.getHtmlComanda("TicketComanda", requestInfo)
         }
+        console.log("antes de hacer la comanda2", System.clone(toPrint))
         pp.infoToFill["Ticket.NFolio"] = requestInfo.hashEnvase
+        console.log("camiando n folio", pp.infoToFill["Ticket.NFolio"])
+        console.log("antes de hacer la comanda3", System.clone(toPrint))
         toPrint.imprimir["imprimirEnvase"] = pp.getHtmlEnvases("Envase", requestInfo, createQrString)
 
         return toPrint
     }
 
 
-    static printContent(contenido, functionConfirm, showAlert) {
+    static printContent(contenido:any, functionConfirm:any, showAlert:any, adicionalInfo = null) {
         const queImpresoraUsa = ModelConfig.get("modoImpresion")
-        console.log("printContent")
-        console.log("contenido", contenido)
+        // console.log("printContent")
+        // console.log("contenido", contenido)
+        // console.log("adicionalInfo", adicionalInfo)
 
         //adapto el response a una venta offline
         if (!contenido.imprimir && contenido.imprimirResponse) contenido.imprimir = contenido.imprimirResponse
 
         if (queImpresoraUsa == ModosImpresion.IMPRESORA_PREDETERMINADA) {
-            console.log("imprimiendo por IMPRESORA_PREDETERMINADA")
+            // console.log("imprimiendo por IMPRESORA_PREDETERMINADA")
 
             Printer.preguntaFuncion = functionConfirm
-            Printer.printAll(contenido)
+            Printer.printAll(contenido, 1, adicionalInfo)
 
             const impresoraComanda = ModelConfig.get("modoImpresionComanda")
-            console.log("reviso comanda", impresoraComanda)
+            // console.log("reviso comanda", impresoraComanda)
             if (
                 contenido.imprimir.imprimirComanda
                 && impresoraComanda == ModosImpresion.SERVIDOR
             ) {
-                console.log("reviso comanda2")
+                // console.log("reviso comanda2")
                 PrinterServer.preguntaFuncion = functionConfirm
                 setTimeout(() => {
                     PrinterServer.printAll({
                         imprimirComanda: contenido.imprimir.imprimirComanda
-                    }, (a) => {
-                    }, showAlert)
+                    }, (a:any) => {
+                    }, showAlert, adicionalInfo)
                 }, 3000);
             }
         } else {
-            console.log("imprimiendo por servidor")
+            // console.log("imprimiendo por servidor")
             PrinterServer.preguntaFuncion = functionConfirm
-            PrinterServer.printAll(contenido.imprimir, (a) => {
-            }, showAlert)
+            PrinterServer.printAll(contenido.imprimir, (a:any) => {
+            }, showAlert, adicionalInfo)
 
             const impresoraComanda = ModelConfig.get("modoImpresionComanda")
             const cantAImprimir = parseInt(ModelConfig.get("cantidadTicketImprimir"))
@@ -380,7 +393,7 @@ class Printer {
                         imprimir: {
                             imprimirComanda: contenido.imprimir.imprimirComanda
                         }
-                    }, cantAImprimir)
+                    }, cantAImprimir, adicionalInfo)
                 }, 3000);
             }
         }
@@ -390,10 +403,11 @@ class Printer {
         showAlert,
         functionConfirm,
         content,
-        createQrString
-    }) {
+        createQrString,
+        adicionalInfo = null
+    }:any) {
         const toPrint: any = this.prepareContent(content, createQrString)
-        this.printContent(toPrint, functionConfirm, showAlert)
+        this.printContent(toPrint, functionConfirm, showAlert, adicionalInfo)
     }
 
 };

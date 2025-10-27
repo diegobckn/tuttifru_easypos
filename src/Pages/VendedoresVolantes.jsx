@@ -11,6 +11,8 @@ import BoxBotonesVendedoresVolantes from "../Components/BoxOptionsLite/BoxBotone
 import System from "../Helpers/System";
 import ScreenAbrirCaja from "../Components/ScreenDialog/AbrirCaja";
 import { SelectedOptionsContext } from "../Components/Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../Components/Context/ProviderModales";
+
 
 import {
   Box,
@@ -34,7 +36,7 @@ const VentasVolantes = () => {
   const {
     userData,
     updateUserData,
-    searchInputRef,
+    focusSearchInput,
     showAlert,
     showMessage,
     showLoading,
@@ -47,6 +49,10 @@ const VentasVolantes = () => {
   const navigate = useNavigate();
 
   const { GeneralElements } = useContext(SelectedOptionsContext);
+
+  const {
+    GeneralElements2
+  } = useContext(ProviderModalesContext);
   const [seleccionarUsuario, setSeleccionarUsuario] = useState(false);
   const [ingresarNumeroAtencion, setIngresarNumeroAtencion] = useState(false);
 
@@ -150,8 +156,7 @@ const VentasVolantes = () => {
 
 
   useEffect(() => {
-
-    // System.intentarFoco(searchInputRef)
+    focusSearchInput()
 
     UserEvent.send({
       name: "carga pantalla Vendedores Volantes",
@@ -205,6 +210,8 @@ const VentasVolantes = () => {
       }}
       >
         <GeneralElements />
+        <GeneralElements2 />
+
 
         <SelUsuariosVolantes
           openDialog={seleccionarUsuario}

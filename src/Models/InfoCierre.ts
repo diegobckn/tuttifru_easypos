@@ -12,14 +12,14 @@ class InfoCierre extends Model {
     info: any;
 
 
-  async obtenerDeServidor(idUsuario,callbackOk, callbackWrong){
+  async obtenerDeServidor(idUsuario:string | number,callbackOk:any, callbackWrong:any){
     const configs = ModelConfig.get()
     var url = configs.urlBase + "/api/Cajas/GetArqueoCajaByIdUsuario?idusuario=" + idUsuario
 
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url,(responseData, response)=>{
+    EndPoint.sendGet(url,(responseData:any, response:any)=>{
       callbackOk(responseData,response);
       this.info = response.data;
     },callbackWrong)

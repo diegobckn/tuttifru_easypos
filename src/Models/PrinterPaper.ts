@@ -1,12 +1,12 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
-import BaseConfig, { EmitirDetalle } from "../definitions/BaseConfig.ts";
+import BaseConfig from "../definitions/BaseConfig.ts";
 import MovimientoCaja from "../Types/MovimientoCaja.ts";
 import Model from './Model';
 import ModelConfig from './ModelConfig.ts';
 import System from '../Helpers/System.ts';
 import LoopProperties from '../Helpers/LoopProperties.ts';
 import ModelSingleton from './ModelSingleton.ts';
-import User from './User.js';
+import User from './User.ts';
 import Comercio from './Comercio.ts';
 
 
@@ -25,18 +25,18 @@ class PrinterPaper extends ModelSingleton {
         return []
     }
 
-    saveDummy(infoDummy) {
+    saveDummy(infoDummy: any) {
         const sesDummy = new StorageSesion("printerInfoDummy")
         sesDummy.guardar(infoDummy)
     }
 
     static getInstance(): PrinterPaper { return super.getInstance() }
 
-    static loadTeamplatesFromServer(configs, callbackOk = (x) => { }) {
+    static loadTeamplatesFromServer(configs: any, callbackOk = (x: any) => { }) {
         console.log("loadTeamplatesFromServer")
         var me = PrinterPaper.getInstance()
         me.templates = []
-        configs.forEach((serverConfig) => {
+        configs.forEach((serverConfig: any) => {
             const empiezaConImprimir = serverConfig.entrada.indexOf("Imprimir") === 0
             const invertido = System.invertirStr(serverConfig.entrada + "")
             const terminaConMM = invertido.indexOf("mm") === 0
@@ -75,7 +75,7 @@ class PrinterPaper extends ModelSingleton {
         var me = PrinterPaper.getInstance()
         me.loadWidthFromSesion()
 
-        const procesarItems = (serverConfigs, callbackOk) => {
+        const procesarItems = (serverConfigs: any, callbackOk: any) => {
             PrinterPaper.loadTeamplatesFromServer(serverConfigs, () => {
                 PrinterPaper.addInfoToFill("Usuario", userData.codigoUsuario)
                 PrinterPaper.addInfoToFill("CodSucursal", ModelConfig.get("sucursal"))
@@ -92,13 +92,13 @@ class PrinterPaper extends ModelSingleton {
             const ses = Comercio.sesionServerAllConfig.cargar(1)
             procesarItems(ses, callbackOk)
         } else {
-            Comercio.getServerAllConfigs((serverConfigs) => {
+            Comercio.getServerAllConfigs((serverConfigs: any) => {
                 procesarItems(serverConfigs, callbackOk)
             }, () => { })
         }
     }
 
-    static addInfoToFill(propName, propValue) {
+    static addInfoToFill(propName: string, propValue: any) {
         // console.log("....addInfoToFill....")
         // console.log("addInfoToFill---->propName", propName)
         // console.log("addInfoToFill---->propValue", propValue)
@@ -107,7 +107,7 @@ class PrinterPaper extends ModelSingleton {
         me.infoToFill[propName] = propValue
     }
 
-    getTemplate(entrada) {
+    getTemplate(entrada: string) {
         var enc = ""
         this.templates.forEach((temp) => {
             if (temp.entrada == entrada || temp.entrada == "Imprimir" + entrada) {
@@ -117,7 +117,7 @@ class PrinterPaper extends ModelSingleton {
         return enc
     }
 
-    getFilled(entrada) {
+    getFilled(entrada: string) {
         const template = this.getTemplate(entrada)
         if (!template) return ""
         var copiaTemplate = template + ""
@@ -130,13 +130,13 @@ class PrinterPaper extends ModelSingleton {
         return copiaTemplate
     }
 
-    prepare(entrada) {
+    prepare(entrada: string) {
         return this.getFilled(entrada)
     }
 
 
 
-    getHtmlDetalles(entrada, datosfinales) {
+    getHtmlDetalles(entrada: string, datosfinales: any) {
         entrada = entrada + this.width
         // console.log("getHtmlDetalles.. de " + entrada, "..datos", datosfinales)
         var pre = this.prepare(entrada)
@@ -156,8 +156,8 @@ class PrinterPaper extends ModelSingleton {
 
         var totalEnvases = 0
 
-        const formatoMonto = (m) => { return System.isInt(m) ? m : m.toFixed(2) }
-        datosfinales.products.forEach((prod) => {
+        const formatoMonto = (m: string | number): string => { return System.isInt(m) ? m + "" : parseFloat(m + "").toFixed(2) }
+        datosfinales.products.forEach((prod: any) => {
             if (prod.codbarra == "0" && prod.descripcion == "Envase") {
                 // es un envase
                 totalEnvases += prod.cantidad * prod.precioUnidad
@@ -168,7 +168,7 @@ class PrinterPaper extends ModelSingleton {
 
                 const txtCantidad = formatoMonto(prod.cantidad)
 
-                rowHtml = rowHtml.replaceAll("{{Cod_Scanner}}", System.partirCada(prod.codbarra, 5).join(" "))
+                rowHtml = rowHtml.replaceAll("{{Cod_Scanner}}", System.partirCada(prod.codbarra + "", 5).join(" "))
                 rowHtml = rowHtml.replaceAll("{{num_Cant}}", txtCantidad)
                 rowHtml = rowHtml.replaceAll("{{Desc_Prod}}", prod.descripcion)
                 rowHtml = rowHtml.replaceAll("{{Valor_Unit}}", formatoMonto(prod.precioUnidad))
@@ -207,10 +207,57 @@ class PrinterPaper extends ModelSingleton {
         // console.log("html de ticket", html)
 
 
+        if (datosfinales.esVentaApp) {
+            var addApp = ""
+            addApp += "<div class=\"footer\">";
+            // console.log("agregando datos de entrega", datosfinales)
+
+            if (datosfinales.pedidoInfoEntrega && datosfinales.pedidoInfoEntrega.tipoEntrega) {
+                if (
+                    datosfinales.pedidoInfoEntrega.tipoEntrega == "2"
+                    || datosfinales.pedidoInfoEntrega.tipoEntrega == "3"
+
+                ) {
+
+                    if (datosfinales.pedidoInfoEntrega.direccion) {
+                        addApp += "      Domicilio:";
+                        addApp += "<br/>";
+                        addApp += datosfinales.pedidoInfoEntrega.direccion;
+                    }
+
+                    if (datosfinales.pedidoInfoEntrega.aclaracion) {
+                        addApp += "<br/>";
+                        addApp += "      Aclaraciones:";
+                        addApp += "<br/>";
+                        addApp += datosfinales.pedidoInfoEntrega.aclaracion;
+                    }
+                    if (datosfinales.pedidoInfoEntrega.hora) {
+                        addApp += "<br/>";
+                        addApp += "      Hora:";
+                        addApp += "<br/>";
+                        addApp += datosfinales.pedidoInfoEntrega.hora;
+                    }
+                } else {
+                    addApp += "      Retira en caja del Comercio";
+                }
+                if (datosfinales.pedidoInfoEntrega.codigoRepartidor) {
+                    addApp += "<br/>";
+                    addApp += "      Codigo Repartidor:";
+                    addApp += "<br/>";
+                    addApp += datosfinales.pedidoInfoEntrega.codigoRepartidor;
+                }
+            }
+
+
+            addApp += "</div><div class=\"footer\">";
+            html = html.replace("<div class=\"footer\">", addApp)
+        }
+
+
         return html
     }
 
-    getHtmlEnvases(entrada, datosfinales, createQrString) {
+    getHtmlEnvases(entrada:string, datosfinales:any, createQrString:any) {
         entrada = entrada + this.width
         // console.log("getHtmlEnvases.. de " + entrada, "..datos", datosfinales)
         var pre = this.prepare(entrada)
@@ -223,9 +270,9 @@ class PrinterPaper extends ModelSingleton {
         var totalEnvases = 0
         var cantidad = 0
 
-        const formatoMonto = (m) => { return System.isInt(m) ? m : m.toFixed(2) }
+        const formatoMonto = (m:number) => { return System.isInt(m) ? m : m.toFixed(2) }
 
-        datosfinales.products.forEach((prod) => {
+        datosfinales.products.forEach((prod:any) => {
             if (prod.codbarra == "0" && prod.descripcion == "Envase") {
                 // es un envase
                 cantidad += prod.cantidad
@@ -255,9 +302,11 @@ class PrinterPaper extends ModelSingleton {
 
 
 
-    getHtmlComanda(entrada, datosfinales) {
+    getHtmlComanda(entrada:string, datosfinales:any) {
         entrada = entrada + this.width
         // console.log("getHtmlDetalles.. de " + entrada, "..datos", datosfinales)
+
+        // console.log("se rellena con ", this.infoToFill)
         var pre = this.prepare(entrada)
 
         const rowTemplate = `<tr>
@@ -272,8 +321,8 @@ class PrinterPaper extends ModelSingleton {
 
         // var totalEnvases = 0
 
-        const formatoMonto = (m) => { return System.isInt(m) ? m : m.toFixed(2) }
-        datosfinales.products.forEach((prod) => {
+        const formatoMonto = (m:any) => { return System.isInt(m) ? m : m.toFixed(2) }
+        datosfinales.products.forEach((prod:any) => {
             if (prod.codbarra == "0" && prod.descripcion == "Envase") {
                 // es un envase
                 // totalEnvases += prod.cantidad * prod.precioUnidad
@@ -294,14 +343,14 @@ class PrinterPaper extends ModelSingleton {
                     var agrega = ""
                     var quita = ""
                     if (prod.extras.agregar) {
-                        prod.extras.agregar.forEach((agre) => {
+                        prod.extras.agregar.forEach((agre:any) => {
                             if (agrega != "") agrega += ", "
                             agrega += agre.nombre
                         })
                     }
 
                     if (prod.extras.quitar) {
-                        prod.extras.quitar.forEach((sin) => {
+                        prod.extras.quitar.forEach((sin:any) => {
                             if (quita != "") quita += ", "
                             quita += sin.nombre
                         })
@@ -345,6 +394,34 @@ class PrinterPaper extends ModelSingleton {
 
         // console.log("html de ticket", html)
 
+
+        if (datosfinales.esVentaApp && datosfinales.pedidoExtras) {
+            var extras = JSON.parse(datosfinales.pedidoExtras)
+            console.log("extras", extras)
+
+            if (extras.aclaraciones) {
+
+                var addApp = ""
+                addApp += "<div class=\"receipt\">";
+                addApp += "  <table class=\"details\">";
+                addApp += "    <tr>";
+                addApp += "      <td>";
+                addApp += "         Aclaraciones:";
+                addApp += "      </td>";
+                addApp += "    </tr>";
+
+                addApp += "    <tr>";
+                addApp += "      <td>";
+                addApp += extras.aclaraciones;
+                addApp += "      </td>";
+                addApp += "    </tr>";
+
+                addApp += "  </table>";
+
+                addApp += "</div></body>";
+                html = html.replace("</body>", addApp)
+            }
+        }
 
         return html
     }

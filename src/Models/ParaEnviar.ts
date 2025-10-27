@@ -1,12 +1,7 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
-import BaseConfig, { EmitirDetalle, ModosImpresion } from "../definitions/BaseConfig.ts";
-import MovimientoCaja from "../Types/MovimientoCaja.ts";
-import axios from "axios";
-import Model from './Model';
-import ModelConfig from './ModelConfig.ts';
 import System from '../Helpers/System.ts';
-import LoopProperties from '../Helpers/LoopProperties.ts';
 import EndPoint from './EndPoint.ts';
+import PagoBoleta from './PagoBoleta.ts';
 import Product from './Product.ts';
 
 
@@ -16,9 +11,14 @@ class ParaEnviar {
     static procesando = false
     static sincronizando = false
 
+    static TIPO = {
+        NUEVO_PRODUCTO_EXPRESS: 1,
+        VENTA_TICKET: 2,
+    }
+
     static reintentoTiempoSincro = 10
 
-    static agregar(url, data, metodo, tipo) {
+    static agregar(url: string, data: any, metodo: any, tipo: any) {
         // console.log("agregar")
         const habia = this.sesion.cargar(1) || []
         // console.log("habia", System.clone(habia))
@@ -44,6 +44,7 @@ class ParaEnviar {
         // console.log("sigo")
         this.procesando = true
         const habia = this.sesion.cargar(1)
+        console.log('habia', habia);
         if (habia.length < 1) {
             this.procesando = false
             this.sincronizando = false
@@ -55,12 +56,12 @@ class ParaEnviar {
         const callbackOkEnvio = () => {
             // console.log("callbackOkEnvio")
             const quita = habia.splice(0, 1)
-            ParaEnviar.doPostSend(quita)
+            ParaEnviar.doAfterSend(quita)
             this.sesion.guardar(habia)
             this.procesando = false
             if (habia.length > 0) {
                 ParaEnviar.cicloEnviar()
-            }else{
+            } else {
                 this.sincronizando = false
             }
         }
@@ -73,22 +74,31 @@ class ParaEnviar {
         }
 
         // intentar envio
+        this.process(habia[0], callbackOkEnvio, intentarLuego)
+    }
 
-        const paraEnviarAhora = habia[0]
-        const met = paraEnviarAhora.metodo.toLocaleLowerCase()
+    static process(info: any, callbackOk: any, callbackWrong: any) {
+        if (info.tipo == this.TIPO.VENTA_TICKET) {
+            var MPago = new PagoBoleta();
+            MPago.fill(info.data);
+            MPago.hacerPago(info.data, callbackOk, callbackWrong, true)
+            return
+        }
+
+        const met = info.metodo.toLocaleLowerCase()
         if (met == "get") {
-            EndPoint.sendGet(paraEnviarAhora.url, callbackOkEnvio, intentarLuego)
+            EndPoint.sendGet(info.url, callbackOk, callbackWrong)
         } else {
-            const cmdEval = "EndPoint.send" + System.ucfirst(met) + "(paraEnviarAhora.url, paraEnviarAhora.data, callbackOkEnvio, intentarLuego)"
+            const cmdEval = "EndPoint.send" + System.ucfirst(met) + "(info.url, info.data, callbackOkEnvio, intentarLuego)"
             // console.log("haciendo eval", cmdEval)
             eval(cmdEval)
         }
     }
 
-    static doPostSend(infoArr) {
+    static doAfterSend(infoArr: any) {
         const info = infoArr[0]
-        // console.log("doPostSend..info", info)
-        if (info.tipo == "nuevoProductoExpress") {
+        // console.log("doAfterSend..info", info)
+        if (info.tipo == this.TIPO.NUEVO_PRODUCTO_EXPRESS) {
             Product.getInstance().almacenarParaOffline(() => { }, () => {
                 // console.log("callback ok de producto express nuevo")
             })

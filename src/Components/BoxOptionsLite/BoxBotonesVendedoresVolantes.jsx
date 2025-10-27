@@ -25,6 +25,7 @@ import BoxBusquedaRapida from "./BoxBusquedaRapida";
 import ModelConfig from "../../Models/ModelConfig";
 import Suspender from "../../Models/Suspender";
 import dayjs from "dayjs";
+import System from "../../Helpers/System";
 
 
 const BoxBotonesVendedoresVolantes = () => {
@@ -117,6 +118,10 @@ const BoxBotonesVendedoresVolantes = () => {
     }
   }, [salesData])
 
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
+
   return (
     <Grid container spacing={2}>
 
@@ -124,9 +129,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFamiliasDialog(val)
           if (!val) {
-            setTimeout(() => {
-              searchInputRef.current.focus()
-            }, 500);
+            focusSearchInput()
           }
         }}
       />
@@ -136,9 +139,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFastSearchDialog(val)
           if (!val) {
-            setTimeout(() => {
-              searchInputRef.current.focus()
-            }, 500);
+            focusSearchInput()
           }
         }}
       />
@@ -147,9 +148,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFastSearchDialog(val)
           if (!val) {
-            setTimeout(() => {
-              searchInputRef.current.focus()
-            }, 500);
+            focusSearchInput()
           }
         }}
       />
@@ -165,11 +164,15 @@ const BoxBotonesVendedoresVolantes = () => {
           <MainButton textButton="Borrar Todo" actionButton={() => {
             if (salesData.length < 1) {
               showMessage("El listado esta vacio")
+              focusSearchInput()
               return
             }
 
             showConfirm("Borrar todos los productos de la lista?", () => {
               clearSalesData()
+              focusSearchInput()
+            }, () => {
+              focusSearchInput()
             })
           }} xs={6} sm={3} md={2} lg={2} style={{
             height: "80px",

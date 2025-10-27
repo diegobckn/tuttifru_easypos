@@ -50,7 +50,10 @@ class SoporteTicket extends Singleton {
 
   static catchRequestError(error: any) {
     if (SoporteTicket.reportarError) console.log("capturando error desde SoporteTicket catch", error)
-
+    console.log("Error", error)
+    if (!error.config) {
+      return
+    }
     var data: any = {
       urlCliente: window.location.href,
       usuarioLogueado: User.getInstance().sesion.cargarGuardados()[0],

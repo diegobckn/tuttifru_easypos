@@ -48,7 +48,7 @@ const TouchInputNumber = ({
         inputState={inputState}
         validationState={validationState}
         withLabel={withLabel}
-        autoFocus={autoFocus}
+        // autoFocus={autoFocus}
         fieldName={fieldName}
         label={label}
         minLength={minLength}
@@ -88,7 +88,7 @@ const TouchInputNumber = ({
         openDialog={showModalTeclado}
         setOpenDialog={setShowModalTeclado}
         varChanger={(newVal) => {
-          console.log("varChanger..")
+          // console.log("varChanger..")
           if (isDecimal && Validator.isDecimal(newVal)) {
             setInputValue(newVal);
             return false

@@ -9,25 +9,25 @@ import EndPoint from './EndPoint.ts';
 
 
 class Retiro extends Model implements MovimientoCaja {
-  codigoUsuario: number;
-  codigoSucursal: number;
-  puntoVenta: string;
-  fechaIngreso: string;
-  idTurno: number;
-  tipo: string;
-  detalleTipo: string;
-  observacion: string;
-  monto: number;
+  codigoUsuario: number = 0;
+  codigoSucursal: number = 0;
+  puntoVenta: string = ""
+  fechaIngreso: string = ""
+  idTurno: number = 0;
+  tipo: string = ""
+  detalleTipo: string = ""
+  observacion: string = ""
+  monto: number = 0
 
-  motivo: string | null | undefined;
-  rutProveedor: string | null | undefined;
-  idUsuario: string | null | undefined;
+  motivo: string | null = ""
+  rutProveedor: string | null = ""
+  idUsuario: string | null = ""
 
   static TIPO = "EGRESO"
 
 
 
-  async retiroDeCaja(callbackOk, callbackWrong) {
+  async retiroDeCaja(callbackOk: any, callbackWrong: any) {
     if (!this.motivo) {
       console.log("Retiro. retiroDeCaja. Falta motivo");
       callbackWrong("Falta motivo");
@@ -37,7 +37,7 @@ class Retiro extends Model implements MovimientoCaja {
     this.detalleTipo = "RETIRODECAJA"
     this.observacion = this.motivo
 
-    const data = this.getFillables()
+    const data: any = this.getFillables()
     delete data.motivo
 
 
@@ -48,13 +48,13 @@ class Retiro extends Model implements MovimientoCaja {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData: any, response: any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   }
 
 
-  async anticipoTrabajador(callbackOk, callbackWrong) {
+  async anticipoTrabajador(callbackOk: any, callbackWrong: any) {
     if (this.codigoUsuario == null) {
       console.log("Retiro. pago de factura. Falta codigoUsuario");
       return
@@ -62,7 +62,7 @@ class Retiro extends Model implements MovimientoCaja {
     this.tipo = Retiro.TIPO
     this.detalleTipo = "ANTICIPOTRABAJADOR"
 
-    const data = this.getFillables()
+    const data: any = this.getFillables()
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Cajas/AddCajaFlujo"
@@ -70,12 +70,12 @@ class Retiro extends Model implements MovimientoCaja {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData: any, response: any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   }
 
-  static revisarSiDebeSolicitar(respuestaEndpoint, funcionAsignar, showAlert) {
+  static revisarSiDebeSolicitar(respuestaEndpoint: any, funcionAsignar: any, showAlert: any) {
     if (
       respuestaEndpoint.solicitaRetiro == undefined
       || respuestaEndpoint.solicitaRetiro == ""

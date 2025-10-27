@@ -38,9 +38,10 @@ import IngresarNumeroORut from "../../ScreenDialog/IngresarNumeroORut";
 import LastSale from "../../../Models/LastSale";
 import PrinterServer from "../../../Models/PrinterServer";
 import BoxOptionList from "../BoxOptionList";
-import { EmitirDetalle, ModosImpresion } from "../../../definitions/BaseConfig";
+import { EmitirDetalle } from "../../../definitions/EmisionesDetalle";
 import System from "../../../Helpers/System";
 import ConfigPlantillas from "../../ScreenDialog/ConfigPlantillas";
+import ModosImpresion from "../../../definitions/ModosImpresion";
 
 const TabImpresion = ({
   onFinish = () => { }

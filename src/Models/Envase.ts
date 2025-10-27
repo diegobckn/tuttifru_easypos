@@ -7,38 +7,21 @@ import BaseConfig from "../definitions/BaseConfig.ts";
 import ModelConfig from './ModelConfig.ts';
 import axios from 'axios';
 import EndPoint from './EndPoint.ts';
+import ModelSingleton from './ModelSingleton.ts';
 
 
-class Envase{
+class Envase extends ModelSingleton{
     sesion: StorageSesion;
 
     constructor(){
+      super()
       this.sesion = new StorageSesion("Envase");
     }
-
-  fill(values){
-      for(var campo in values){
-          const valor = values[campo]
-          this[campo] = valor;
-      }
-  }
-
-  getFillables(){
-      var values:any = {};
-      for(var prop in this){
-          if(typeof(this[prop]) != 'object'
-              && this[prop] != undefined
-          ){
-              values[prop] = this[prop]
-          }
-      }
-      return values
-  }
 
   static async buscar({
     folio,
     qr
-  },callbackOk, callbackWrong){
+  }:any,callbackOk:any, callbackWrong:any){
     const configs = ModelConfig.get()
     var url = configs.urlBase
     +"/api/ProductosTmp/GetEnvases?"
@@ -48,13 +31,13 @@ class Envase{
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url,(responseData, response)=>{
+    EndPoint.sendGet(url,(responseData:any, response:any)=>{
       callbackOk(responseData,response);
     },callbackWrong)
   }
 
 
-  static async devolver(data,callbackOk, callbackWrong){
+  static async devolver(data:any,callbackOk:any, callbackWrong:any){
     const configs = ModelConfig.get()
     var url = configs.urlBase
     +"/api/ProductosTmp/PostEnvasesByNFolio"
@@ -62,7 +45,7 @@ class Envase{
     if(!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if(!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url,data,(responseData, response)=>{
+    EndPoint.sendPost(url,data,(responseData:any, response:any)=>{
       callbackOk(responseData,response);
     },callbackWrong)
   }

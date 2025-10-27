@@ -39,7 +39,7 @@ import BoxOptionListMulti from "../BoxOptionListMulti";
 import BoxOptionList from "../BoxOptionList";
 import System from "../../../Helpers/System";
 import MetodosPago from "../../../definitions/MetodosPago";
-import { EmitirDetalle } from "../../../definitions/BaseConfig";
+import EmitirDetalle from "../../../definitions/EmisionesDetalle";
 
 const TabEmitirBoleta = ({
   onFinish = () => { }

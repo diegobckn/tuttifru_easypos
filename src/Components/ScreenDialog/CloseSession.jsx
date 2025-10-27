@@ -16,6 +16,7 @@ import User from "../../Models/User";
 import UserEvent from "../../Models/UserEvent";
 import StorageSesion from "../../Helpers/StorageSesion";
 import System from "../../Helpers/System";
+import Atudepa from "../../Models/Atudepa";
 
 const ScreenSessionOptions = ({ openDialog, setOpenDialog }) => {
   const navigate = useNavigate();
@@ -30,7 +31,8 @@ const ScreenSessionOptions = ({ openDialog, setOpenDialog }) => {
     userData,
     showTecladoBuscar,
     setShowTecladoBuscar,
-    showMessage
+    showMessage,
+    showConfirm,
   } = useContext(SelectedOptionsContext);
 
 
@@ -45,10 +47,26 @@ const ScreenSessionOptions = ({ openDialog, setOpenDialog }) => {
     user.fill(userData)
 
     const hacerCierre = () => {
+      if (Atudepa.intervaloFuncion) {
+        clearInterval(Atudepa.intervaloFuncion)
+      }
+      Atudepa.checkNuevosPedidos = false
+      Atudepa.nuevoPedidoFuncion = null
+
+      if (Atudepa.ultimoTurno) {
+        showConfirm("Cerrar turno de la app?", () => {
+          Atudepa.cerrarTurno(
+            Atudepa.ultimoTurno,
+            (resp) => {
+
+            }, showMessage)
+        })
+      }
 
       setTimeout(() => {
         clearSessionData();
         navigate("/login");
+
       }, 300);
     }
 

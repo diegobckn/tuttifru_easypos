@@ -3,6 +3,7 @@ import StorageSesion from '../Helpers/StorageSesion.ts';
 import BaseConfig from "../definitions/BaseConfig.ts";
 import EndPoint from './EndPoint.ts';
 import ModelConfig from './ModelConfig.ts';
+import Env from '../definitions/Env.ts';
 
 
 class Licencia {
@@ -24,13 +25,13 @@ class Licencia {
         this.sesionLicenciaLocal = new StorageSesion("licenciaLocal");
     }
 
-    static estaVencida(licencia) {
+    static estaVencida(licencia: any) {
         const venceFechaHora = licencia.expireDateTime.substr(0, 16)
         const hoy = dayjs().format("YYYY-MM-DD HH:mm")
         return (hoy > venceFechaHora)
     }
 
-    static mostrarVencimiento(diferenciasDias, showMessageUser) {
+    static mostrarVencimiento(diferenciasDias: any, showMessageUser: any) {
         switch (diferenciasDias) {
             case 1:
                 showMessageUser("Licencia vencida. El sistema se bloqueará mañana.")
@@ -55,7 +56,7 @@ class Licencia {
         }
     }
 
-    static async check(showMessageUser, callbackLicenciaVencida) {
+    static async check(showMessageUser: any, callbackLicenciaVencida: any) {
         // console.log("licencias.. check")
         if (Licencia.intervalRepeat === null) {
             Licencia.intervalRepeat = setInterval(() => {
@@ -66,16 +67,16 @@ class Licencia {
         this.checkCiclo(showMessageUser, callbackLicenciaVencida)
     }
 
-    static async checkCiclo(showMessageUser, callbackLicenciaVencida) {
+    static async checkCiclo(showMessageUser: any, callbackLicenciaVencida: any) {
         // console.log("licencias..checkCiclo")
 
         const data = {
             "clientName": ModelConfig.get("licencia"),
-            "unitName": import.meta.env.VITE_UNIDAD_NEGOCIO
+            "unitName": Env.unidadNegocio
         }
         // console.log("licencia, data a enviar", data)
         const url = "https://softus.com.ar/easypos/get-licence"
-        EndPoint.sendPost(url, data, (responseData, response) => {
+        EndPoint.sendPost(url, data, (responseData: any, response: any) => {
             if (responseData.license) {
                 let me = new Licencia()
                 // console.log("respuesta licencia", responseData)
@@ -115,7 +116,7 @@ class Licencia {
         return licenciaLocal
     }
 
-    static updateAllWithoutLicense(showMessageUser = null, callbackLicenciaVencida) {
+    static updateAllWithoutLicense(showMessageUser = null, callbackLicenciaVencida:any) {
         let me = new Licencia()
         const license = {
             expireDateTime: dayjs().format("YYYY-MM-DD HH:mm")
@@ -125,13 +126,13 @@ class Licencia {
         me.checkPostergaciones(license, showMessageUser, callbackLicenciaVencida)
     }
 
-    static updateAllWithLicense(license, showMessageUser: any = () => { }, callbackLicenciaVencida) {
+    static updateAllWithLicense(license:any, showMessageUser: any = () => { }, callbackLicenciaVencida:any) {
         let me = new Licencia()
         me.sesionLicenciaServer.guardar(license)
         me.checkPostergaciones(license, showMessageUser, callbackLicenciaVencida)
     }
 
-    checkPostergaciones(license, showMessageUser: any = () => { }, callbackLicenciaVencida) {
+    checkPostergaciones(license:any, showMessageUser: any = () => { }, callbackLicenciaVencida:any) {
         var licenciaLocal: any = Licencia.checkLocal()
         var me = this
 

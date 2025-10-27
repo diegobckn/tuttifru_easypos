@@ -33,7 +33,6 @@ import AsignarPeso from "../ScreenDialog/AsignarPeso";
 import Confirm from "../Dialogs/Confirm";
 import Client from "../../Models/Client";
 import Alert from "../Dialogs/Alert";
-import PedirSupervision from "../ScreenDialog/PedirSupervision";
 import UserEvent from "../../Models/UserEvent";
 import ScreenDialogBuscarCliente from "../ScreenDialog/BuscarCliente";
 import Log from "../../Models/Log";
@@ -99,6 +98,10 @@ export const SelectedOptionsProvider = ({ children }) => {
 
   const searchInputRef = useRef(null)
 
+  const focusSearchInput = () => {
+    System.intentarFoco(searchInputRef)
+  }
+
   //set general dialog variables
   const [showLoadingDialog, setShowLoadingDialogx] = useState(false)
   const [loadingDialogText, setLoadingDialogText] = useState("")
@@ -131,10 +134,6 @@ export const SelectedOptionsProvider = ({ children }) => {
 
   const [modoAvion, setModoAvion] = useState(!ModelConfig.get("emitirBoleta"))
 
-  const [verPedirSupervision, setVerPedirSupervision] = useState(false)
-  const [accionPedirSupervision, setAccionPedirSupervision] = useState("")
-  const [handleConfirmarSupervision, setHandleConfirmarSupervision] = useState(null)
-  const [datosConfirmarSupervision, setDatosConfirmarSupervision] = useState({})
   const [solicitaRetiro, setSolicitaRetiro] = useState("");
   const [numeroAtencion, setNumeroAtencion] = useState(0);
   const [listSalesOffline, setListSalesOffline] = useState(SalesOffline.getInstance().loadFromSesion());
@@ -152,13 +151,16 @@ export const SelectedOptionsProvider = ({ children }) => {
 
   const checkInternet = () => {
     // console.log("checkInternet")
-    Model.getConexion(() => {
-      setTieneInternet(true)
-      setConexionesOkInternet((prev) => { return prev + 1 })
-    }, () => {
-      setTieneInternet(false)
-      setConexionesMalInternet((prev) => { return prev + 1 })
-    })
+
+    if (window.location.href.indexOf("espejo") === -1) {
+      Model.getConexion(() => {
+        setTieneInternet(true)
+        setConexionesOkInternet((prev) => { return prev + 1 })
+      }, () => {
+        setTieneInternet(false)
+        setConexionesMalInternet((prev) => { return prev + 1 })
+      })
+    }
   }
 
   const setShowLoadingDialogWithTitle = (textToShow = "", value) => {
@@ -182,20 +184,6 @@ export const SelectedOptionsProvider = ({ children }) => {
     setTimeout(function () {
       setShowLoadingDialog(false);
     }, timeOut);
-  }
-
-  const pedirSupervision = (accion, callbackOk, datos) => {
-    const us = User.getInstance().getFromSesion()
-
-    if (us === null) {
-      showAlert("Debe iniciar sesion para realizar esta operacion")
-      return
-    }
-
-    setAccionPedirSupervision(accion)
-    setDatosConfirmarSupervision(datos)
-    setHandleConfirmarSupervision(() => callbackOk)
-    setVerPedirSupervision(true)
   }
 
   useEffect(() => {
@@ -274,6 +262,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   }, [productoSinPeso]);
 
   useEffect(() => {
+    // console.log("cambio salesData", salesData)
     setGrandTotal(sales.getTotal());
     if (tieneInternet === null) {
       checkInternet()
@@ -291,6 +280,7 @@ export const SelectedOptionsProvider = ({ children }) => {
     if (
       salesData.length == 0
       && sales.sesionProducts.hasOne()
+      && window.location.href.indexOf("espejo") === -1
       && sales.sesionProducts.getFirst().length > 0
     ) {
       setSalesData(sales.loadFromSesion())
@@ -305,7 +295,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log("cliente", cliente)
+    // console.log("cliente", cliente)
     setClienteModal(null)
     if (cliente) {
       if (cliente.validacionFactura && cliente.validacionFactura.esValidoFactura) {
@@ -410,9 +400,7 @@ export const SelectedOptionsProvider = ({ children }) => {
           name: "agrega producto " + product.nombre,
         })
 
-        setTimeout(() => {
-          searchInputRef.current.focus()
-        }, 500);
+        focusSearchInput()
       }
     }
   };
@@ -509,9 +497,7 @@ export const SelectedOptionsProvider = ({ children }) => {
     })
     setSalesData(sales.removeFromIndex(index));
 
-    setTimeout(() => {
-      searchInputRef.current.focus()
-    }, 500);
+    focusSearchInput()
   };
 
 
@@ -571,19 +557,6 @@ export const SelectedOptionsProvider = ({ children }) => {
           product={productoSinPrecio}
           onAsignPrice={onAsignPrice}
         />
-
-
-
-        <PedirSupervision
-          openDialog={verPedirSupervision}
-          accion={accionPedirSupervision}
-          infoEnviar={datosConfirmarSupervision}
-          setOpenDialog={setVerPedirSupervision}
-          onConfirm={() => {
-            if (handleConfirmarSupervision) handleConfirmarSupervision()
-          }}
-        />
-
       </>
     )
   }
@@ -649,6 +622,8 @@ export const SelectedOptionsProvider = ({ children }) => {
 
         textSearchProducts,
         searchInputRef,
+        focusSearchInput,
+        
         setTextSearchProducts,
         buscarCodigoProducto,
         setBuscarCodigoProducto,
@@ -674,7 +649,6 @@ export const SelectedOptionsProvider = ({ children }) => {
         suspenderYRecuperar,
         setSuspenderYRecuperar,
 
-        pedirSupervision,
         setSolicitaRetiro,
 
         numeroAtencion,

@@ -40,7 +40,6 @@ const BoxFamiliaFija = ({
     showConfirm,
     showMessage,
     showAlert,
-    searchInputRef,
 
     suspenderYRecuperar,
   } = useContext(SelectedOptionsContext);

@@ -1,18 +1,19 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import IProduct from '../Types/IProduct.ts';
 import Model from './Model';
-import BaseConfig, { ModosTrabajoConexion } from "../definitions/BaseConfig.ts";
+import BaseConfig from "../definitions/BaseConfig.ts";
 import axios from 'axios';
 import ModelConfig from './ModelConfig.ts';
 import EndPoint from './EndPoint.ts';
 import ModelSingleton from './ModelSingleton.ts';
 import Product from './Product.ts';
+import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
 
 
 class ProductFastSearch extends ModelSingleton {
     productosOffline: Product[] = []
 
-    async getProductsFastSearch(callbackOk, callbackWrong, forzarDescarga = false) {
+    async getProductsFastSearch(callbackOk:any, callbackWrong:any, forzarDescarga = false) {
         // console.log("getProductsFastSearch")
 
         const me = this
@@ -43,9 +44,9 @@ class ProductFastSearch extends ModelSingleton {
 
         // console.log("carga normal online")
 
-        EndPoint.sendGet(url, (responseData, response) => {
+        EndPoint.sendGet(url, (responseData:any, response:any) => {
             callbackOk(responseData.productosVentaRapidas, response);
-        }, (err) => {
+        }, (err:any) => {
             // si esta offline cargamos desde la sesion
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
@@ -69,7 +70,7 @@ class ProductFastSearch extends ModelSingleton {
         })
     }
 
-    async addProductFastSearch(product, callbackOk, callbackWrong) {
+    async addProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase + "/api/ProductosTmp/ProductosVentaRapidaPost"
@@ -77,7 +78,7 @@ class ProductFastSearch extends ModelSingleton {
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
 
-        EndPoint.sendPost(url, product, (responseData, response) => {
+        EndPoint.sendPost(url, product, (responseData:any, response:any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
             if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
@@ -88,7 +89,7 @@ class ProductFastSearch extends ModelSingleton {
         }, callbackWrong)
     }
 
-    async changeProductFastSearch(product, callbackOk, callbackWrong) {
+    async changeProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase
@@ -96,7 +97,7 @@ class ProductFastSearch extends ModelSingleton {
 
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
-        EndPoint.sendPut(url, product, (responseData, response) => {
+        EndPoint.sendPut(url, product, (responseData:any, response:any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
             if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
@@ -107,7 +108,7 @@ class ProductFastSearch extends ModelSingleton {
         }, callbackWrong)
     }
 
-    async removeProductFastSearch(product, callbackOk, callbackWrong) {
+    async removeProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase
@@ -118,7 +119,7 @@ class ProductFastSearch extends ModelSingleton {
 
         EndPoint.sendDelete(url, {
             params: product
-        }, (responseData, response) => {
+        }, (responseData:any, response:any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
             if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
@@ -129,9 +130,9 @@ class ProductFastSearch extends ModelSingleton {
         }, callbackWrong)
     }
 
-    async almacenarParaOffline(callbackOk, callbackWrong) {
+    async almacenarParaOffline(callbackOk:any, callbackWrong:any) {
         var me = this
-        this.getProductsFastSearch((prods, resp) => {
+        this.getProductsFastSearch((prods:any, resp:any) => {
             me.sesion.guardar({
                 id: 1,
                 productos: prods

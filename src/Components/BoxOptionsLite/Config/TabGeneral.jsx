@@ -29,12 +29,13 @@ import {
   IconButton,
 } from "@mui/material";
 import { SelectedOptionsContext } from "../../Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../../Context/ProviderModales";
 import TouchInputPage from "../../TouchElements/TouchInputPage";
 import ModelConfig from "../../../Models/ModelConfig";
 import SmallButton from "../../Elements/SmallButton";
 import Sucursal from "../../../Models/Sucursal";
 import TiposPasarela from "../../../definitions/TiposPasarela";
-import BaseConfig, { ModosTrabajoConexion, OrdenListado } from "../../../definitions/BaseConfig";
+import BaseConfig from "../../../definitions/BaseConfig";
 import BoxOptionList from "../BoxOptionList";
 import InputCheckbox from "../../Elements/Compuestos/InputCheckbox";
 import InputCheckboxAutorizar from "../../Elements/Compuestos/InputCheckboxAutorizar";
@@ -47,6 +48,7 @@ import ProductFastSearch from "../../../Models/ProductFastSearch";
 import Product from "../../../Models/Product";
 import AdminStorage from "../../ScreenDialog/AdminStorage";
 import TouchInputName from "../../TouchElements/TouchInputName";
+import ModosTrabajoConexion from "../../../definitions/ModosConexion";
 
 const TabGeneral = ({
   onFinish = () => { }
@@ -89,8 +91,11 @@ const TabGeneral = ({
     modoAvion,
     ultimoVuelto,
     setUltimoVuelto,
-    pedirSupervision,
   } = useContext(SelectedOptionsContext);
+
+  const {
+    pedirSupervision,
+  } = useContext(ProviderModalesContext);
 
   const [urlBase, setUrlBase] = useState("");
   const [licencia, setLicencia] = useState("");
@@ -119,6 +124,9 @@ const TabGeneral = ({
 
   const [modoTrabajoConexion, setModoTrabajoConexion] = useState(null)
   const [checkOfertas, setCheckOfertas] = useState(false)
+
+  const [verSucursalesMype, setVerSucursalesMype] = useState(false)
+
 
   const buscarNombreSucursal = (idSucursal) => {
     var nombre = ""
@@ -172,14 +180,19 @@ const TabGeneral = ({
   }
 
   const separarSucursales = (info) => {
+    // console.log("separarSucursales")
     var sucursalesx = []
     info.forEach((infoItem, ix) => {
-      sucursalesx.push({
-        id: infoItem.idSucursal + "",
-        value: infoItem.descripcionSucursal
-      })
+      var esMype = (infoItem.descripcionSucursal.toLowerCase().indexOf("mype") > -1)
+      if (!esMype || verSucursalesMype) {
+        sucursalesx.push({
+          id: infoItem.idSucursal + "",
+          value: infoItem.descripcionSucursal
+        })
+      } else {
+        // console.log("no agrego sucursal de mype", infoItem)
+      }
     })
-
     setSucursales(sucursalesx)
   }
 
@@ -238,6 +251,8 @@ const TabGeneral = ({
     setPedirDatosTransferencia(ModelConfig.get("pedirDatosTransferencia"))
     setPagarConCuentaCorriente(ModelConfig.get("pagarConCuentaCorriente"))
     setCantidadProductosBusquedaRapida(ModelConfig.get("cantidadProductosBusquedaRapida"))
+
+    console.log("get cant bus rapida ", ModelConfig.get("cantidadProductosBusquedaRapida"))
     setConNumeroAtencion(ModelConfig.get("conNumeroAtencion"))
     setModoTrabajoConexion(ModelConfig.get("modoTrabajoConexion"))
     setCheckOfertas(ModelConfig.get("checkOfertas"))
@@ -246,32 +261,33 @@ const TabGeneral = ({
   }
 
   const handlerSaveAction = () => {
-    ModelConfig.change("urlBase", urlBase);
-    ModelConfig.change("licencia", licencia);
-
-    ModelConfig.change("pedirDatosTransferencia", pedirDatosTransferencia)
-    ModelConfig.change("pagarConCuentaCorriente", pagarConCuentaCorriente)
+    var changes = {
+      "urlBase": urlBase,
+      "licencia": licencia,
+      "pedirDatosTransferencia": pedirDatosTransferencia,
+      "pagarConCuentaCorriente": pagarConCuentaCorriente,
+      "cantidadProductosBusquedaRapida": cantidadProductosBusquedaRapida,
+      "afterLogin": afterLogin,
+      "conNumeroAtencion": conNumeroAtencion,
+      "modoTrabajoConexion": modoTrabajoConexion,
+      "checkOfertas": checkOfertas
+    }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
     if (estamosEnPantallaLogin) {
-      ModelConfig.change("sucursal", sucursal)
-      ModelConfig.change("sucursalNombre", buscarNombreSucursal(sucursal))
-      ModelConfig.change("puntoVenta", puntoVenta)
-      ModelConfig.change("puntoVentaNombre", buscarNombreCaja(puntoVenta))
+      changes["sucursal"] = sucursal
+      changes["sucursalNombre"] = buscarNombreSucursal(sucursal)
+      changes["puntoVenta"] = puntoVenta
+      changes["puntoVentaNombre"] = buscarNombreCaja(puntoVenta)
     }
 
-
-    ModelConfig.change("cantidadProductosBusquedaRapida", cantidadProductosBusquedaRapida)
-
-    ModelConfig.change("afterLogin", afterLogin)
     if (!ModelConfig.isEqual("conNumeroAtencion", conNumeroAtencion)) {
       showConfirm("Hay que recargar la pantalla para aplicar los cambios. Desea hacerlo ahora?", () => {
         window.location.href = window.location.href
       })
     }
-    ModelConfig.change("conNumeroAtencion", conNumeroAtencion)
-    ModelConfig.change("modoTrabajoConexion", modoTrabajoConexion)
-    ModelConfig.change("checkOfertas", checkOfertas)
+
+    ModelConfig.changeAll(changes)
 
     showMessage("Guardado correctamente")
     // onFinish()
@@ -351,6 +367,11 @@ const TabGeneral = ({
 
   const [showAdminMem, setShowAdminMem] = useState(false)
 
+
+  useEffect(() => {
+    cargarSucursales()
+  }, [verSucursalesMype])
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -373,7 +394,18 @@ const TabGeneral = ({
             <Typography>Elegir Sucursal</Typography>
             <BoxOptionList
               optionSelected={sucursal}
-              setOptionSelected={setSucursal}
+              setOptionSelected={(x) => {
+                setSucursal(x)
+                if (!window.sucursalClicked) window.sucursalClicked = 0
+                window.sucursalClicked++
+
+                if (window.sucursalClicked % 3 == 0) {
+                  window.sucursalClicked = 0
+                  setVerSucursalesMype(!verSucursalesMype)
+                }
+
+                console.log("window.sucursalClicked", window.sucursalClicked)
+              }}
               // options = {[{
               //   "id": 1,
               //   "value":"Punto de venta"
@@ -516,7 +548,11 @@ const TabGeneral = ({
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={4} lg={4}>
                 <MainButton xs={12} sm={12} md={12} lg={12} textButton="Espejo" actionButton={() => {
-                  window.location.href = "./espejo-punto-venta"
+                  window.location.href = "./espejo-punto-venta" +
+                    "?puntoVenta=" +
+                    ModelConfig.get("puntoVenta") +
+                    "&sucursal=" +
+                    ModelConfig.get("sucursal")
                 }} style={{
                   backgroundColor: "skyblue",
                 }} />
@@ -597,7 +633,7 @@ const TabGeneral = ({
         }} />
 
 
-        <SmallButton textButton="Reiniciar sistema" actionButton={() => {
+        <SmallButton textButton="Actualizar Version" actionButton={() => {
           window.location.href = window.location.href
         }} style={{
           backgroundColor: "blueviolet",

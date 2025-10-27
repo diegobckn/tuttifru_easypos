@@ -1,53 +1,28 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import BaseConfig from "../definitions/BaseConfig.ts";
+import ModelSingleton from './ModelSingleton.ts';
 import ProductSold from './ProductSold.ts';
 import Sales from './Sales.ts';
 
 
-class LastSale{
+class LastSale extends ModelSingleton{
 
     static instance: LastSale | null = null;
     sesion: StorageSesion;
 
     constructor(){
+        super()
         this.sesion = new StorageSesion(eval("this.__proto__.constructor.name"));
     }
 
-    static getInstance():LastSale{
-        if(LastSale.instance == null){
-            LastSale.instance = new LastSale();
-        }
-  
-        return LastSale.instance;
-      }
-
-    fill(values:any){
-        for(var campo in values){
-            const valor = values[campo]
-            this[campo] = valor;
-        }
-    }
-
-    getFillables(){
-        var values:any = {};
-        for(var prop in this){
-            if(typeof(this[prop]) != 'object'
-                && this[prop] != undefined
-            ){
-                values[prop] = this[prop]
-            }
-        }
-        return values
-    }
-
-    static prepare(requestData){
+    static prepare(requestData:any){
         LastSale.getInstance().sesion.guardar({
             id:1,
             data: requestData
         })
     }
 
-    static confirm(dataResponse){
+    static confirm(dataResponse:any){
         var me = LastSale.getInstance()
         var carga1 = me.sesion.cargar(1)
         console.log("carga1")

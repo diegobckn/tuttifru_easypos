@@ -1,4 +1,5 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
+import System from '../Helpers/System.ts';
 import BaseConfig from "../definitions/BaseConfig.ts";
 import EndPoint from './EndPoint.ts';
 import ModelConfig from './ModelConfig.ts';
@@ -8,16 +9,16 @@ import axios from 'axios';
 class ModelSingleton {
   sesion: StorageSesion;
 
-  static instances = {};
+  static instances: any = {};
 
   constructor() {
     this.sesion = new StorageSesion(eval("this.__proto__.constructor.name"));
   }
 
-  fill(values) {
+  fill(values: any) {
     for (var campo in values) {
-      const valor = values[campo]
-      this[campo] = valor;
+      const valor: any = values[campo]
+      System.setProp(this, campo, valor)
     }
   }
 
@@ -38,6 +39,18 @@ class ModelSingleton {
       this.instances[this.name] = new this();
     }
     return this.instances[this.name];
+  }
+
+  saveInSesion(data: any) {
+    this.sesion.guardar(data)
+    // localStorage.setItem('userData', JSON.stringify(data));
+    return data;
+  }
+
+  getFromSesion() {
+    return this.sesion.cargar(1)
+    // var dt = localStorage.getItem('userData') || "{}";
+    // return JSON.parse(dt);
   }
 };
 

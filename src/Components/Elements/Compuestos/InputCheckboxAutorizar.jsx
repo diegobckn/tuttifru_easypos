@@ -6,6 +6,7 @@ import {
   InputLabel
 } from "@mui/material";
 import { SelectedOptionsContext } from "../../Context/SelectedOptionsProvider";
+import { ProviderModalesContext} from "../../Context/ProviderModales";
 import ModelConfig from "../../../Models/ModelConfig";
 import { Check, Dangerous } from "@mui/icons-material";
 import User from "../../../Models/User";
@@ -22,8 +23,11 @@ const InputCheckboxAutorizar = ({
 }) => {
 
   const {
-    pedirSupervision,
   } = useContext(SelectedOptionsContext);
+  const {
+    pedirSupervision,
+
+  } = useContext(ProviderModalesContext);
 
 
   const [inputValue, setInputValue] = inputState ? inputState : vars ? vars[0][fieldName] : useState("")

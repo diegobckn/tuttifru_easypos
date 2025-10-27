@@ -33,8 +33,8 @@ import TecladoCierre from "../Teclados/TecladoCierre";
 import Validator from "../../Helpers/Validator";
 import BoxOptionList from "../BoxOptionsLite/BoxOptionList";
 import IngresarNumeroORut from "./IngresarNumeroORut";
-import { ModosImpresion, TiposDescuentos } from "../../definitions/BaseConfig";
 import SmallDangerButton from "../Elements/SmallDangerButton";
+import TiposDescuentos from "../../definitions/TiposDescuentos";
 
 
 const Descuento = ({

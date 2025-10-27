@@ -34,7 +34,6 @@ import ModelConfig from "../../../Models/ModelConfig";
 import SmallButton from "../../Elements/SmallButton";
 import Sucursal from "../../../Models/Sucursal";
 import TiposPasarela from "../../../definitions/TiposPasarela";
-import { ModosTrabajoConexion, OrdenListado } from "../../../definitions/BaseConfig";
 import BoxOptionList from "../BoxOptionList";
 import InputCheckbox from "../../Elements/Compuestos/InputCheckbox";
 import InputCheckboxAutorizar from "../../Elements/Compuestos/InputCheckboxAutorizar";
@@ -42,6 +41,8 @@ import BoxBat from "../BoxBat";
 import System from "../../../Helpers/System";
 import Product from "../../../Models/Product";
 import ProductFastSearch from "../../../Models/ProductFastSearch";
+import ModosTrabajoConexion from "../../../definitions/ModosConexion";
+import OrdenListado from "../../../definitions/OrdenesListado";
 
 const TabProductos = ({
   onFinish = () => { }

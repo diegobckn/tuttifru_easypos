@@ -11,23 +11,23 @@ import System from '../Helpers/System.ts';
 
 
 class PagoBoleta extends Model implements IPagoBoleta {
-  idUsuario: number;
-  codigoClienteSucursal: number;
-  codigoCliente: number;
-  total: number;
-  products: IProductoPagoBoleta[];
-  metodoPago: string;
-  transferencias: ITransferencia;
+  idUsuario: number = 0;
+  codigoClienteSucursal: number = 0;
+  codigoCliente: number = 0;
+  total: number = 0;
+  products: IProductoPagoBoleta[] = [];
+  metodoPago: string = "";
+  transferencias: ITransferencia | null = null;
 
 
 
-  static medioExcluido(infoAEnviar) {
+  static medioExcluido(infoAEnviar:any) {
     const excluirMediosEnBoleta = (ModelConfig.get("excluirMediosEnBoleta"))
 
     const metodosArr: any = System.arrayFromObject(MetodosPago, true)
 
     var algunExcluido = false
-    infoAEnviar.pagos.forEach((pago) => {
+    infoAEnviar.pagos.forEach((pago:any) => {
 
       var metodoAdaptado = pago.metodoPago
       if (pago.metodoPago == "TARJETA") {
@@ -48,7 +48,7 @@ class PagoBoleta extends Model implements IPagoBoleta {
 
   }
   //devuelve lo opuesto a modo avion..
-  static analizarSiHaceBoleta(infoAEnviar) {
+  static analizarSiHaceBoleta(infoAEnviar:any) {
     if (!ModelConfig.get("emitirBoleta")) {
       return false
     }
@@ -60,7 +60,7 @@ class PagoBoleta extends Model implements IPagoBoleta {
     return !(this.medioExcluido(infoAEnviar))
   }
 
-  async hacerPago(data, callbackOk, callbackWrong, esOffline = false) {
+  async hacerPago(data:any, callbackOk:any, callbackWrong:any, esOffline = false) {
     const emitirBoleta = (ModelConfig.get("emitirBoleta"))
 
     const configs = ModelConfig.get()
@@ -86,7 +86,7 @@ class PagoBoleta extends Model implements IPagoBoleta {
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta") + ""
 
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData:any, response:any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   }
