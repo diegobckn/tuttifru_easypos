@@ -153,8 +153,8 @@ class Balanza extends Singleton {
         const formatResponse = JSON.parse(event.data)
         console.log("Mensaje recibido:", formatResponse);
         if (formatResponse.status) {
-          me.onChangeFn(event.data);
-          me.ultimoPesoDetectado = event.data
+          me.onChangeFn(formatResponse.info);
+          me.ultimoPesoDetectado = formatResponse.info
           setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
         } else {
           Balanza.onNeedReconect()
