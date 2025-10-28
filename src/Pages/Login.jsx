@@ -196,6 +196,10 @@ const Login = () => {
 
 
   const loadComercioApp = () => {
+    if (!ModelConfig.get("trabajarConApp")) {
+      return
+    }
+
     getInfoComercio((infoCom) => {
       console.log("info de comercio", infoCom)
       infoCom.url_base = ModelConfig.get("urlBase")
@@ -384,6 +388,12 @@ const Login = () => {
               Atudepa.checkNuevosPedidos = true
               Atudepa.iniciarCiclo()
             }, () => {
+
+              if (!ModelConfig.get("trabajarConApp")) {
+                return
+              }
+
+
               showConfirm("Abrir Turno de la app?", () => {
                 // console.log("abiendo turno")
 

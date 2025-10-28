@@ -124,6 +124,7 @@ const TabGeneral = ({
 
   const [modoTrabajoConexion, setModoTrabajoConexion] = useState(null)
   const [checkOfertas, setCheckOfertas] = useState(false)
+  const [trabajarConApp, setTrabajarConApp] = useState(false)
 
   const [verSucursalesMype, setVerSucursalesMype] = useState(false)
 
@@ -256,6 +257,7 @@ const TabGeneral = ({
     setConNumeroAtencion(ModelConfig.get("conNumeroAtencion"))
     setModoTrabajoConexion(ModelConfig.get("modoTrabajoConexion"))
     setCheckOfertas(ModelConfig.get("checkOfertas"))
+    setTrabajarConApp(ModelConfig.get("trabajarConApp"))
 
 
   }
@@ -270,7 +272,8 @@ const TabGeneral = ({
       "afterLogin": afterLogin,
       "conNumeroAtencion": conNumeroAtencion,
       "modoTrabajoConexion": modoTrabajoConexion,
-      "checkOfertas": checkOfertas
+      "checkOfertas": checkOfertas,
+      "trabajarConApp": trabajarConApp
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -480,6 +483,13 @@ const TabGeneral = ({
         <InputCheckbox
           inputState={[checkOfertas, setCheckOfertas]}
           label={"Ofertas"}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[trabajarConApp, setTrabajarConApp]}
+          label={"Trabajar con App"}
         />
       </Grid>
 
