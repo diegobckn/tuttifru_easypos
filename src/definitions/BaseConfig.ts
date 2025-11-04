@@ -86,7 +86,12 @@ const BaseConfig = {
 
     checkOfertas: false,
     refreshInfoEspejo: 3,
-    trabajarConApp: false
+    reflejarInfoEspejo: false,
+    
+    trabajarConApp: false,
+    
+    crearProductoNoEncontrado: true,
+    pedirAutorizacionParaAplicarDescuentos: true,
 };
 
 export default BaseConfig;

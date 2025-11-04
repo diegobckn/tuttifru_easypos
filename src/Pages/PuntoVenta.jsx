@@ -120,11 +120,13 @@ const PuntoVenta = () => {
   useEffect(() => {
     console.log("cambio salesData", salesData)
 
-    //para que lo vea el espejo
-    const sl = new Sales()
-    sl.sendToMirror(salesData, () => {
-      console.log("enviado a espejo")
-    }, (err) => { })
+    if (ModelConfig.get("reflejarInfoEspejo")) {
+      //para que lo vea el espejo
+      const sl = new Sales()
+      sl.sendToMirror(salesData, () => {
+        console.log("enviado a espejo")
+      }, (err) => { })
+    }
 
   }, [salesData])
 

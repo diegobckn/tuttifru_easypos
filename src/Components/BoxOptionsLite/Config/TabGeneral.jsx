@@ -126,6 +126,10 @@ const TabGeneral = ({
   const [checkOfertas, setCheckOfertas] = useState(false)
   const [trabajarConApp, setTrabajarConApp] = useState(false)
 
+  const [crearProductoNoEncontrado, setCrearProductoNoEncontrado] = useState(false)
+  const [pedirAutorizacionParaAplicarDescuentos, setPedirAutorizacionParaAplicarDescuentos] = useState(false)
+  const [reflejarInfoEspejo, setReflejarInfoEspejo] = useState(false)
+
   const [verSucursalesMype, setVerSucursalesMype] = useState(false)
 
 
@@ -259,6 +263,9 @@ const TabGeneral = ({
     setCheckOfertas(ModelConfig.get("checkOfertas"))
     setTrabajarConApp(ModelConfig.get("trabajarConApp"))
 
+    setCrearProductoNoEncontrado(ModelConfig.get("crearProductoNoEncontrado"))
+    setPedirAutorizacionParaAplicarDescuentos(ModelConfig.get("pedirAutorizacionParaAplicarDescuentos"))
+    setReflejarInfoEspejo(ModelConfig.get("reflejarInfoEspejo"))
 
   }
 
@@ -273,7 +280,10 @@ const TabGeneral = ({
       "conNumeroAtencion": conNumeroAtencion,
       "modoTrabajoConexion": modoTrabajoConexion,
       "checkOfertas": checkOfertas,
-      "trabajarConApp": trabajarConApp
+      "trabajarConApp": trabajarConApp,
+      "crearProductoNoEncontrado": crearProductoNoEncontrado,
+      "pedirAutorizacionParaAplicarDescuentos": pedirAutorizacionParaAplicarDescuentos,
+      "reflejarInfoEspejo": reflejarInfoEspejo,
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -490,6 +500,24 @@ const TabGeneral = ({
         <InputCheckbox
           inputState={[trabajarConApp, setTrabajarConApp]}
           label={"Trabajar con App"}
+        />
+      </Grid>
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[crearProductoNoEncontrado, setCrearProductoNoEncontrado]}
+          label={"Crear Producto No Encontrado"}
+        />
+      </Grid>
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[pedirAutorizacionParaAplicarDescuentos, setPedirAutorizacionParaAplicarDescuentos]}
+          label={"Pedir Autorizacion Para Aplicar Descuentos"}
+        />
+      </Grid>
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[reflejarInfoEspejo, setReflejarInfoEspejo]}
+          label={"Reflejar en espejo"}
         />
       </Grid>
 

@@ -21,6 +21,8 @@ import {
   TextField,
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../Context/ProviderModales";
+
 import BoxAbrirCaja from "../BoxOptionsLite/BoxAbrirCaja";
 import SystemHelper from "../../Helpers/System";
 import SmallButton from "../Elements/SmallButton";
@@ -35,6 +37,7 @@ import BoxOptionList from "../BoxOptionsLite/BoxOptionList";
 import IngresarNumeroORut from "./IngresarNumeroORut";
 import SmallDangerButton from "../Elements/SmallDangerButton";
 import TiposDescuentos from "../../definitions/TiposDescuentos";
+import ModelConfig from "../../Models/ModelConfig";
 
 
 const Descuento = ({
@@ -49,8 +52,12 @@ const Descuento = ({
     userData,
     updateUserData,
     showMessage,
-    showAlert
+    showAlert,
   } = useContext(SelectedOptionsContext);
+
+  const {
+    pedirSupervision,
+  } = useContext(ProviderModalesContext);
 
   const [descuentoInput, setDescuentoInput] = useState(0)
   const [descuentoAConfirmar, setDescuentoAConfirmar] = useState(0)
@@ -186,8 +193,18 @@ const Descuento = ({
         <SmallButton
           textButton={"Aceptar"}
           actionButton={() => {
-            setOpenDialog(false)
-            setDescuentos(descuentoAConfirmar)
+            const sds = ModelConfig.get("pedirAutorizacionParaAplicarDescuentos")
+            console.log("pedirAutorizacionParaAplicarDescuentos", sds)
+            if (sds) {
+
+              pedirSupervision("Aplicar descuento", () => {
+                setOpenDialog(false)
+                setDescuentos(descuentoAConfirmar)
+              })
+            } else {
+              setOpenDialog(false)
+              setDescuentos(descuentoAConfirmar)
+            }
           }}
         />
 

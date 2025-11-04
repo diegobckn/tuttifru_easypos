@@ -149,11 +149,7 @@ const BoxProducts = ({ }) => {
                 // setProductByCodigo(productoEncontrado);
               } else {
                 showMessage("Producto No encontrado");
-                showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo '" + parte + "' ?", () => {
-                  addNewProductFromCode(parte)
-                }, () => {
-
-                })
+                procesarNoEncontrado(parte)
               }
 
               hideLoading()
@@ -166,21 +162,14 @@ const BoxProducts = ({ }) => {
           } else {
             //codigo no coincide con codigo de balanza configurado
             showMessage("Producto No encontrado");
-            showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo '" + parte + "' ?", () => {
-              addNewProductFromCode(parte)
-            }, () => {
-
-            })
+            procesarNoEncontrado(parte)
           }
 
 
         })
       } else {
         showMessage("Producto No encontrado");
-        showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo ' " + codigoBusqueda + " ' ?", () => {
-          addNewProductFromCode(codigoBusqueda)
-        }, () => {
-        })
+        procesarNoEncontrado(codigoBusqueda)
       }
 
       hideLoading()
@@ -189,8 +178,14 @@ const BoxProducts = ({ }) => {
       return
     } else {
       showMessage("Producto No encontrado");
-      showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo ' " + codigoBusqueda + " ' ?", () => {
-        addNewProductFromCode(codigoBusqueda)
+      procesarNoEncontrado(codigoBusqueda)
+    }
+  }
+
+  const procesarNoEncontrado = (codigoNoEncontrado) => {
+    if (ModelConfig.get("crearProductoNoEncontrado")) {
+      showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo ' " + codigoNoEncontrado + " ' ?", () => {
+        addNewProductFromCode(codigoNoEncontrado)
       }, () => {
       })
     }
@@ -252,11 +247,7 @@ const BoxProducts = ({ }) => {
                 // setProductByCodigo(productoEncontrado);
               } else {
                 showMessage("Producto No encontrado");
-                showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo '" + parte + "' ?", () => {
-                  addNewProductFromCode(parte)
-                }, () => {
-
-                })
+                procesarNoEncontrado(parte)
               }
 
               hideLoading()
@@ -276,10 +267,7 @@ const BoxProducts = ({ }) => {
         })
       } else {
         showMessage("Producto No encontrado");
-        showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo ' " + codigoBusqueda + " ' ?", () => {
-          addNewProductFromCode(codigoBusqueda)
-        }, () => {
-        })
+        procesarNoEncontrado(codigoBusqueda)
       }
 
       hideLoading()
@@ -288,10 +276,7 @@ const BoxProducts = ({ }) => {
       return
     } else {
       showMessage("Producto No encontrado");
-      showConfirm("Producto No encontrado, desea agregar un nuevo producto con el codigo ' " + codigoBusqueda + " ' ?", () => {
-        addNewProductFromCode(codigoBusqueda)
-      }, () => {
-      })
+      procesarNoEncontrado(codigoBusqueda)
     }
   }
 
