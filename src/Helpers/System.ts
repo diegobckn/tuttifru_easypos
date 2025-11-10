@@ -152,23 +152,28 @@ class System {
     }
 
     static intentarFoco(textInfoRef: any) {
-        console.log("..intentarFoco", textInfoRef)
-        // console.log(textInfoRef)
+        // console.log("..intentarFoco", textInfoRef)
+        console.log(textInfoRef)
         if (!textInfoRef || textInfoRef.current == null) {
             // console.log("no tiene valor ref")
             setTimeout(() => {
                 this.intentarFoco(textInfoRef)
             }, 300);
         } else {
-            //   console.log("ya tiene no es null")
+            // console.log("ya tiene no es null")
             const contInput = textInfoRef.current
-            // console.log("input encontrado:")
+            // console.log("input encontrado:", contInput)
             // console.log(contInput.querySelector("input"))
             var inp = null
             if (contInput.localName && contInput.localName == "input") {
-                contInput.focus()
+                // console.log("if 1")
+                // console.log("resp blur", contInput.blur())
+                setTimeout(() => {
+                    contInput.focus()
+                }, 300);
                 inp = contInput
             } else {
+                // console.log("else 2")
                 // console.log("contInput", contInput)
                 // console.log("contInput.localName", contInput.localName)
                 inp = contInput.querySelector("input")
