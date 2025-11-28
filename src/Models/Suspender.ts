@@ -7,8 +7,8 @@ import EndPoint from './EndPoint.ts';
 
 
 class Suspender extends Model {
-  usuario: number
-  descripcion: string
+  usuario = null
+  descripcion = "string"
   ventaSuspenderDetalle: any
   // [
   // {
@@ -29,17 +29,17 @@ class Suspender extends Model {
     return Suspender.instance;
   }
 
-  preSuspender(data:{
-    usuario,
-    descripcion,
-    listado
+  preSuspender(data: {
+    usuario:any,
+    descripcion:string,
+    listado:any
   }) {
     this.usuario = data.usuario
     this.descripcion = data.descripcion
     this.ventaSuspenderDetalle = data.listado
   }
 
-  async suspender(callbackOk, callbackWrong) {
+  async suspender(callbackOk:any, callbackWrong:any) {
     if (
       !this.usuario
       || !this.descripcion
@@ -49,7 +49,7 @@ class Suspender extends Model {
       return
     }
 
-    const data = this.getFillables()
+    const data:any = this.getFillables()
     data["ventaSuspenderDetalle"] = this.ventaSuspenderDetalle
     const configs = ModelConfig.get()
     var url = configs.urlBase +
@@ -59,24 +59,36 @@ class Suspender extends Model {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData:any, response:any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   }
 
-  async listarVentas(userId, callbackOk, callbackWrong) {
+  async listarVentas(userId:number, callbackOk:any, callbackWrong:any) {
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Ventas/SuspenderVentaGetByIdUsuario?idusuario=" + userId;
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url, (responseData, response) => {
+    EndPoint.sendGet(url, (responseData:any, response:any) => {
+      callbackOk(response.data.ventaSuspenderCabeceras, response)
+    }, callbackWrong)
+  } 
+  
+  async listarVentasDeTodos(callbackOk:any, callbackWrong:any) {
+    const configs = ModelConfig.get()
+    var url = configs.urlBase
+      + "/api/Ventas/SuspenderVentaGetAll";
+    url += "?codigoSucursal=" + ModelConfig.get("sucursal")
+    url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
+
+    EndPoint.sendGet(url, (responseData:any, response:any) => {
       callbackOk(response.data.ventaSuspenderCabeceras, response)
     }, callbackWrong)
   }
 
-  async recuperar(id, callbackOk, callbackWrong) {
+  async recuperar(id:number, callbackOk:any, callbackWrong:any) {
     const data: any = {
       id: id
     }
@@ -88,7 +100,7 @@ class Suspender extends Model {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData:any, response:any) => {
       callbackOk(response, responseData);
     }, callbackWrong)
   }

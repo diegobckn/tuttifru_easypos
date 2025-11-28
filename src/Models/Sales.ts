@@ -44,6 +44,10 @@ class Sales {
   }
 
   findKeyAndPriceInProducts(productId: number, price): number {
+    console.log("findKeyAndPriceInProducts")
+    console.log("productId", productId)
+    console.log("price", price)
+
     return this.products.findIndex(
       (productSold: ProductSold) => (
         productSold.idProducto === productId
@@ -94,7 +98,7 @@ class Sales {
       allTotal = allTotal + product.getSubTotal();
       if (product.extras && product.extras.agregar) {
         product.extras.agregar.forEach((agrega) => {
-          totalExtrasAgregar += agrega.precioVenta
+          totalExtrasAgregar += (product.quantity * agrega.precioVenta)
         })
       }
     })
@@ -171,7 +175,9 @@ class Sales {
   }
 
   changeQuantityByIndex(index, newQuantity, removeIfQuantityIs0 = false) {
-    // console.log("changeQuantityByIndex")
+    console.log("changeQuantityByIndex")
+    console.log("index", index)
+    console.log("newQuantity", newQuantity)
     // console.log("this")
     // console.log(this)
 
@@ -195,39 +201,38 @@ class Sales {
     }
 
     //si tiene extras tengo que actualizar cantidades de agregados
-    if (producto.extras && producto.extras.agregar.length > 0) {
+    // if (producto.extras && producto.extras.agregar.length > 0) {
 
-      producto.extras.agregar.forEach((agregado, ix) => {
-        // console.log("agregado", agregado)
-        //suma
-        if (diffQuantity > 0) {
-          const keyDelProductoAgregado = this.findKeyAndPriceInProducts(agregado.idProducto, agregado.precioVenta)
-          // console.log("keyDelProductoAgregado", keyDelProductoAgregado)
-          var productoAgregado = System.clone(this.products[keyDelProductoAgregado])
-          // console.log("productoAgregado", productoAgregado)
-          this.products[keyDelProductoAgregado].quantity += diffQuantity
-          this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
-          // console.log("diffQuantity", diffQuantity)
-        } else {
-          //resta
-          const keyDelProductoAgregado = this.findKeyAndPriceInProducts(agregado.idProducto, agregado.precioVenta)
-          const productoAgregado = this.products[keyDelProductoAgregado]
+    // producto.extras.agregar.forEach((agregado, ix) => {
+    // console.log("agregado", agregado)
+    //suma
+    // if (newQuantity > 0) {
+    //   const keyDelProductoAgregado = this.findKeyAndPriceInProducts(producto.idProducto, producto.precioVenta)
+    //   // const keyDelProductoAgregado = this.findKeyAndPriceInProducts(agregado.idProducto, agregado.precioVenta)
+    //   console.log("keyDelProductoAgregado", keyDelProductoAgregado)
+    //   // var productoAgregado = System.clone(this.products[keyDelProductoAgregado])
+    //   // console.log("productoAgregado", productoAgregado)
+    //   this.products[keyDelProductoAgregado].quantity = newQuantity
+    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
+    //   // console.log("newQuantity", newQuantity)
+    // } else {
+    //   //resta
+    //   const keyDelProductoAgregado = this.findKeyAndPriceInProducts(producto.idProducto, producto.precioVenta)
+    //   const productoAgregado = this.products[keyDelProductoAgregado]
 
-          // console.log("keyDelProductoAgregado", keyDelProductoAgregado)
-          // console.log("productoAgregado", productoAgregado)
-          // console.log("diffQuantity", diffQuantity)
+    //   // console.log("keyDelProductoAgregado", keyDelProductoAgregado)
+    //   // console.log("productoAgregado", productoAgregado)
+    //   // console.log("newQuantity", newQuantity)
 
-          this.products[keyDelProductoAgregado].quantity += diffQuantity
-          this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
+    //   this.products[keyDelProductoAgregado].quantity = newQuantity
+    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
 
-          if (productoAgregado.quantity <= 0) {
-            this.removeFromIndex(keyDelProductoAgregado)
-          }
-        }
-      })
-
-
-    }
+    //   if (productoAgregado.quantity <= 0) {
+    //     this.removeFromIndex(keyDelProductoAgregado)
+    //   }
+    // }
+    // })
+    // }
 
     this.sesionProducts.guardar(this.products)
     return (this.products);

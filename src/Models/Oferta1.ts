@@ -16,7 +16,7 @@ export interface ResultadoAplicarOferta {
   productosQueNoAplican: any[]
 }
 
-class Oferta5 {
+export default class {
   info: any = null
   codigosAplicables: any[] = []
 
@@ -54,10 +54,10 @@ class Oferta5 {
       }
     });
 
-    // console.log("cuantosHay", cuantosHay)
+    console.log("cuantosHay", cuantosHay)
 
     const rs = this.llegoACantidadRequerida(cuantosHay)
-    // console.log("debeAplicar devuelve ", rs)
+    console.log("debeAplicar devuelve ", rs)
     return rs
   }
 
@@ -165,5 +165,3 @@ class Oferta5 {
   }
 
 };
-
-export default Oferta5;

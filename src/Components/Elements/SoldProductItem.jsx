@@ -88,6 +88,7 @@ const SoldProductItem = ({
   }
 
   const addQuantity = () => {
+    console.log("product", product)
     const newQuantity = parseInt(product.quantity + 1);
     changeQuantity(newQuantity)
 
@@ -385,9 +386,27 @@ const SoldProductItem = ({
           )}
 
         </TableCell>
-        <TableCell sx={{ fontSize: "20px" }}>${System.formatMonedaLocal(product.price, false)}</TableCell>
+        <TableCell sx={{ fontSize: "20px" }}>
+          ${System.formatMonedaLocal(product.price, false)}
+          <br />
+          <p style={{
+            fontSize: "15px"
+          }}>
+            {product.tieneExtraAgregar() && (
+              "+$" + System.formatMonedaLocal(product.montoExtrasUnitario(), false)
+            )}
+          </p>
+        </TableCell>
         <TableCell sx={{ fontSize: "20px" }}>
           ${System.formatMonedaLocal(product.total, false)}
+          <br />
+          <p style={{
+            fontSize: "15px"
+          }}>
+            {product.tieneExtraAgregar() && (
+              "+$" + System.formatMonedaLocal(product.montoExtrasSubtotal(), false)
+            )}
+          </p>
         </TableCell>
 
         {canDelete && (

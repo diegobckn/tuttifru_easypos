@@ -1,4 +1,4 @@
-export const OrdenListado = {
+export const OrdenListado:any = {
     Ascendente: 1,
     Descendente: 2
 }

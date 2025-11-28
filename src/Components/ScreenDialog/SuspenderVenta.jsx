@@ -19,6 +19,7 @@ import ModelConfig from "../../Models/ModelConfig";
 import Suspender from "../../Models/Suspender";
 import Validator from "../../Helpers/Validator";
 import IngresarTexto from "./IngresarTexto";
+import dayjs from "dayjs";
 
 var prods = [];
 for (let index = 1; index <= 5; index++) {
@@ -79,6 +80,14 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
   }
 
   const [dialogDescripcion, setDialogDescripcion] = useState(false);
+
+  useEffect(() => {
+    if (!openDialog) return
+    if (ModelConfig.get("descripcionAutomaticaSuspender")) {
+      const ahora = dayjs().format("DD/MM HH:mm")
+      setSuspendName(userData.nombres + " " + userData.apellidos + " " + ahora + " $" + sales.getTotal())
+    }
+  }, [openDialog])
 
 
   return (

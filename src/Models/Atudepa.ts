@@ -21,18 +21,23 @@ class Atudepa extends ModelSingleton {
     static data: any = null
     static listo: any = false
 
+    static ultimoIdPedidoProg = 0;
+    static checkNuevosPedidosProg = true;
+    static intervaloFuncionProg: any = null;
+    static nuevoPedidoProgFuncion = (nuevosPedidos: any) => { };
+
     static ultimoIdPedido = 0;
     static tiempoIntervaloChequeoPedidos = 5;//en segundos
     static checkNuevosPedidos = true;
     static ultimoTurno: any = null;
     static intervaloFuncion: any = null;
-    static nuevoPedidoFuncion = (nuevosPedidos:any) => { };
+    static nuevoPedidoFuncion = (nuevosPedidos: any) => { };
 
-    static async preparar(callbackOk:any, alertFunction:any) {
+    static async preparar(callbackOk: any, alertFunction: any) {
 
         var me = this;
 
-        await Comercio.getServerAllConfigs((info:any) => {
+        await Comercio.getServerAllConfigs((info: any) => {
             // console.log("info", info)
             const cnf: any = Comercio.buscarConfig("ImpresionTicket", "Nro_Rut", info)
             if (!cnf) {
@@ -68,7 +73,18 @@ class Atudepa extends ModelSingleton {
         }
     }
 
-    static abrirTurno(abrirA:any, cerrarA:any, cantidadPersonas:any, callbackOk:any, callbackWrong:any) {
+    static iniciarCicloProgramados() {
+        console.log("Atudepa.iniciarCicloProgramados")
+        console.log("Atudepa.intervaloFuncionProg", Atudepa.intervaloFuncionProg)
+        if (!Atudepa.intervaloFuncionProg) {
+            Atudepa.intervaloFuncionProg = setInterval(() => {
+                console.log(" atudepa intervalo")
+                Atudepa.buscarNuevosPedidosProgramados()
+            }, Atudepa.tiempoIntervaloChequeoPedidos * 1000);
+        }
+    }
+
+    static abrirTurno(abrirA: any, cerrarA: any, cantidadPersonas: any, callbackOk: any, callbackWrong: any) {
         var me = this;
 
         me.data.open = abrirA
@@ -82,12 +98,12 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             Atudepa.ultimoTurno = responseData.info;
 
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
@@ -103,22 +119,47 @@ class Atudepa extends ModelSingleton {
 
         me.data.lastPurchaseId = Atudepa.ultimoIdPedido
         // console.log("a enviar ", me.data);
-        const url = "https://softus.com.ar/easypos/check-news-purchases-atudepa"
+        const url = "https://softus.com.ar/easypos/check-news-purchases-tohome-atudepa"
 
         console.log("buscarNuevosPedidos..")
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             if (responseData.purchases.length > 0) {
                 Atudepa.nuevoPedidoFuncion(responseData.purchases)
             }
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             SoporteTicket.reportarError = vl
         })
     }
 
-    static cerrarTurno(turno:any, callbackOk:any, callbackWrong:any) {
+    static buscarNuevosPedidosProgramados() {
+        if (!Atudepa.checkNuevosPedidos) {
+            console.log("Atudepa.buscarNuevosPedidos..saliendo !checkNuevosPedidos")
+            return
+        }
+        console.log("Atudepa.buscarNuevosPedidos..")
+        var me = this;
+
+        me.data.lastPurchaseId = Atudepa.ultimoIdPedidoProg
+        // console.log("a enviar ", me.data);
+        const url = "https://softus.com.ar/easypos/check-news-purchases-prog-atudepa"
+
+        console.log("buscarNuevosPedidos..")
+        const vl = SoporteTicket.reportarError
+        SoporteTicket.reportarError = false
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
+            if (responseData.purchases.length > 0) {
+                Atudepa.nuevoPedidoProgFuncion(responseData.purchases)
+            }
+            SoporteTicket.reportarError = vl
+        }, (err: any) => {
+            SoporteTicket.reportarError = vl
+        })
+    }
+
+    static cerrarTurno(turno: any, callbackOk: any, callbackWrong: any) {
         var me = this;
 
         me.data.id = turno.id
@@ -127,16 +168,16 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
     }
 
-    static pausarTurno(turno:any, callbackOk:any, callbackWrong:any) {
+    static pausarTurno(turno: any, callbackOk: any, callbackWrong: any) {
         var me = this;
 
         me.data.id = turno.id
@@ -145,16 +186,16 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
     }
 
-    static despausarTurno(turno:any, callbackOk:any, callbackWrong:any) {
+    static despausarTurno(turno: any, callbackOk: any, callbackWrong: any) {
         var me = this;
 
         me.data.id = turno.id
@@ -163,16 +204,16 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
     }
 
-    static checkTurno(callbackOk:any, callbackWrong:any) {
+    static checkTurno(callbackOk: any, callbackWrong: any) {
         var me = this;
 
         // console.log("a enviar ", me.data);
@@ -183,44 +224,71 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             Atudepa.ultimoTurno = responseData.info;
 
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
     }
 
-    static obtenerPedidos(callbackOk:any, callbackWrong:any) {
+    static obtenerPedidos(callbackOk: any, callbackWrong: any) {
         var me = this;
 
         // console.log("a enviar ", me.data);
 
-        const url = "https://softus.com.ar/easypos/get-purchases-atudepa"
+        const url = "https://softus.com.ar/easypos/get-purchases-tohome-atudepa"
 
         me.data.date = dayjs().format("YYYY-MM-DD")
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
 
             var maxId = -1
-            responseData.purchases.forEach((pur:any) => {
+            responseData.purchases.forEach((pur: any) => {
                 if (maxId === -1 || pur.id > maxId) maxId = pur.id
             });
             Atudepa.ultimoIdPedido = maxId
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })
     }
 
-    static cambiarEstadosPedidos(ids:any, status:any, callbackOk:any, callbackWrong:any) {
+    static obtenerPedidosProgramados(callbackOk: any, callbackWrong: any) {
+        var me = this;
+
+        console.log("a enviar ", me.data);
+        if (!me.data) {
+            return false
+        }
+        const url = "https://softus.com.ar/easypos/get-purchases-prog-atudepa"
+
+        me.data.date = dayjs().format("YYYY-MM-DD")
+
+        const vl = SoporteTicket.reportarError
+        SoporteTicket.reportarError = false
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
+            callbackOk(responseData)
+            var maxId = -1
+            responseData.purchases.forEach((pur: any) => {
+                if (maxId === -1 || pur.id > maxId) maxId = pur.id
+            });
+            Atudepa.ultimoIdPedidoProg = maxId
+            SoporteTicket.reportarError = vl
+        }, (err: any) => {
+            callbackWrong(err)
+            SoporteTicket.reportarError = vl
+        })
+    }
+
+    static cambiarEstadosPedidos(ids: any, status: any, callbackOk: any, callbackWrong: any) {
         var me = this;
 
         // console.log("a enviar ", me.data);
@@ -232,10 +300,51 @@ class Atudepa extends ModelSingleton {
 
         const vl = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
-        EndPoint.sendPost(url, me.data, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
             callbackOk(responseData)
             SoporteTicket.reportarError = vl
-        }, (err:any) => {
+        }, (err: any) => {
+            callbackWrong(err)
+            SoporteTicket.reportarError = vl
+        })
+    }
+
+    static asignarPedidosProgramados(ids: any, repartidor: any, callbackOk: any, callbackWrong: any) {
+        var me = this;
+
+        // console.log("a enviar ", me.data);
+
+        const url = "https://softus.com.ar/easypos/assign-progs-atudepa"
+
+        const data: any = {}
+        data.rut = me.data.rut
+        data.listToAssign = ids
+        data.userToAssign = repartidor.id
+
+        const vl = SoporteTicket.reportarError
+        SoporteTicket.reportarError = false
+        EndPoint.sendPost(url, data, (responseData: any, response: any) => {
+            callbackOk(responseData)
+            SoporteTicket.reportarError = vl
+        }, (err: any) => {
+            callbackWrong(err)
+            SoporteTicket.reportarError = vl
+        })
+    }
+
+    static getRepartidores(callbackOk: any, callbackWrong: any) {
+        var me = this;
+
+        // console.log("a enviar ", me.data);
+
+        const url = "https://softus.com.ar/easypos/get-deliveriers-atudepa"
+
+        const vl = SoporteTicket.reportarError
+        SoporteTicket.reportarError = false
+        EndPoint.sendPost(url, me.data, (responseData: any, response: any) => {
+            callbackOk(responseData)
+            SoporteTicket.reportarError = vl
+        }, (err: any) => {
             callbackWrong(err)
             SoporteTicket.reportarError = vl
         })

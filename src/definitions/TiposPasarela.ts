@@ -1,5 +1,5 @@
 
-const TiposPasarela = {
+const TiposPasarela:any = {
     CAJA: 1,
     PREVENTA: 2,
     CONSULTA_PRECIO: 3,

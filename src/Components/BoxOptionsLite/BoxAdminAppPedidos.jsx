@@ -54,7 +54,7 @@ import SmallWarningButton from "../Elements/SmallWarningButton";
 import SmallSuccessButton from "../Elements/SmallSuccessButton";
 
 
-const BoxAdminAppPedidos = ({
+export default ({
   pedidos,
   setPedidos,
   visible
@@ -325,9 +325,14 @@ const BoxAdminAppPedidos = ({
                       <TableCell>{prodsTxt}</TableCell>
                       <TableCell>{pedido.status.showable}</TableCell>
                       <TableCell>
-                        {pedido.status_id == EstadosPedidosApp.PREPARANDO && (
-                          <SmallButton textButton={"reimprimir"} actionButton={() => imprimir(pedidos[index])} />
+                        {(pedido.status_id == EstadosPedidosApp.PREPARANDO
+                          || pedido.status_id == EstadosPedidosApp.COMPRADO) && (
+                            <SmallButton textButton={"reimprimir"} actionButton={() => imprimir(pedidos[index])} />
+                          )}
+                        {(pedido.status_id == EstadosPedidosApp.COMPRADO) && (
+                          <SmallButton textButton={"preparando"} actionButton={() => cambiarEstado(EstadosPedidosApp.PREPARANDO, pedido.id)} />
                         )}
+
                         {pedido.status_id == EstadosPedidosApp.LISTO_PARA_ENTREGAR && (
                           <>
                             <SmallPrimaryButton textButton={"Ver Codigo de entrega"} actionButton={() => {
@@ -407,5 +412,3 @@ const BoxAdminAppPedidos = ({
     <></>
   );
 }
-
-export default BoxAdminAppPedidos;

@@ -31,6 +31,7 @@ import Product from "../../Models/Product";
 import SalesOffline from "../../Models/SalesOffline";
 import IconButtonBadge from "../Elements/IconButtonBadge";
 import AdminApp from "../ScreenDialog/AdminApp";
+import AdmPedidosProgramadosApp from "../ScreenDialog/AdmPedidosProgramadosApp";
 
 const BoxTop = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -73,6 +74,7 @@ const BoxTop = () => {
 
   const [widthPrinter, setWidthPrinter] = useState(null);
   const [stockCriticoSuperados, setStockCriticoSuperados] = useState(0);
+  const [showAdmPedidosProgramados, setShowAdmPedidosProgramados] = useState(false);
 
 
   const focusSearchInput = () => {
@@ -295,6 +297,15 @@ const BoxTop = () => {
                   }
                 }}
               />
+              <AdmPedidosProgramadosApp
+                openDialog={showAdmPedidosProgramados}
+                setOpenDialog={(v) => {
+                  setShowAdmPedidosProgramados(v)
+                  if (!v) {
+                    focusSearchInput()
+                  }
+                }}
+              />
               <AdminApp
                 openDialog={showAdminApp}
                 setOpenDialog={(v) => {
@@ -347,11 +358,20 @@ const BoxTop = () => {
 
                   <IconButtonBadge
                     actionButton={() => {
+                      setShowAdmPedidosProgramados(true)
+                    }}
+                    icon={<MobileFriendly fontSize="medium" />}
+                    style={{
+                      color: "#ccc"
+                    }}
+                  />
+                  <IconButtonBadge
+                    actionButton={() => {
                       setShowAdminApp(true)
                     }}
                     icon={<MobileFriendly fontSize="medium" />}
                     style={{
-                      color: "rgb(251 219 18)"
+                      color: "#fbdb12"
                     }}
                   />
                   <IconButtonBadge

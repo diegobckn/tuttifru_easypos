@@ -131,6 +131,7 @@ const TabGeneral = ({
   const [reflejarInfoEspejo, setReflejarInfoEspejo] = useState(false)
 
   const [verSucursalesMype, setVerSucursalesMype] = useState(false)
+  const [descripcionAutomaticaSuspender, setDescripcionAutomaticaSuspender] = useState(false)
 
 
   const buscarNombreSucursal = (idSucursal) => {
@@ -266,6 +267,7 @@ const TabGeneral = ({
     setCrearProductoNoEncontrado(ModelConfig.get("crearProductoNoEncontrado"))
     setPedirAutorizacionParaAplicarDescuentos(ModelConfig.get("pedirAutorizacionParaAplicarDescuentos"))
     setReflejarInfoEspejo(ModelConfig.get("reflejarInfoEspejo"))
+    setDescripcionAutomaticaSuspender(ModelConfig.get("descripcionAutomaticaSuspender"))
 
   }
 
@@ -284,6 +286,7 @@ const TabGeneral = ({
       "crearProductoNoEncontrado": crearProductoNoEncontrado,
       "pedirAutorizacionParaAplicarDescuentos": pedirAutorizacionParaAplicarDescuentos,
       "reflejarInfoEspejo": reflejarInfoEspejo,
+      "descripcionAutomaticaSuspender": descripcionAutomaticaSuspender,
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -518,6 +521,13 @@ const TabGeneral = ({
         <InputCheckbox
           inputState={[reflejarInfoEspejo, setReflejarInfoEspejo]}
           label={"Reflejar en espejo"}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[descripcionAutomaticaSuspender, setDescripcionAutomaticaSuspender]}
+          label={"Descripcion Automatica Suspender"}
         />
       </Grid>
 

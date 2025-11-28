@@ -142,7 +142,7 @@ const BoxProducts = ({ }) => {
             const pesoFloat = parseFloat(peso)
 
             showLoading("buscando producto " + parseInt(idProducto))
-            Product.getInstance().findByCodigo({ codigoProducto: idProducto, codigoCliente: codigoCliente }, (products, response) => {
+            Product.getInstance().findByCodigoBarras({ codigoProducto: idProducto, codigoCliente: codigoCliente }, (products, response) => {
               if (products.length > 0) {
                 const productoEncontrado = products[0];
                 addToSalesData(productoEncontrado, pesoFloat);
@@ -192,7 +192,7 @@ const BoxProducts = ({ }) => {
   }
 
   const buscarValoresBalanza = (codigoBusqueda) => {
-    // console.log("buscarValoresBalanza")
+    console.log("buscarValoresBalanza")
 
     const CODBALANZA = Balanza.getCodigo()
     const LARGOIDPRODBALANZA = parseInt(ModelConfig.get("largoIdProdBalanza"))
@@ -233,14 +233,14 @@ const BoxProducts = ({ }) => {
 
             if (parte.trim() == "") return;
 
-            // console.log("codigo: " + parseInt(idProducto))
-            // console.log("peso: " + peso)
+            console.log("codigo: " + parseInt(idProducto))
+            console.log("peso: " + peso)
             const pesoEntero = peso.substring(0, PESOENTERO)
             const pesoDecimal = peso.substring(PESOENTERO)
             const pesoFloat = parseFloat(pesoEntero + "." + pesoDecimal)
 
             showLoading("buscando producto " + parseInt(idProducto))
-            Product.getInstance().findByCodigo({ codigoProducto: idProducto, codigoCliente: codigoCliente }, (products, response) => {
+            Product.getInstance().findByCodigoBarras({ codigoProducto: parseInt(idProducto), codigoCliente: codigoCliente }, (products, response) => {
               if (products.length > 0) {
                 const productoEncontrado = products[0];
                 addToSalesData(productoEncontrado, pesoFloat);

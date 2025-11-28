@@ -129,13 +129,13 @@ const BoxAdminAppTurno = ({
 
   useEffect(() => {
 
-    const fechaHoy = dayjs().format('DD/MM/YYYY')
-    const hr = dayjs().format('HH:mm')
+    const fechaHoy = dayjs()
+    const hr = dayjs()
 
-    setAbrirAFecha(fechaHoy)
-    setCerrarAFecha(fechaHoy)
+    setAbrirAFecha(fechaHoy.format('DD/MM/YYYY'))
+    setCerrarAFecha(fechaHoy.add(3, 'hour').format('DD/MM/YYYY'))
 
-    setAbrirAHora(hr)
+    setAbrirAHora(hr.format('HH:mm'))
     setCerrarAHora(dayjs().add(3, 'hour').format('HH:mm'))
 
     showLoading("Revisando turno...")

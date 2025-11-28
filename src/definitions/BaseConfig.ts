@@ -92,6 +92,9 @@ const BaseConfig = {
     
     crearProductoNoEncontrado: true,
     pedirAutorizacionParaAplicarDescuentos: true,
+    
+    descripcionAutomaticaSuspender: false,
+
 };
 
 export default BaseConfig;

@@ -48,7 +48,7 @@ import ModelConfig from "../../Models/ModelConfig";
 import UserEvent from "../../Models/UserEvent";
 import Product from "../../Models/Product";
 import BoxMultiPago from "./BoxMultiPago";
-import Oferta5 from "../../Models/Oferta5";
+import Oferta1 from "../../Models/Oferta1";
 import Model from "../../Models/Model";
 import IngresarTexto from "../ScreenDialog/IngresarTexto";
 import Sales from "../../Models/Sales";
@@ -172,14 +172,14 @@ const BoxFactura = ({
 
             var copiaProductos = salesData
 
-            Oferta5.setInfo(ofer)
+            Oferta1.setInfo(ofer)
             var resultadoOfertas = {
               productosQueAplican: [],
               productosQueNoAplican: copiaProductos
             }
 
-            while (Oferta5.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-              const resultadoAplicar = Oferta5.aplicar(resultadoOfertas.productosQueNoAplican)
+            while (Oferta1.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
+              const resultadoAplicar = Oferta1.aplicar(resultadoOfertas.productosQueNoAplican)
               // console.log("luego de aplicar queda asi", resultadoAplicar)
 
               resultadoOfertas.productosQueAplican =

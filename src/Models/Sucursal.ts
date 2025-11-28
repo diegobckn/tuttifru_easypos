@@ -42,7 +42,7 @@ class Sucursal extends Model {
   }
 
   static async getAll(callbackOk: any, callbackWrong: any) {
-    const url = ModelConfig.get("urlBase") + "/api/Sucursales/GetAllSucursalesCajas"
+    const url = ModelConfig.get("urlBase") + "/api/Sucursales/GetAllSucursales"
     var me = new Sucursal();
     var teniaGuardados = false
     const guardados = me.sesion.cargarGuardados()[0]

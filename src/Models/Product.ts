@@ -281,62 +281,6 @@ class Product extends ModelSingleton {
         })
     }
 
-    async findByCodigo({ codigoProducto, codigoCliente }: any, callbackOk: any, callbackWrong: any) {
-        const configs = ModelConfig.get()
-        var url = configs.urlBase +
-            "/api/ProductosTmp/GetProductosByCodigo?idproducto=" + codigoProducto
-        if (codigoCliente) {
-            url += "&codigoCliente=" + codigoCliente
-        }
-
-        url += "&codigoSucursal=" + ModelConfig.get("sucursal")
-        url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
-
-
-        const modo = ModelConfig.get("modoTrabajoConexion")
-        console.log("modo", modo)
-
-        if (
-            modo == ModosTrabajoConexion.SOLO_OFFLINE
-            || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-        ) {
-            console.log("buscar offline")
-            this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
-                callbackOk(dataProds, {
-                    data: {
-                        cantidadRegistros: dataProds.length,
-                        productos: dataProds
-                    }
-                })
-            }, () => { })
-        }
-
-        EndPoint.sendGet(url, (responseData: any, response: any) => {
-            callbackOk(response.data.productos, response);
-        }, (err: any) => {
-            // buscamos offline
-            const modo = ModelConfig.get("modoTrabajoConexion")
-            console.log("modo", modo)
-
-            if (
-                modo == ModosTrabajoConexion.SOLO_OFFLINE
-                || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-            ) {
-                console.log("buscar offline")
-                this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
-                    callbackOk(dataProds, {
-                        data: {
-                            cantidadRegistros: dataProds.length,
-                            productos: dataProds
-                        }
-                    })
-                }, callbackWrong)
-            } else {
-                callbackWrong(err)
-            }
-        })
-    }
-
     async findByCodigoBarras({ codigoProducto, codigoCliente }: any, callbackOk: any, callbackWrong: any, soloOnline = false) {
         console.log("findByCodigoBarras codigoProducto", codigoProducto + "")
         if (Product.enviando) {

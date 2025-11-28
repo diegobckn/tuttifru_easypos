@@ -30,7 +30,8 @@ import { SelectedOptionsContext } from "./../../Context/SelectedOptionsProvider"
 const TableSelecRecuperarVenta = ({
   onSelect,
   selectedItem,
-  setSelectedItem
+  setSelectedItem,
+  deTodosLosUsuarios = false
 }) => {
 
   const {
@@ -40,78 +41,90 @@ const TableSelecRecuperarVenta = ({
   } = useContext(SelectedOptionsContext);
 
   const [ventas, setVentas] = useState([])
-  const [ventaSeleccionada, setVentaSeleccionada] = useState([])
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     showLoading("cargando ventas suspendidas...")
-    Suspender.getInstance().listarVentas(userData.codigoUsuario,(ventas)=>{
-      setVentas(ventas)
-      console.log("ventas", ventas)
-      hideLoading()
-    }, (error)=>{
-      console.log("listarVentas:" + error)
-      setVentas([])
-      hideLoading()
-    })
-  },[])
+    if (deTodosLosUsuarios) {
+      Suspender.getInstance().listarVentasDeTodos((ventas) => {
+        setVentas(ventas)
+        console.log("ventas", ventas)
+        hideLoading()
+      }, (error) => {
+        console.log("listarVentas:" + error)
+        setVentas([])
+        hideLoading()
+      })
+    } else {
+      Suspender.getInstance().listarVentas(userData.codigoUsuario, (ventas) => {
+        setVentas(ventas)
+        console.log("ventas", ventas)
+        hideLoading()
+      }, (error) => {
+        console.log("listarVentas:" + error)
+        setVentas([])
+        hideLoading()
+      })
+
+    }
+  }, [deTodosLosUsuarios])
 
   return (
-      <Table style={{
-        minWidth:"200px",
-        minHeight:"150px"
-      }}>
-          <TableHead>
+    <Table style={{
+      minWidth: "200px",
+      minHeight: "150px"
+    }}>
+      <TableHead>
 
-            {!selectedItem &&  ventas.length>0 && (
-              <TableRow>
-                <TableCell>Descripcion</TableCell>
-                <TableCell> </TableCell>
-              </TableRow>
-          )}
-        </TableHead>
+        {!selectedItem && ventas.length > 0 && (
+          <TableRow>
+            <TableCell>Descripcion</TableCell>
+            <TableCell> </TableCell>
+          </TableRow>
+        )}
+      </TableHead>
 
-        <TableBody>
-          {ventas.length>0 && !selectedItem && ventas.map((venta, index)=>{
-            return(
-              <TableRow key={index}>
+      <TableBody>
+        {ventas.length > 0 && !selectedItem && ventas.map((venta, index) => {
+          return (
+            <TableRow key={index}>
               <TableCell>{venta.descripcion}</TableCell>
               <TableCell>
-              
-              <SmallButton textButton="Seleccionar" actionButton={()=>{
-                onSelect(venta);
-                console.log("sel", venta)
-              }}/>
-              
-              </TableCell>
-              </TableRow>
-            )
-            })
-          }
 
-          {ventas.length < 1 && (
-            <TableRow>
+                <SmallButton textButton="Seleccionar" actionButton={() => {
+                  onSelect(venta);
+                  console.log("sel", venta)
+                }} />
+
+              </TableCell>
+            </TableRow>
+          )
+        })
+        }
+
+        {ventas.length < 1 && (
+          <TableRow>
             <TableCell>
               <Typography >No hay ventas para recuperar</Typography>
             </TableCell>
           </TableRow>
-          )}
-              
-          {
-            selectedItem && (
-              <>
-                <TableRow>
-                    <TableCell>
-                      <Typography >{selectedItem.descripcion}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Button onClick={()=>{
-                      setSelectedItem(null)
-                    }} variant="contained">Cambiar</Button>
-                  </TableCell>
-                </TableRow>
+        )}
 
-                { selectedItem.ventaSuspenderDetalle.length > 0 && (
-                  <TableRow>
+        {
+          selectedItem && (
+            <>
+              <TableRow>
+                <TableCell>
+                  <Typography >{selectedItem.descripcion}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Button onClick={() => {
+                    setSelectedItem(null)
+                  }} variant="contained">Cambiar</Button>
+                </TableCell>
+              </TableRow>
+
+              {selectedItem.ventaSuspenderDetalle.length > 0 && (
+                <TableRow>
                   <TableCell>
                     Producto
                   </TableCell>
@@ -119,29 +132,29 @@ const TableSelecRecuperarVenta = ({
                   <TableCell>
                     Cantidad
                   </TableCell>
-                  </TableRow>
-                )}
-                { selectedItem.ventaSuspenderDetalle.map((venta,index)=>{
-                    return(
-                      <TableRow key={index}>
-                      <TableCell>
-                        { venta.descripcion }
-                      </TableCell>
+                </TableRow>
+              )}
+              {selectedItem.ventaSuspenderDetalle.map((venta, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell>
+                      {venta.descripcion}
+                    </TableCell>
 
-                      <TableCell>
-                      { venta.cantidad }
-                      </TableCell>
-                      </TableRow>
-                    )
-                  })
-                }
-              </>
-            )
-          }
-          
-          
-        </TableBody>
-      </Table>
+                    <TableCell>
+                      {venta.cantidad}
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+              }
+            </>
+          )
+        }
+
+
+      </TableBody>
+    </Table>
   );
 };
 

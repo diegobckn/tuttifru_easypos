@@ -86,7 +86,7 @@ const TableSelecProduct = ({
     var codigoCliente = 0
     if (cliente) codigoCliente = cliente.codigoCliente
 
-    Product.getInstance().findByCodigo({
+    Product.getInstance().findByCodigoBarras({
       codigoProducto: searchTerm,
       codigoCliente: codigoCliente
     }, callbackOk, callbackWrong)
