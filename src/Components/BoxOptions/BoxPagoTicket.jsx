@@ -236,7 +236,7 @@ const BoxPagoTicket = ({ onCloseTicket }) => {
         total: grandTotal,
         products: salesData.map((producto) => ({
           codProducto: producto.idProducto, // Ajustar la propiedad según el nombre real en tus datos
-          cantidad: producto.quantity, // Ajustar la propiedad según el nombre real en tus datos
+          cantidad: producto.cantidad, // Ajustar la propiedad según el nombre real en tus datos
           precioUnidad: producto.precio, // Ajustar la propiedad según el nombre real en tus datos
           descripcion: producto.descripcion, // Ajustar la propiedad según el nombre real en tus datos
         })),

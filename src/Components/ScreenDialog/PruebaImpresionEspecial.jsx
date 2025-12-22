@@ -94,7 +94,7 @@ const PruebaImpresionEspecial = ({
   useEffect(()=>{
     var total = 0
     products.forEach((prod)=>{
-      total += (prod.quantity * prod.price)
+      total += (prod.cantidad * prod.precioVenta)
     })
 
     setGrandTotal(total)
@@ -147,8 +147,8 @@ const PruebaImpresionEspecial = ({
     products.forEach((prod)=>{
       paraEnviar.products.push({
         "codProducto": 0,
-        "cantidad": prod.quantity,
-        "precioUnidad": prod.price,
+        "cantidad": prod.cantidad,
+        "precioUnidad": prod.precioVenta,
         "descripcion": prod.description,
         "codBarra": prod.idProducto + ""
       })

@@ -78,7 +78,7 @@ const BoxTop = () => {
 
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   const cargarStockCriticoSuperados = () => {

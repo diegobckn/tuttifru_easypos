@@ -17,8 +17,19 @@ import LongClick from "../../Helpers/LongClick";
 import ConfirmOption from "../Dialogs/ConfirmOption";
 import SmallDangerButton from "../Elements/SmallDangerButton";
 import ProductFastSearch from "../../Models/ProductFastSearch";
+import ProductButton from "../Elements/ProductButton";
+import BoxOptionList from "./BoxOptionList";
+import System from "../../Helpers/System";
+import ProductSold from "../../Models/ProductSold";
+
+export const filtrosBusquedaRapida = {
+  Pesables: 1,
+  Unitarios: 2,
+  Todos: 3,
+}
 
 export default ({
+  show
 }) => {
 
   const {
@@ -32,6 +43,10 @@ export default ({
   } = useContext(SelectedOptionsContext);
 
   const [prods, setProds] = useState([])
+
+  const [prodFiltereds, setProdfiltereds] = useState([])
+  const [filterSelected, setFilterSelected] = useState(null)
+
   const [showSearchProduct, setShowSearchProduct] = useState(false)
   const [showConfirmOption, setShowConfirmOption] = useState(false)
   const [findedProduct, setFindedProduct] = useState(null)
@@ -40,21 +55,58 @@ export default ({
   const [isChanging, setIsChanging] = useState(false)
 
   useEffect(() => {
-    setProds([])
-    getProducts()
-  }, []);
+    if (!show) return
 
+    if (prods.length < 1) {
+      console.log("no tiene prod cargados")
+      setProdfiltereds([])
+      getProducts()
+    }
+  }, [show]);
+
+
+  useEffect(() => {
+    if (filterSelected === null) return
+
+    aplicarFiltro()
+
+  }, [filterSelected]);
+
+  const aplicarFiltro = () => {
+    if (filterSelected == filtrosBusquedaRapida.Todos) {
+      setProdfiltereds(prods)
+      return
+    }
+
+    var filtered = []
+
+    prods.forEach((botonProd) => {
+      if (
+        filterSelected == filtrosBusquedaRapida.Pesables && ProductSold.esPesable(botonProd)
+        || filterSelected == filtrosBusquedaRapida.Unitarios && !ProductSold.esPesable(botonProd)
+      ) {
+        filtered.push(botonProd)
+      }
+    })
+
+    setProdfiltereds(filtered)
+  }
 
   const getProducts = () => {
     // console.log("getProducts")
+    showLoading("Cargando productos...")
     setProds([])
+    setProdfiltereds([])
     ProductFastSearch.getInstance().getProductsFastSearch((productosServidor) => {
       setProds(productosServidor)
+      setProdfiltereds(productosServidor)
+      setFilterSelected(filtrosBusquedaRapida.Todos)
       // console.log("respuesta del servidor")
       // console.log(productosServidor)
       completarBotonesFaltantes(productosServidor)
+      hideLoading()
     }, () => {
-      setProds([])
+      hideLoading()
     })
   }
 
@@ -131,6 +183,7 @@ export default ({
   }
 
   const handleSelectProduct = (findedProductx) => {
+    console.log("handleSelectProduct..findedProductx", findedProductx)
     setShowSearchProduct(false)
     setFindedProduct(findedProductx)
 
@@ -140,6 +193,7 @@ export default ({
 
     // console.log("para enviar:")
     // console.log(findedProductx)
+    console.log("isChanging", isChanging ? "si" : "no")
     if (isChanging) {
       findedProductx.id = settingProduct.id,
         ProductFastSearch.getInstance().changeProductFastSearch(findedProductx, (response) => {
@@ -151,10 +205,12 @@ export default ({
         })
     } else {
       ProductFastSearch.getInstance().addProductFastSearch(findedProductx, (response) => {
+        console.log("Se agrego correctamente")
         showMessage("Se agrego correctamente")
         setProds([])
         getProducts()
       }, () => {
+        console.log("No se pudo agregar")
         showMessage("No se pudo agregar")
       })
     }
@@ -162,17 +218,21 @@ export default ({
 
 
   const handleClearButton = () => {
-    showConfirm("Limpiar el boton " + (settingProduct ? settingProduct.boton : "") + " " + settingProduct.nombre + "?", () => {
-      setSettingProduct(null)
-      ProductFastSearch.getInstance().removeProductFastSearch(settingProduct, (response) => {
-        showMessage("Realizado correctamente")
-        setProds([])
-        getProducts()
-      }, () => {
-        showMessage("No se pudo realizar")
+    console.log("handleClearButton..")
+    showConfirm("Limpiar el boton " + (settingProduct ? settingProduct.boton : "") + " " + settingProduct.nombre + "?",
+      () => {
+        console.log("eligio si")
+        setSettingProduct(null)
+        ProductFastSearch.getInstance().removeProductFastSearch(settingProduct, (response) => {
+          console.log("Realizado correctamente")
+          showMessage("Realizado correctamente")
+          setProds([])
+          getProducts()
+        }, () => {
+          console.log("No se pudo realizar")
+          showMessage("No se pudo realizar")
+        })
       })
-
-    })
   }
 
 
@@ -182,17 +242,24 @@ export default ({
       padding: "0px",
     }}>
 
-      <Grid item xs={12} sm={5} md={12} lg={12} style={{
+      <Grid item xs={12} sm={12} md={12} lg={12} style={{
         display: (!showSearchProduct ? "block" : "none")
       }}>
 
-        {prods.length > 0 && prods.map((product, index) => {
+        <BoxOptionList
+          optionSelected={filterSelected}
+          setOptionSelected={setFilterSelected}
+          options={System.arrayIdValueFromObject(filtrosBusquedaRapida, true)}
+        />
+
+        {prodFiltereds.length > 0 && prodFiltereds.map((product, index) => {
           var styles = {
+            marginTop: "20px",
             minHeight: "80px"
           }
 
           if (!product.codigoProducto) {
-            styles.backgroundColor = "#465379"
+            styles.backgroundColor = "#c1c1c1"
           }
 
           const longBoleta = new LongClick(2);
@@ -209,7 +276,7 @@ export default ({
 
 
           return (
-            <SmallButton key={index} textButton={product.nombre}
+            <ProductButton key={index} product={product}
               onTouchStart={() => longBoleta.onStart("touch")}
               onMouseDown={() => longBoleta.onStart("mouse")}
               onTouchEnd={() => longBoleta.onEnd("touch")}
@@ -261,6 +328,7 @@ export default ({
             settingProduct.boton + " con el producto '" + settingProduct.nombre + "'"
             : " de busqueda rapida")}
         onClick={(option) => {
+          console.log(" on click option", option)
           switch (option) {
             case 0:
               setShowSearchProduct(true)

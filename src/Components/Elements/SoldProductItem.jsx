@@ -54,19 +54,32 @@ const SoldProductItem = ({
     pedirSupervision
   } = useContext(ProviderModalesContext);
 
-
-
   const changeQuantity = (newQuantity) => {
+    // console.log("changeQuantity..newQuantity", newQuantity)
     if (ProductSold.esEnvase(product)) {
       return
     }
+    // console.log("changeQuantity2")
+    if ((newQuantity + "") == "" || isNaN(newQuantity)) return
 
+    // console.log("changeQuantity3")
     if (newQuantity <= 0) return
     if (!product.pesable && !Validator.isCantidad(newQuantity)) return false
     if (product.pesable && !Validator.isPeso(newQuantity)) return false
-    setSalesData([...sales.changeQuantityByIndex(itemIndex,
-      isNaN(newQuantity) ? 0 : newQuantity)])
+
+    // console.log("changeQuantity6")
+
+    sales.changeQuantityByIndex(itemIndex, newQuantity)
+    // console.log("changeQuantity7")
+    sales.checkQuantityEnvase(itemIndex, product)
+    // console.log("changeQuantity8")
+
+    setSalesData([...sales.products])
+
+    // console.log("changeQuantity9")
     setGrandTotal(sales.getTotal())
+
+    sales.sesionProducts.guardar(sales.products)
   }
 
   const handleChangeQuantityProductSold = (event) => {
@@ -81,15 +94,15 @@ const SoldProductItem = ({
 
 
   const decQuantity = () => {
-    const newQuantity = parseInt(product.quantity - 1);
+    const newQuantity = parseInt(product.cantidad - 1);
     if (newQuantity < 1) return
     changeQuantity(newQuantity)
     focusSearchInput()
   }
 
   const addQuantity = () => {
-    console.log("product", product)
-    const newQuantity = parseInt(product.quantity + 1);
+    // console.log("product", product)
+    const newQuantity = parseInt(product.cantidad + 1);
     changeQuantity(newQuantity)
 
     focusSearchInput()
@@ -102,18 +115,18 @@ const SoldProductItem = ({
   }
 
   const handleRemoveFromSalesData = () => {
-    console.log("product", product)
+    // console.log("product", product)
     const debePedirPermiso = (ModelConfig.get("pedirPermisoBorrarProducto"))
     showConfirm("Eliminar " + product.description + "?", () => {
 
       if (debePedirPermiso) {
         pedirSupervision("Quitar Producto", () => {
           confirmarEliminar()
-          console.log("vuelve de confirmar autorizacion")
+          // console.log("vuelve de confirmar autorizacion")
         }, {
           "codProducto": 0, //parseInt(product.idProducto),
-          "cantidad": product.quantity,
-          "precioUnidad": product.price,
+          "cantidad": product.cantidad,
+          "precioUnidad": product.precioVenta,
           "descripcion": product.description,
           "codBarra": product.idProducto + ""
         })
@@ -130,7 +143,7 @@ const SoldProductItem = ({
   const [newQuantityValue, setNewQuantityValue] = useState(0)
 
   const prepareTecladoChangeQuantity = () => {
-    setNewQuantityValue(product.quantity)
+    setNewQuantityValue(product.cantidad)
     setShowTecladoQuantity(true)
   }
 
@@ -229,7 +242,7 @@ const SoldProductItem = ({
                   if (!product.isEnvase) prepareTecladoChangeQuantity()
                 }}
 
-              >{product.quantity === 0 ? "" : product.quantity}</Typography>
+              >{product.cantidad === 0 ? "" : product.cantidad}</Typography>
             ) : (
               <div>
 
@@ -256,7 +269,7 @@ const SoldProductItem = ({
 
 
                     <TextField
-                      value={product.quantity === 0 ? "" : product.quantity}
+                      value={product.cantidad === 0 ? "" : product.cantidad}
                       onChange={(event) => {
                         handleChangeQuantityProductSold(event)
                       }}
@@ -300,7 +313,7 @@ const SoldProductItem = ({
                 {!canChangeQuantity && (
                   <>
                     <TextField
-                      value={product.quantity === 0 ? "" : product.quantity}
+                      value={product.cantidad === 0 ? "" : product.cantidad}
                       onChange={(event) => {
                         handleChangeQuantityProductSold(event)
                       }}
@@ -337,7 +350,7 @@ const SoldProductItem = ({
                       marginLeft: "33%",
                       padding: "0 15px",
                     }}
-                  >{product.quantity === 0 ? "0" : product.quantity}</Typography>
+                  >{product.cantidad === 0 ? "0" : product.cantidad}</Typography>
                 )}
 
 
@@ -387,7 +400,7 @@ const SoldProductItem = ({
 
         </TableCell>
         <TableCell sx={{ fontSize: "20px" }}>
-          ${System.formatMonedaLocal(product.price, false)}
+          ${System.formatMonedaLocal(product.precioVenta, false)}
           <br />
           <p style={{
             fontSize: "15px"

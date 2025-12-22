@@ -29,6 +29,8 @@ import TableSelecSubFamily from "../BoxOptionsLite/TableSelect/TableSelecSubFami
 import TableSelecProductNML from "../BoxOptionsLite/TableSelect/TableSelecProductNML";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 import { extraDefault, extraDefaultLlevar } from "../../Types/TExtra";
+import Product from "../../Models/Product";
+import TableSelecProductFromList from "../BoxOptionsLite/TableSelect/TableSelecProductFromList";
 
 const Agregar = ({
   openDialog,
@@ -43,30 +45,60 @@ const Agregar = ({
     suspenderYRecuperar,
     setSuspenderYRecuperar,
     showAlert,
+    showLoading,
+    hideLoading,
     showConfirm,
     sales,
     addToSalesData,
     setSalesData
   } = useContext(SelectedOptionsContext);
 
-  const handleSelect = (prod) => {
-    // console.log("agrega ", prod)
 
-    var nombreOriginal = prod.nombre + ""
+  const [agregadosList, setAgregadosList] = useState([])
+  const [tieneAgregados, setTieneAgregados] = useState(false)
+
+
+  const handleSelect = (prodExtra) => {
+    console.log("Agrega ", prodExtra)
+
+    var nombreOriginal = prodExtra.nombre + ""
     var nombreReemplazado = nombreOriginal.replace("AGREGA ", "")
 
-    prod.nombre = nombreReemplazado
-    prod.description = nombreReemplazado
-    product.extras.agregar.push(System.clone(prod))
+    prodExtra.nombre = nombreReemplazado
+    prodExtra.description = nombreReemplazado
+    product.extras.agregar.push(System.clone(prodExtra))
 
-    prod.nombre = nombreOriginal
-    prod.description = nombreOriginal
+    prodExtra.nombre = nombreOriginal
+    prodExtra.description = nombreOriginal
 
-    prod.ocultarEnListado = true
-    prod.esAgregado = true
+    prodExtra.ocultarEnListado = true
+    prodExtra.esAgregado = true
     sales.actualizarSesion()
     setSalesData(sales.loadFromSesion())
   }
+
+  useEffect(() => {
+    if (!openDialog) return
+
+    showLoading("Buscando agregadosList")
+    console.log("pantalla agregar activa..prod", product)
+    Product.getAgregadosExternos(product, (agregadosList) => {
+      hideLoading()
+      setAgregadosList(agregadosList)
+      console.log("agregadosList..", agregadosList)
+
+      if (!window.AgregadosGenerales) {
+        window.AgregadosGenerales = {}
+      }
+
+      window.AgregadosGenerales[product.idProducto] = agregadosList
+
+      setTieneAgregados(true)
+    }, (err) => {
+      setTieneAgregados(false)
+      hideLoading()
+    })
+  }, [openDialog])
 
   return (
     <Dialog open={openDialog} onClose={() => {
@@ -86,17 +118,27 @@ const Agregar = ({
 
 
           <Grid item xs={12} sm={12} md={12} lg={12}>
-            <TableSelecProductNML
-              title={""}
-              show={true}
-              categoryId={1}
-              subcategoryId={1}
-              familyId={1}
-              subfamilyId={1}
-              onSelect={handleSelect}
-              includeOnlyText={["AGREGA"]}
-              replaceText={["AGREGA ,"]}
-            />
+            {tieneAgregados ? (
+              <TableSelecProductFromList
+                title={""}
+                show={true}
+                productList={agregadosList}
+                onSelect={handleSelect}
+              />
+            ) : (
+
+              <TableSelecProductNML
+                title={""}
+                show={true}
+                categoryId={1}
+                subcategoryId={1}
+                familyId={1}
+                subfamilyId={1}
+                onSelect={handleSelect}
+                includeOnlyText={["AGREGA"]}
+                replaceText={["AGREGA ,"]}
+              />
+            )}
 
           </Grid>
 

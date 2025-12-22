@@ -41,7 +41,7 @@ class Shop extends ModelSingleton {
         })
     }
 
-    static async enviarImagen(fileInput:any, infoComercio: any, callbackOk: any, callbackWrong: any) {
+    static async enviarImagen(fileInput: any, infoComercio: any, callbackOk: any, callbackWrong: any) {
         // const configs = ModelConfig.get()
         var url = "https://softus.com.ar/easypos/update-image"
 
@@ -120,7 +120,8 @@ class Shop extends ModelSingleton {
         })
     }
 
-    static async getProperty(topic: string, unique: string, name:string, infoComercio: any, callbackOk: any, callbackWrong: any) {
+    static async getProperty(topic: string, unique: string, name: string, infoComercio: any, callbackOk: any, callbackWrong: any) {
+        console.log("getProperty..name", name)
         // console.log("infocomercio", infoComercio)
         // callbackWrong("x")
         // return
@@ -136,9 +137,11 @@ class Shop extends ModelSingleton {
         const ant = SoporteTicket.reportarError
         SoporteTicket.reportarError = false
         EndPoint.sendPost(url, formData, (responseData: any, response: any) => {
+            console.log("cayo en ok")
             callbackOk(responseData, response);
             SoporteTicket.reportarError = ant
         }, (err: any) => {
+            console.log("cayo en error")
             callbackWrong(err)
             SoporteTicket.reportarError = ant
         }, {
@@ -148,7 +151,7 @@ class Shop extends ModelSingleton {
         })
     }
 
-    static async updateProperty(topic: string, unique: string, name:string, value:string, infoComercio: any, callbackOk: any, callbackWrong: any) {
+    static async updateProperty(topic: string, unique: string, name: string, value: string, infoComercio: any, callbackOk: any, callbackWrong: any) {
         // console.log("infocomercio", infoComercio)
         // callbackWrong("x")
         // return

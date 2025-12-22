@@ -72,23 +72,16 @@ const TableSelecProduct = ({
 
 
   const buscarPorCodigoBarras = (callbackOk, callbackWrong) => {
-    var codigoCliente = 0
-    if (cliente) codigoCliente = cliente.codigoCliente
-
 
     Product.getInstance().findByCodigoBarras({
       codigoProducto: searchTerm,
-      codigoCliente: codigoCliente
     }, callbackOk, callbackWrong)
   }
 
   const buscarPorCodigoProducto = (callbackOk, callbackWrong) => {
-    var codigoCliente = 0
-    if (cliente) codigoCliente = cliente.codigoCliente
 
     Product.getInstance().findByCodigoBarras({
       codigoProducto: searchTerm,
-      codigoCliente: codigoCliente
     }, callbackOk, callbackWrong)
   }
 
@@ -105,7 +98,7 @@ const TableSelecProduct = ({
         showMessage("Producto no encontrado.");
       }
     }
-    
+
     const cnok = (error) => {
       hideLoading()
       showMessage("No se encontraron resultados para: " + searchTerm);

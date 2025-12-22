@@ -90,7 +90,7 @@ const AgregarQuitar = ({
       if (indexADescontar > -1) {
         const producADescontar = sales.products[indexADescontar]
         console.log("producADescontar", producADescontar)
-        // if (producADescontar.quantity > 1) {
+        // if (producADescontar.cantidad > 1) {
         // decrementQuantity(indexADescontar)
         sales.changeQuantityByIndex(indexADescontar, producADescontar.cantidad - product.cantidad, true)
         setSalesData(sales.products)
@@ -154,12 +154,20 @@ const AgregarQuitar = ({
 
         <Grid container item xs={12} sm={12} md={12} lg={12}>
 
-
-
           <Grid item xs={12} sm={12} md={12} lg={12}>
-            <Agregar openDialog={showModalAgregar} setOpenDialog={setShowModalAgregar} product={product} indexInSales={indexInSales} />
-            <Quitar openDialog={showModalQuitar} setOpenDialog={setShowModalQuitar} product={product} indexInSales={indexInSales} />
+
+            <Agregar openDialog={showModalAgregar}
+              setOpenDialog={setShowModalAgregar}
+              product={product}
+              indexInSales={indexInSales} />
+
+            <Quitar openDialog={showModalQuitar}
+              setOpenDialog={setShowModalQuitar}
+              product={product}
+              indexInSales={indexInSales} />
+
           </Grid>
+          
           <Grid item xs={12} sm={12} md={12} lg={12}>
             <Typography variant="body4" color="black" sx={{
               paddingLeft: "5px 0 10px",

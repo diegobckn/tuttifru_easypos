@@ -99,7 +99,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   const searchInputRef = useRef(null)
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   //set general dialog variables
@@ -263,7 +263,7 @@ export const SelectedOptionsProvider = ({ children }) => {
 
   useEffect(() => {
     // console.log("cambio salesData", salesData)
-    setGrandTotal(sales.getTotal());
+    setGrandTotal(sales.getTotal() + 0);
     if (tieneInternet === null) {
       checkInternet()
       setInterval(() => {
@@ -295,7 +295,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    // console.log("cliente", cliente)
+    console.log("cliente", cliente)
     setClienteModal(null)
     if (cliente) {
       if (cliente.validacionFactura && cliente.validacionFactura.esValidoFactura) {
@@ -360,55 +360,66 @@ export const SelectedOptionsProvider = ({ children }) => {
 
 
   const addToSalesData = (product, quantity) => {
-    // console.log("")
-    // console.log("")
-    // console.log("")
-    // console.log("")
-    // console.log("addToSalesData", product, "..quantity", quantity)
+    console.log("")
+    console.log("")
+    console.log("")
+    console.log("")
+    console.log("addToSalesData", product, "..cantidad", quantity)
+    if (!quantity && product.cantidad) quantity = product.cantidad
+
+    if (!quantity && ProductSold.esPesable(product)) {
+      console.log("es pesable..a pesar producto", product)
+      setProductoSinPeso(product)
+      return
+    }
+    if (!quantity) quantity = 1
 
     if (solicitaRetiro !== '') {
       showAlert(solicitaRetiro)
     }
 
-    if (!quantity && product.cantidad) quantity = product.cantidad
-
 
     if (parseFloat(product.precioVenta) <= 0 && !sePuedeVenderPrecio0) {
+      console.log("sin precio..a poner precio..producto", product)
       setShowAsignarPrecio(true)
       setProductoSinPrecio(product)
-    } else {
-      if (
-        // (quantity === 1 || quantity == undefined)
-        (quantity == undefined)
-        && ProductSold.getInstance().esPesable(product)) {
-        // setShowAsignarPeso(true)
-        setProductoSinPeso(product)
-      } else {
-        var totalAntesPrecio = sales.getTotal()
-        var totalAntesCantidad = sales.getTotalCantidad()
-        sales.addProduct(product, quantity);
-        var totalDespuesPrecio = sales.getTotal()
-        var totalDespuesCantidad = sales.getTotalCantidad()
-
-        if (totalAntesPrecio != totalDespuesPrecio || totalAntesCantidad != totalDespuesCantidad) showMessage("Agregado correctamente")
-        setGrandTotal(sales.getTotal())
-        setSalesData(sales.products)
-
-        setUltimoVuelto(null)
-
-        UserEvent.send({
-          name: "agrega producto " + product.nombre,
-        })
-
-        focusSearchInput()
-      }
+      return
     }
+
+    var totalAntesPrecio = sales.getTotal() + 0
+    var totalAntesCantidad = sales.getTotalCantidad() + 0
+
+    sales.addProduct(product, quantity);
+
+    var totalDespuesPrecio = sales.getTotal() + 0
+    var totalDespuesCantidad = sales.getTotalCantidad() + 0
+
+    console.log("totalAntesPrecio", totalAntesPrecio)
+    console.log("totalAntesCantidad", totalAntesCantidad)
+
+    console.log("totalDespuesPrecio", totalDespuesPrecio)
+    console.log("totalDespuesCantidad", totalDespuesCantidad)
+    // if (
+    //   totalAntesPrecio != totalDespuesPrecio
+    //   || totalAntesCantidad != totalDespuesCantidad
+    // )
+    showMessage("Agregado correctamente")
+    setGrandTotal(sales.getTotal())
+    setSalesData(sales.products)
+
+    setUltimoVuelto(null)
+
+    UserEvent.send({
+      name: "agrega producto " + product.nombre,
+    })
+
+    focusSearchInput()
   };
 
   useEffect(() => {
-    setAddToSalesDataModal((a, b, c, d, e, f) => {
-      return addToSalesData
-    })
+    // setAddToSalesDataModal((a, b, c, d, e, f) => {
+    //   return addToSalesData
+    // })
   }, [])
 
 
@@ -483,8 +494,8 @@ export const SelectedOptionsProvider = ({ children }) => {
 
   const calculateTotalPrice = (quantity, price) => {
     var pr = new ProductSold();
-    pr.quantity = quantity;
-    pr.price = price;
+    pr.cantidad = quantity;
+    pr.precioVenta = price;
     console.log("calculateTotalPrice..");
     console.log(pr.getSubTotal());
     return pr.getSubTotal();
@@ -623,7 +634,7 @@ export const SelectedOptionsProvider = ({ children }) => {
         textSearchProducts,
         searchInputRef,
         focusSearchInput,
-        
+
         setTextSearchProducts,
         buscarCodigoProducto,
         setBuscarCodigoProducto,

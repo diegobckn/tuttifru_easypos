@@ -79,7 +79,7 @@ const LecturaFolioPreventa = ({
         showMessage("Ya fue usada la preventa")
       } else {
         Preventa.adaptarLecturaProductos(products).forEach((produ) => {
-          const tipo = ProductSold.getInstance().esPesable(produ) ? 2 : 1
+          const tipo = ProductSold.esPesable(produ) ? 2 : 1
           addToSalesData({
             ...produ, ...{
               idProducto: produ.codProducto,

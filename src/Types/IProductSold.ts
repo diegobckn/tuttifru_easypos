@@ -1,7 +1,7 @@
 import IProduct from "./IProduct";
 
 interface IProductSold extends IProduct {
-    quantity: number,
+    cantidad: number,
     total: number,
 
     ocultarEnListado: boolean | undefined

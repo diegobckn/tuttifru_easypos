@@ -20,13 +20,8 @@ import {
   Typography
 } from "@mui/material";
 import UserEvent from "../Models/UserEvent";
-import User from "../Models/User";
 import ModelConfig from "../Models/ModelConfig";
-import Licencia from "../Models/Licencia";
 import { useNavigate } from "react-router-dom";
-import BoxProductoFamilia from "../Components/BoxOptionsLite/BoxProductoFamilia";
-import BoxFamiliaFija from "../Components/BoxOptionsLite/BoxFamiliaFija";
-import BoxBusquedaRapidaFija from "../Components/BoxOptionsLite/BoxBusquedaRapidaFija";
 import Sales from "../Models/Sales";
 import RefreshInfoControl from "../Components/BoxOptionsLite/RefreshInfoControl";
 import dayjs from "dayjs";

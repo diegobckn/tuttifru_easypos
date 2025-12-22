@@ -6,27 +6,12 @@ import {
   Box,
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
-import MainButton from "../Elements/MainButton";
-import ScreenDialogCreateClient from "../ScreenDialog/CreateClient";
-import ScreenDialogShowFamilies from "../ScreenDialog/ShowFamilies";
-import ScreenDialogConfig from "../ScreenDialog/AdminConfig";
-import BusquedaRapida from "../ScreenDialog/BusquedaRapida";
-import ScreenSuspend from "../ScreenDialog/SuspenderVenta";
-import ScreenRecuperarVenta from "../ScreenDialog/RecuperarVenta";
-import ScreenIngreso from "../ScreenDialog/Ingreso";
-import ScreenRetiro from "../ScreenDialog/Retiro";
-import ScreenDevolucion from "../ScreenDialog/Devolucion";
-import ScreenProductoAbierto from "../ScreenDialog/ProductoAbierto";
-import CierreCaja from "../ScreenDialog/CierreCaja";
-import MessageDialog from "../Dialogs/Alert";
-import UserEvent from "../../Models/UserEvent";
-import BoxProductoFamilia from "./BoxProductoFamilia";
 import BoxBusquedaRapida from "./BoxBusquedaRapida";
 import ModelConfig from "../../Models/ModelConfig";
 
 
 const BoxBusquedaRapidaFija = ({
-  whenApply = () => {}
+  whenApply = () => { }
 }) => {
   const {
     userData,
@@ -54,7 +39,7 @@ const BoxBusquedaRapidaFija = ({
 
   useEffect(() => {
 
-    if(fijarBusquedaRapida){
+    if (fijarBusquedaRapida) {
       whenApply()
     }
   }, [fijarBusquedaRapida])
@@ -72,7 +57,7 @@ const BoxBusquedaRapidaFija = ({
       <Grid container spacing={2} >
 
         <Grid item xs={12}>
-          <BoxBusquedaRapida />
+          <BoxBusquedaRapida show={true} />
         </Grid>
         <Grid item xs={12}>
         </Grid>
@@ -81,4 +66,4 @@ const BoxBusquedaRapidaFija = ({
   ) : null;
 }
 
-  export default BoxBusquedaRapidaFija;
+export default BoxBusquedaRapidaFija;

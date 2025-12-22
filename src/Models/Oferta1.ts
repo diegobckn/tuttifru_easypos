@@ -22,16 +22,18 @@ export default class {
 
   static session = new StorageSesion("ofertas")
 
-  setInfo(infoOferta:any) {
+  setInfo(infoOferta: any) {
     this.info = infoOferta
 
   }
 
-  static guardarOffline(info:any) {
+  static guardarOffline(info: any) {
     this.session.guardar(info)
   }
 
-  llegoACantidadRequerida(cantidad:number) {
+  llegoACantidadRequerida(cantidad: number) {
+    // console.log("llegoACantidadRequerida..cantidad", cantidad)
+
     var signo = this.info.signo === "=" ? ">=" : this.info.signo
     if (this.info.signo === ">") signo = ">="
 
@@ -40,34 +42,45 @@ export default class {
     return eval(cantidad + signo + this.info.cantidad)
   }
 
-  debeAplicar(productos:any) {
+  debeAplicar(productos: any) {
     // console.log("debeAplicar...para", productos)
     // console.log("this.info.products", this.info.products)
+    // console.log("debeAplicar..this", this)
+    if (
+      this.info.signo !== "="
+      && this.info.signo !== ">"
+      && this.info.signo !== "<"
+      && this.info.signo !== ">="
+      && this.info.signo !== "<="
+    ) {
+      // console.log("debeAplicar devuelve false")
+      return false
+    }
 
-    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr:any) => pr.codbarra)
+    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr: any) => pr.codbarra)
 
     // console.log("this.codigosAplicables", this.codigosAplicables)
     var cuantosHay = 0
-    productos.forEach((prod:any) => {
+    productos.forEach((prod: any) => {
       if (this.estaEnAplicables(prod)) {
-        cuantosHay += parseFloat(prod.quantity)
+        cuantosHay += parseFloat(prod.cantidad)
       }
     });
 
-    console.log("cuantosHay", cuantosHay)
+    // console.log("cuantosHay", cuantosHay)
 
     const rs = this.llegoACantidadRequerida(cuantosHay)
-    console.log("debeAplicar devuelve ", rs)
+    // console.log("debeAplicar devuelve ", rs, "la oferta es ", this)
     return rs
   }
 
-  estaEnAplicables(producto:any) {
+  estaEnAplicables(producto: any) {
     return this.codigosAplicables.indexOf(producto.idProducto) > -1
   }
 
-  aplicar(productos:any): ResultadoAplicarOferta {
+  aplicar(productos: any): ResultadoAplicarOferta {
 
-    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr:any) => pr.codbarra)
+    if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr: any) => pr.codbarra)
 
 
     const resul: ResultadoAplicarOferta = {
@@ -79,31 +92,31 @@ export default class {
     var cantidadAcumulada = 0
     var seAplico = false
 
-    productos.forEach((prod:any) => {
+    productos.forEach((prod: any) => {
       if (!seAplico && this.estaEnAplicables(prod)) {
-        if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.quantity)) {
+        if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.cantidad)) {
           const copiaProd = System.clone(prod)
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.quantity = parseFloat(this.info.cantidad)//porque tiene igual o mas
-          copiaAplica.price = precioEnOferta
+          copiaAplica.cantidad = parseFloat(this.info.cantidad)//porque tiene igual o mas
+          copiaAplica.precioVenta = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
-          var cantidadRestante = parseFloat(prod.quantity) - this.info.cantidad
+          var cantidadRestante = parseFloat(prod.cantidad) - this.info.cantidad
           if (cantidadRestante > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
-            copiaNoAplica.quantity = cantidadRestante//toma lo que se paso
+            copiaNoAplica.cantidad = cantidadRestante//toma lo que se paso
             copiaNoAplica.updateSubtotal()
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
           seAplico = true
-        } else if (this.llegoACantidadRequerida(parseFloat(prod.quantity) + cantidadAcumulada)) {
+        } else if (this.llegoACantidadRequerida(parseFloat(prod.cantidad) + cantidadAcumulada)) {
           // revisar si sobre paso 
           var cantidadAplica = parseFloat(this.info.cantidad) - cantidadAcumulada
-          var cantidadSobra = cantidadAcumulada + parseFloat(prod.quantity) - this.info.cantidad
+          var cantidadSobra = cantidadAcumulada + parseFloat(prod.cantidad) - this.info.cantidad
           /*
           llegar a 7
           viene con 3
@@ -116,8 +129,8 @@ export default class {
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.quantity = cantidadAplica
-          copiaAplica.price = precioEnOferta
+          copiaAplica.cantidad = cantidadAplica
+          copiaAplica.precioVenta = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
@@ -126,7 +139,7 @@ export default class {
           if (cantidadSobra > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
-            copiaNoAplica.quantity = cantidadSobra
+            copiaNoAplica.cantidad = cantidadSobra
             copiaNoAplica.updateSubtotal()
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
@@ -146,11 +159,11 @@ export default class {
 
           const copiaAplica = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.price = precioEnOferta
+          copiaAplica.precioVenta = precioEnOferta
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
 
-          cantidadAcumulada += parseFloat(prod.quantity)
+          cantidadAcumulada += parseFloat(prod.cantidad)
 
         }
 

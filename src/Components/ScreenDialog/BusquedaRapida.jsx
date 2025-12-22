@@ -17,7 +17,7 @@ import ConfirmOption from "../Dialogs/ConfirmOption";
 import SmallDangerButton from "../Elements/SmallDangerButton";
 import BoxBusquedaRapida from "../BoxOptionsLite/BoxBusquedaRapida";
 
-const BusquedaRapida = ({ 
+const BusquedaRapida = ({
   openDialog,
   setOpenDialog
 }) => {
@@ -33,10 +33,12 @@ const BusquedaRapida = ({
   } = useContext(SelectedOptionsContext);
 
   return (
-    <Dialog open={openDialog} onClose={() => {
-      setOpenDialog(false)
-    }}
-      // fullScreen
+    <Dialog
+      open={openDialog}
+      onClose={() => {
+        setOpenDialog(false)
+      }}
+      fullScreen
       maxWidth="lg"
       PaperProps={{
         style: {
@@ -48,14 +50,14 @@ const BusquedaRapida = ({
     >
       <DialogContent>
 
-        <BoxBusquedaRapida />
+        <BoxBusquedaRapida show={true} />
 
       </DialogContent>
       <DialogActions sx={{
         alignSelf: "center"
       }}>
 
-        
+
         <SmallDangerButton
           actionButton={() => {
             setOpenDialog(false)

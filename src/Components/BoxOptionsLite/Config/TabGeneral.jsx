@@ -49,6 +49,7 @@ import Product from "../../../Models/Product";
 import AdminStorage from "../../ScreenDialog/AdminStorage";
 import TouchInputName from "../../TouchElements/TouchInputName";
 import ModosTrabajoConexion from "../../../definitions/ModosConexion";
+import TouchInputEmail from "../../TouchElements/TouchInputEmail";
 
 const TabGeneral = ({
   onFinish = () => { }
@@ -133,6 +134,13 @@ const TabGeneral = ({
   const [verSucursalesMype, setVerSucursalesMype] = useState(false)
   const [descripcionAutomaticaSuspender, setDescripcionAutomaticaSuspender] = useState(false)
 
+  const [enviarEmailInicioSesion, setEnviarEmailInicioSesion] = useState(false)
+  const [enviarEmailInicioCaja, setEnviarEmailInicioCaja] = useState(false)
+  const [enviarEmailCierreCaja, setenviarEmailCierreCaja] = useState(false)
+  const [aQuienEnviaEmails, setaQuienEnviaEmails] = useState("")
+
+  const [yaIngresoUnaAutorizacion, setYaIngresoUnaAutorizacion] = useState(false)
+  const [darFocoEnBuscar, setDarFocoEnBuscar] = useState(false)
 
   const buscarNombreSucursal = (idSucursal) => {
     var nombre = ""
@@ -269,6 +277,13 @@ const TabGeneral = ({
     setReflejarInfoEspejo(ModelConfig.get("reflejarInfoEspejo"))
     setDescripcionAutomaticaSuspender(ModelConfig.get("descripcionAutomaticaSuspender"))
 
+
+    setEnviarEmailInicioSesion(ModelConfig.get("enviarEmailInicioSesion"))
+    setEnviarEmailInicioCaja(ModelConfig.get("enviarEmailInicioCaja"))
+    setenviarEmailCierreCaja(ModelConfig.get("enviarEmailCierreCaja"))
+    setaQuienEnviaEmails(ModelConfig.get("aQuienEnviaEmails"))
+    setDarFocoEnBuscar(ModelConfig.get("darFocoEnBuscar"))
+
   }
 
   const handlerSaveAction = () => {
@@ -287,6 +302,11 @@ const TabGeneral = ({
       "pedirAutorizacionParaAplicarDescuentos": pedirAutorizacionParaAplicarDescuentos,
       "reflejarInfoEspejo": reflejarInfoEspejo,
       "descripcionAutomaticaSuspender": descripcionAutomaticaSuspender,
+      "enviarEmailInicioSesion": enviarEmailInicioSesion,
+      "enviarEmailInicioCaja": enviarEmailInicioCaja,
+      "enviarEmailCierreCaja": enviarEmailCierreCaja,
+      "aQuienEnviaEmails": aQuienEnviaEmails,
+      "darFocoEnBuscar": darFocoEnBuscar,
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -530,6 +550,12 @@ const TabGeneral = ({
           label={"Descripcion Automatica Suspender"}
         />
       </Grid>
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[darFocoEnBuscar, setDarFocoEnBuscar]}
+          label={"Dar siempre foco en buscar"}
+        />
+      </Grid>
 
       <Grid item xs={12} md={12} lg={12}>
         <label
@@ -580,6 +606,63 @@ const TabGeneral = ({
           setLicencia(BaseConfig.licencia)
         }} />
       </Grid>
+
+
+      <Grid item xs={12} md={12} lg={12}>
+        <Grid container spacing={2} sx={{
+          border: "1px solid #ccc",
+          padding: "10px",
+          marginTop: "20px",
+          marginBottom: "20px",
+        }}>
+          <Grid item xs={12} md={12} lg={12}>
+            <InputCheckboxAutorizar
+              ignorarPorGrupo={yaIngresoUnaAutorizacion}
+              inputState={[enviarEmailInicioSesion, setEnviarEmailInicioSesion]}
+              label={"Enviar email luego de inicio de sesion"}
+              onAuthorize={() => {
+                setYaIngresoUnaAutorizacion(true)
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={12} lg={12}>
+            <InputCheckboxAutorizar
+              ignorarPorGrupo={yaIngresoUnaAutorizacion}
+              inputState={[enviarEmailInicioCaja, setEnviarEmailInicioCaja]}
+              label={"Enviar email luego de inicio de caja"}
+              onAuthorize={() => {
+                setYaIngresoUnaAutorizacion(true)
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={12} lg={12}>
+            <InputCheckboxAutorizar
+              ignorarPorGrupo={yaIngresoUnaAutorizacion}
+              inputState={[enviarEmailCierreCaja, setenviarEmailCierreCaja]}
+              label={"Enviar email luego de cierre de caja"}
+              onAuthorize={() => {
+                setYaIngresoUnaAutorizacion(true)
+              }}
+            />
+          </Grid>
+
+
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <TouchInputEmail
+              disabled={!enviarEmailInicioCaja
+                && !enviarEmailInicioSesion
+                && !enviarEmailCierreCaja}
+              inputState={[aQuienEnviaEmails, setaQuienEnviaEmails]}
+              withLabel={false}
+              label="A quien enviar" />
+          </Grid>
+
+        </Grid>
+      </Grid>
+
+
+
+
 
       <Grid item xs={12} sm={12} md={12} lg={12}>
 
@@ -699,6 +782,7 @@ const TabGeneral = ({
           handlerSaveAction()
           setTimeout(() => {
             onFinish()
+            setYaIngresoUnaAutorizacion(false)
           }, 300);
         }} />
 

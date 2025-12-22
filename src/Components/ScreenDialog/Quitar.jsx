@@ -29,6 +29,8 @@ import TableSelecSubFamily from "../BoxOptionsLite/TableSelect/TableSelecSubFami
 import TableSelecProductNML from "../BoxOptionsLite/TableSelect/TableSelecProductNML";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 import { extraDefaultLlevar } from "../../Types/TExtra";
+import Product from "../../Models/Product";
+import TableSelecProductFromList from "../BoxOptionsLite/TableSelect/TableSelecProductFromList";
 
 const Quitar = ({
   openDialog,
@@ -44,10 +46,15 @@ const Quitar = ({
     setSuspenderYRecuperar,
     showAlert,
     showConfirm,
+    showLoading,
+    hideLoading,
     sales,
     addToSalesData,
     replaceToSalesData
   } = useContext(SelectedOptionsContext);
+
+  const [ingredientes, setIngredientes] = useState([])
+  const [tieneIngredientes, setTieneIngredientes] = useState(false)
 
 
   const handleSelect = (prod) => {
@@ -64,6 +71,28 @@ const Quitar = ({
 
     replaceToSalesData(indexInSales, copiaProduct)
   }
+
+  useEffect(() => {
+    if (!openDialog) return
+
+    showLoading("Buscando ingredientes")
+    console.log("pantalla agregar activa..prod", product)
+    Product.getIngredientesExternos(product, (ingredientes) => {
+      hideLoading()
+      setIngredientes(ingredientes)
+      console.log("ingredientes..", ingredientes)
+
+      if (!window.ingredientesGenerales) {
+        window.ingredientesGenerales = {}
+      }
+      window.ingredientesGenerales[product.idProducto] = ingredientes
+      setTieneIngredientes(true)
+    }, (err) => {
+      setTieneIngredientes(false)
+      hideLoading()
+    })
+  }, [openDialog])
+
 
   return (
     <Dialog open={openDialog} onClose={() => {
@@ -83,17 +112,29 @@ const Quitar = ({
 
 
           <Grid item xs={12} sm={12} md={12} lg={12}>
-            <TableSelecProductNML
-              title={""}
-              show={true}
-              categoryId={1}
-              subcategoryId={1}
-              familyId={1}
-              subfamilyId={1}
-              onSelect={handleSelect}
-              includeOnlyText={["SIN"]}
-              replaceText={["SIN ,"]}
-            />
+
+            {tieneIngredientes ? (
+              <TableSelecProductFromList
+                title={""}
+                show={true}
+                productList={ingredientes}
+                onSelect={handleSelect}
+              />
+            ) : (
+
+
+              <TableSelecProductNML
+                title={""}
+                show={true}
+                categoryId={1}
+                subcategoryId={1}
+                familyId={1}
+                subfamilyId={1}
+                onSelect={handleSelect}
+                includeOnlyText={["SIN"]}
+                replaceText={["SIN ,"]}
+              />
+            )}
 
           </Grid>
 

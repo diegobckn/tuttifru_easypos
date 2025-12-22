@@ -138,6 +138,7 @@ const BoxBoleta = ({
 
   useEffect(() => {
 
+    if (!openDialog) return
     PrinterPaper.getInstance().loadWidthFromSesion()
 
     const offAI = OfflineAutoIncrement.getInstance()
@@ -164,7 +165,8 @@ const BoxBoleta = ({
     }, (err) => {
     }, true);
 
-  }, [])
+    setTrabajaConComanda(ModelConfig.get("trabajarConComanda"))
+  }, [openDialog])
 
   const revisarOfertas = (ofertas) => {
     if (ofertas.length > 0) {
@@ -272,8 +274,6 @@ const BoxBoleta = ({
     //     }
     //   })
     // }, () => { })
-
-    setTrabajaConComanda(ModelConfig.get("trabajarConComanda"))
   }
 
   // ACCIONES

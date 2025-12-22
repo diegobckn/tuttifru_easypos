@@ -110,12 +110,12 @@ const BoxTicketPreventa = ({
     if(!Validator.isCantidad(newQuantity))return false
 
     const orig = ProductSold.getOwnerByEnvase(prod, productosConEnvases)
-    if(newQuantity> orig.quantity || newQuantity<0) {
+    if(newQuantity> orig.cantidad || newQuantity<0) {
       return
     }
 
     const prods = productosConEnvases
-    prods[index].quantity = newQuantity
+    prods[index].cantidad = newQuantity
     prods[index].updateSubtotal()
     setProductosConEnvases([...prods])
   }
@@ -135,12 +135,12 @@ const BoxTicketPreventa = ({
         const esEnvase = ProductSold.esEnvase(producto)
         if(esEnvase){
         const owner = ProductSold.getOwnerByEnvase(producto,productosConEnvases)
-        const difcant = owner.quantity - producto.quantity
+        const difcant = owner.cantidad - producto.cantidad
         return ({
           codProducto: 0,
           codbarra: (producto.idProducto + ""),
           cantidad: System.getInstance().typeIntFloat(difcant),
-          precioUnidad: producto.price,
+          precioUnidad: producto.precioVenta,
           descripcion: producto.description,
         })
 
@@ -149,8 +149,8 @@ const BoxTicketPreventa = ({
           return({
             codProducto: 0,
             codbarra: (producto.idProducto + ""),
-            cantidad: System.getInstance().typeIntFloat(producto.quantity),
-            precioUnidad: producto.price,
+            cantidad: System.getInstance().typeIntFloat(producto.cantidad),
+            precioUnidad: producto.precioVenta,
             descripcion: producto.description,
           })
         }
@@ -229,7 +229,7 @@ const BoxTicketPreventa = ({
                         backgroundColor:"#f5f5f5",
                         textAlign:"center"
                       }}
-                      >{prod.quantity === 0 ? "0" : prod.quantity}</Typography>
+                      >{prod.cantidad === 0 ? "0" : prod.cantidad}</Typography>
                       </td>
                       <td style={{textAlign:"left"}}>
                         <SmallButton style={{
@@ -243,7 +243,7 @@ const BoxTicketPreventa = ({
                         }}
                         withDelay={false}
                         actionButton={()=>{
-                          changeQuantityIfEnvase(prod,index,prod.quantity-1)
+                          changeQuantityIfEnvase(prod,index,prod.cantidad-1)
                         }}
                         textButton={"-"} />
                       </td>
@@ -258,7 +258,7 @@ const BoxTicketPreventa = ({
                         }}
                         withDelay={false}
                         actionButton={()=>{
-                          changeQuantityIfEnvase(prod,index,prod.quantity+1)
+                          changeQuantityIfEnvase(prod,index,prod.cantidad+1)
                         }}
                         textButton={"+"} />
                       </td>

@@ -4,6 +4,7 @@ import EndPoint from './EndPoint.ts';
 import ModelConfig from './ModelConfig.ts';
 import axios from 'axios';
 import SoporteTicket from './SoporteTicket.ts';
+import User from './User.ts';
 
 
 class Model {
@@ -111,6 +112,36 @@ class Model {
     const url = ModelConfig.get("urlBase") + "/api/Ofertas/GetOfertas"
     EndPoint.sendGet(url, (responseData, response) => {
       callbackOk(responseData.ofertas, response)
+    }, callbackWrong)
+  }
+
+
+  static async informeInisioSesion(infoUser,callbackOk, callbackWrong) {
+    const configs = ModelConfig.get()
+
+    if (!configs.enviarEmailInicioSesion) {
+      callbackWrong("mal configuracion")
+      return
+    }
+    if (configs.aQuienEnviaEmails == "") {
+      callbackWrong("mal configuracion")
+      return
+    }
+
+    var url = "https://softus.com.ar/easypos/info-inicio-sesion";
+
+    // const infoUser = User.getInstance().getFromSesion()
+    const txtUser = infoUser && infoUser.nombres + " " + infoUser.apellidos
+
+    const info = {
+      sucursal: configs.sucursalNombre,
+      puntoVenta: configs.puntoVentaNombre,
+      para: configs.aQuienEnviaEmails,
+      usuario: txtUser
+    }
+
+    EndPoint.sendPost(url, info, (responseData, response) => {
+      callbackOk(responseData, response);
     }, callbackWrong)
   }
 };

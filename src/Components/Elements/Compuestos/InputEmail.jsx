@@ -25,6 +25,7 @@ const InputEmail = ({
   required = false,
   vars = null,
   onClick = () => { },
+  disabled = false
 }) => {
 
   const {
@@ -120,6 +121,7 @@ const InputEmail = ({
         </InputLabel>
       )}
       <TextField
+        disabled={disabled}
         fullWidth
         autoFocus={autoFocus}
         margin="normal"

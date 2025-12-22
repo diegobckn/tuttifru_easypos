@@ -26,7 +26,10 @@ for (let index = 1; index <= 5; index++) {
   prods.push(index);
 }
 
-const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
+const SuspenderVenta = ({
+  openDialog,
+  setOpenDialog
+}) => {
   const {
     userData,
     salesData,
@@ -38,6 +41,9 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
   const [suspendName, setSuspendName] = useState("");
   const [loading, setLoading] = useState(false)
 
+  const [listaProductos, setListaProductos] = useState([])
+  const [total, setTotal] = useState(0)
+
 
   const onAceptClick = () => {
     if (suspendName == "") {
@@ -48,7 +54,7 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
     const ventaSuspenderDetalle = [];
     salesData.forEach(sale => {
       ventaSuspenderDetalle.push({
-        cantidad: parseFloat(sale.quantity),
+        cantidad: parseFloat(sale.cantidad),
         descripcion: sale.description,
         codProducto: sale.idProducto + ""
       });
@@ -83,6 +89,8 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
 
   useEffect(() => {
     if (!openDialog) return
+    setListaProductos(salesData)
+    setTotal(sales.getTotal() + 0)
     if (ModelConfig.get("descripcionAutomaticaSuspender")) {
       const ahora = dayjs().format("DD/MM HH:mm")
       setSuspendName(userData.nombres + " " + userData.apellidos + " " + ahora + " $" + sales.getTotal())
@@ -134,12 +142,12 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
                 <tbody>
 
                   {
-                    salesData.map((sale, index) => {
+                    listaProductos.map((sale, index) => {
                       return (
                         <tr key={sale.idProducto + "" + index}>
-                          <td style={{ fontSize: "20px" }}>{sale.quantity} x ${sale.price} </td>
+                          <td style={{ fontSize: "20px" }}>{sale.cantidad} x ${sale.precioVenta} </td>
                           <td style={{ fontSize: "20px", padding: "0 20px" }}>{sale.description}</td>
-                          <td style={{ fontSize: "20px" }}>${sale.getSubTotal()}</td>
+                          <td style={{ fontSize: "20px" }}>${sale.getSubTotal() + 0}</td>
                         </tr>
                       )
                     })
@@ -147,7 +155,7 @@ const SuspenderVenta = ({ openDialog, setOpenDialog }) => {
                   <tr>
                     <td>&nbsp;</td>
                     <td style={{ fontSize: "20px", padding: "0 20px", textAlign: "right" }}>Total</td>
-                    <td style={{ fontSize: "20px" }}>${sales.getTotal()}</td>
+                    <td style={{ fontSize: "20px" }}>${total}</td>
                   </tr>
                 </tbody>
               </table>

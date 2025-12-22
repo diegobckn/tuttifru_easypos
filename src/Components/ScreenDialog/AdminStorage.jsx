@@ -1,9 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
-/* eslint-disable react/prop-types */
-/* eslint-disable no-undef */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-
 import React, { useState, useContext, useEffect } from "react";
 import {
   Dialog,
@@ -22,16 +16,11 @@ import {
   Box,
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
-import BoxAbrirCaja from "../BoxOptionsLite/BoxAbrirCaja";
-import SystemHelper from "../../Helpers/System";
 import SmallButton from "../Elements/SmallButton";
-import AperturaCaja from "../../Models/AperturaCaja";
-import dayjs from "dayjs";
 import System from "../../Helpers/System";
-import Printer from "../../Models/Printer";
-import UserEvent from "../../Models/UserEvent";
 import StorageSesion from "../../Helpers/StorageSesion";
 import SmallDangerButton from "../Elements/SmallDangerButton";
+import LogObject from "../../Models/LogObject";
 
 
 const AdminStorage = ({
@@ -52,10 +41,12 @@ const AdminStorage = ({
   const [info, setInfo] = useState([])
   const [totalSize, setTotalSize] = useState(0)
 
+  const ses = new StorageSesion("x")
+
+
   const cargarInfo = () => {
     showLoading("Cargando...")
     // console.log("cargarInfo")
-    const ses = new StorageSesion("x")
     const all = ses.getAll()
     setInfo(all)
     // console.log("length", all.length)
@@ -123,7 +114,8 @@ const AdminStorage = ({
                       <SmallButton
                         textButton={"Ver"}
                         actionButton={() => {
-                          showAlert(<textarea cols={100} rows={50} value={info[nm]} readOnly />)
+                          showAlert(<textarea cols={100} rows={50} value={LogObject(info[nm])} readOnly />)
+                          // showAlert(<textarea cols={100} rows={50} value={info[nm]} readOnly />)
                         }}
                       />
 

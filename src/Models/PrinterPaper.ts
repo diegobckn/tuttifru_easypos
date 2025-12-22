@@ -33,7 +33,7 @@ class PrinterPaper extends ModelSingleton {
     static getInstance(): PrinterPaper { return super.getInstance() }
 
     static loadTeamplatesFromServer(configs: any, callbackOk = (x: any) => { }) {
-        console.log("loadTeamplatesFromServer")
+        // console.log("loadTeamplatesFromServer")
         var me = PrinterPaper.getInstance()
         me.templates = []
         configs.forEach((serverConfig: any) => {

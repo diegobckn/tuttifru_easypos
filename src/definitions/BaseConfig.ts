@@ -87,13 +87,24 @@ const BaseConfig = {
     checkOfertas: false,
     refreshInfoEspejo: 3,
     reflejarInfoEspejo: false,
-    
+
     trabajarConApp: false,
-    
+
     crearProductoNoEncontrado: true,
     pedirAutorizacionParaAplicarDescuentos: true,
-    
+
     descripcionAutomaticaSuspender: false,
+
+
+    sinImagen: Env.productoSinImagen + "?v=12",
+
+    aQuienEnviaEmails: "",
+
+    enviarEmailInicioSesion: false,
+    enviarEmailInicioCaja: false,
+    enviarEmailCierreCaja: false,
+
+    darFocoEnBuscar: true
 
 };
 

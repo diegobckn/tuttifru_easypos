@@ -118,7 +118,7 @@ const PuntoVenta = () => {
 
 
   useEffect(() => {
-    console.log("cambio salesData", salesData)
+    // console.log("cambio salesData", salesData)
 
     if (ModelConfig.get("reflejarInfoEspejo")) {
       //para que lo vea el espejo

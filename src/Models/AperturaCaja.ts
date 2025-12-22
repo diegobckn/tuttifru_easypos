@@ -5,6 +5,7 @@ import axios from "axios";
 import Model from './Model';
 import ModelConfig from './ModelConfig.ts';
 import EndPoint from './EndPoint.ts';
+import User from './User.ts';
 
 
 class AperturaCaja extends Model implements MovimientoCaja {
@@ -31,7 +32,7 @@ class AperturaCaja extends Model implements MovimientoCaja {
         return AperturaCaja.instance;
     }
 
-    saveInSesion(data:any) {
+    saveInSesion(data: any) {
         this.sesion.guardar(data)
         // localStorage.setItem('userData', JSON.stringify(data));
         return data;
@@ -43,8 +44,8 @@ class AperturaCaja extends Model implements MovimientoCaja {
         // return JSON.parse(dt);
     }
 
-    async sendToServer(callbackOk:any, callbackWrong:any) {
-        var data:any = this.getFillables();
+    async sendToServer(callbackOk: any, callbackWrong: any) {
+        var data: any = this.getFillables();
         const configs = ModelConfig.get()
         var url = configs.urlBase
             + "/api/Cajas/AddCajaFlujo"
@@ -52,10 +53,44 @@ class AperturaCaja extends Model implements MovimientoCaja {
         if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
         if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-        EndPoint.sendPost(url, data, (responseData:any, response:any) => {
-            callbackOk(responseData, response);
+        EndPoint.sendPost(url, data, (responseData: any, response: any) => {
+            this.informeEmail(() => {
+                callbackOk(responseData, response);
+            }, () => {
+                callbackOk(responseData, response);
+            })
         }, callbackWrong)
 
+    }
+
+    async informeEmail(callbackOk: any, callbackWrong: any) {
+        const configs = ModelConfig.get()
+
+        if (!configs.enviarEmailInicioCaja) {
+            callbackWrong("mal configuracion")
+            return
+        }
+        if (configs.aQuienEnviaEmails == "") {
+            callbackWrong("mal configuracion")
+            return
+        }
+
+        var url = "https://softus.com.ar/easypos/info-inicio-caja";
+
+        const infoUser = User.getInstance().getFromSesion()
+        const txtUser = infoUser && infoUser.nombres + " " + infoUser.apellidos
+
+
+        const info = {
+            sucursal: configs.sucursalNombre,
+            puntoVenta: configs.puntoVentaNombre,
+            para: configs.aQuienEnviaEmails,
+            usuario: txtUser
+        }
+
+        EndPoint.sendPost(url, info, (responseData: any, response: any) => {
+            callbackOk(responseData, response);
+        }, callbackWrong)
     }
 
 

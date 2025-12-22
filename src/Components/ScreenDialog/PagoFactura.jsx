@@ -73,7 +73,7 @@ const PagoFactura = ({
   }
 
   useEffect(() => {
-    console.log("cambio clienteValidoFactura", clienteValidoFactura)
+    // console.log("cambio clienteValidoFactura", clienteValidoFactura)
   }, [clienteValidoFactura])
 
   return (

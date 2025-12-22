@@ -22,12 +22,12 @@ class SalesDummy extends Sales {
 
 
   changeQuantityByIndex(index: number, quantity: number, removeIfQuantityIs0 = false) {
-    this.products[index].quantity = quantity;
+    this.products[index].cantidad = quantity;
     this.products[index].updateSubtotal();
 
     this.checkQuantityEnvase(index)
 
-    if (removeIfQuantityIs0 && this.products[index].quantity <= 0) {
+    if (removeIfQuantityIs0 && this.products[index].cantidad <= 0) {
       console.log("eliminando")
       this.products.splice(index, 1);
     }

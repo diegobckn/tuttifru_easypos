@@ -80,7 +80,7 @@ const BoxTotalesVolantes = () => {
   const [showFastSearchDialog, setShowFastSearchDialog] = useState(false);
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   const onTicketClick = () => {
@@ -101,8 +101,8 @@ const BoxTotalesVolantes = () => {
       products: salesData.map((producto) => ({
         codProducto: 0,
         codbarra: producto.idProducto + "",
-        cantidad: System.getInstance().typeIntFloat(producto.quantity),
-        precioUnidad: producto.price,
+        cantidad: System.getInstance().typeIntFloat(producto.cantidad),
+        precioUnidad: producto.precioVenta,
         descripcion: producto.description,
         costo: producto.precioCosto ?? 0,
       })),

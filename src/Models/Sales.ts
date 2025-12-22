@@ -43,20 +43,20 @@ class Sales {
     );
   }
 
-  findKeyAndPriceInProducts(productId: number, price): number {
-    console.log("findKeyAndPriceInProducts")
-    console.log("productId", productId)
-    console.log("price", price)
+  findKeyAndPriceInProducts(productId: number, price: number | string): number {
+    // console.log("findKeyAndPriceInProducts")
+    // console.log("productId", productId)
+    // console.log("price", price)
 
     return this.products.findIndex(
       (productSold: ProductSold) => (
         productSold.idProducto === productId
-        && productSold.price === price
+        && productSold.precioVenta === price
       )
     );
   }
 
-  findKeyAndPriceAndNameInProducts(productId: number, price, name): number {
+  findKeyAndPriceAndNameInProducts(productId: number, price: number | string, name: string): number {
     // console.log("findKeyAndPriceAndNameInProducts")
     // console.log("productId", productId)
     // console.log("price", price)
@@ -67,7 +67,7 @@ class Sales {
       const aplica = (
         prod.idProducto + "" === productId + ""
         && prod.idProducto !== 0
-        && (prod.price === price || prod.preVenta === price)
+        && (prod.precioVenta === price || prod.preVenta === price)
         && prod.description === name
       )
 
@@ -84,7 +84,7 @@ class Sales {
     //   (productSold: ProductSold) => (
     //     productSold.idProducto + "" === productId + ""
     //     && productSold.idProducto !== 0
-    //     && (productSold.price === price  || productSold.preVenta === price)
+    //     && (productSold.precioVenta === price  || productSold.preVenta === price)
     //     && productSold.description === name
     //   )
     // );
@@ -97,8 +97,8 @@ class Sales {
     this.products.forEach(function (product: ProductSold) {
       allTotal = allTotal + product.getSubTotal();
       if (product.extras && product.extras.agregar) {
-        product.extras.agregar.forEach((agrega) => {
-          totalExtrasAgregar += (product.quantity * agrega.precioVenta)
+        product.extras.agregar.forEach((agrega: any) => {
+          totalExtrasAgregar += (product.cantidad * agrega.precioVenta)
         })
       }
     })
@@ -110,94 +110,112 @@ class Sales {
   getTotalCantidad() {
     var allTotal = 0;
     this.products.forEach(function (product: ProductSold) {
-      allTotal = allTotal + product.quantity;
+      allTotal = allTotal + product.cantidad;
     })
     return allTotal;
   }
 
-  incrementQuantityByIndex(index, quantity = 1, newPrice = 0) {
-    console.log("incrementQuantityByIndex")
+  incrementQuantityByIndex(index: number, cantidad = 1, newPrice = 0) {
+    // console.log("incrementQuantityByIndex")
     const updatedSalesData = [...this.products];
     updatedSalesData[index] =
-      updatedSalesData[index].addQuantity(quantity, newPrice);
+      updatedSalesData[index].addQuantity(cantidad, newPrice);
     this.products = updatedSalesData;
     return (updatedSalesData);
   }
 
-  decrementQuantityByIndex(index) {
-    console.log("decrementQuantityByIndex")
+  decrementQuantityByIndex(index: number) {
+    // console.log("decrementQuantityByIndex")
     // console.log("revisar quantity de envases?")
     const updatedSalesData = [...this.products];
     updatedSalesData[index] =
       updatedSalesData[index].addQuantity(-1);
 
-    if (updatedSalesData[index].quantity < 1) {
+    if (updatedSalesData[index].cantidad < 1) {
       updatedSalesData.splice(index, 1);
     }
     return (updatedSalesData);
   }
 
-  checkQuantityEnvase(index, product: any = null) {
-    // console.log("checkQuantityEnvase..index:", index)
-    var productoCambiando = this.products[index];
-    if (productoCambiando.hasEnvase != undefined) {
-      // console.log("tiene un envase")
-      const ownerEnvaseId = productoCambiando.idProducto//producto con envase
-      if (ownerEnvaseId === 0) {
-        // console.log("tiene id 0 el owner del envase")
-      } else {
-        // console.log("es un producto valido el owner del envase", ownerEnvaseId)
-        // if(productoCambiando.preVenta){
-        //   return // si es preventa no tiene que revisar envase porque el envase viene como un producto separado
-        // }
+  checkQuantityEnvase(productIndex: number, product: any = null) {
+    // console.log("checkQuantityEnvase..productIndex:", productIndex)
+    // console.log("checkQuantityEnvase..product:", product)
 
-        for (let index2 = 0; index2 < this.products.length; index2++) {
-          const posibleEnvase = this.products[index2];
-          // console.log("posible envase", System.clone(posibleEnvase))
-          // console.log("productoCambiando", System.clone(productoCambiando))
-
-          if (ownerEnvaseId == posibleEnvase.ownerEnvaseId) {//encontro su envase
-            // console.log("confirmado es un envase del product ", ownerEnvaseId)
-
-            if (product && ProductSold.tieneEnvases(product)) {
-              var cantidadEnvase = product.envase[0].cantidad
-              if (!cantidadEnvase) cantidadEnvase = product.envase[0].quantity
-              if (!cantidadEnvase) cantidadEnvase = 1
-              posibleEnvase.quantity += cantidadEnvase
-            } else {
-              posibleEnvase.quantity = productoCambiando.quantity
-            }
-            posibleEnvase.updateSubtotal()
-          }
-        }
-      }
+    var productoCambiando = this.products[productIndex];
+    if (!ProductSold.tieneEnvases(productoCambiando)) {
+      // console.log("no tiene envases..salgo")
+      return
     }
+    // console.log("tiene algun envase")
+
+    const cantidadProducto = productoCambiando.cantidad
+    // console.log("checkQuantityEnvase..cantidadProducto:", cantidadProducto)
+
+
+    const envase = this.products[productIndex + 1];
+    envase.cantidad = cantidadProducto
+    envase.cantidad = cantidadProducto
+    envase.updateSubtotal()
+
+    // console.log("checkQuantityEnvase..envase quedo asi:", System.clone(envase))
+
+
+    // const ownerEnvaseId = productoCambiando.idProducto//producto con envase
+    // if (ownerEnvaseId === 0) {
+    //   // console.log("tiene id 0 el owner del envase")
+    // } else {
+    //   // console.log("es un producto valido el owner del envase", ownerEnvaseId)
+    //   // if(productoCambiando.preVenta){
+    //   //   return // si es preventa no tiene que revisar envase porque el envase viene como un producto separado
+    //   // }
+
+    //   for (let index2 = 0; index2 < this.products.length; index2++) {
+    //     const posibleEnvase = this.products[index2];
+    //     // console.log("posible envase", System.clone(posibleEnvase))
+    //     // console.log("productoCambiando", System.clone(productoCambiando))
+
+    //     if (ownerEnvaseId == posibleEnvase.ownerEnvaseId) {//encontro su envase
+    //       // console.log("confirmado es un envase del product ", ownerEnvaseId)
+
+    //       if (product && ProductSold.tieneEnvases(product)) {
+    //         var cantidadEnvase = product.envase[0].cantidad
+    //         if (!cantidadEnvase) cantidadEnvase = product.envase[0].cantidad
+    //         if (!cantidadEnvase) cantidadEnvase = 1
+    //         posibleEnvase.cantidad += cantidadEnvase
+    //       } else {
+    //         posibleEnvase.cantidad = productoCambiando.cantidad
+    //       }
+    //       posibleEnvase.updateSubtotal()
+    //     }
+    //   }
+    // }
   }
 
-  changeQuantityByIndex(index, newQuantity, removeIfQuantityIs0 = false) {
-    console.log("changeQuantityByIndex")
-    console.log("index", index)
-    console.log("newQuantity", newQuantity)
+  changeQuantityByIndex(productIndex: number, newQuantity: number, removeIfQuantityIs0 = false) {
+    // console.log("changeQuantityByIndex")
+    // console.log("productIndex", productIndex)
+    // console.log("newQuantity", newQuantity)
     // console.log("this")
     // console.log(this)
 
-    const oldQuantity = this.products[index].quantity + 0
+    const oldQuantity = this.products[productIndex].cantidad + 0
     const diffQuantity = newQuantity - oldQuantity
 
     // console.log("newQuantity", newQuantity + 0)
     // console.log("oldQuantity", oldQuantity)
-    // console.log("prod quantity", this.products[index].quantity + 0)
+    // console.log("prod quantity", this.products[productIndex].cantidad + 0)
 
-    const producto = this.products[index]
-    producto.quantity = newQuantity;
+    const producto = this.products[productIndex]
     producto.cantidad = newQuantity;
-    producto.updateSubtotal();
+    producto.cantidad = newQuantity;
 
-    this.checkQuantityEnvase(index)
 
-    if (removeIfQuantityIs0 && producto.quantity <= 0) {
+
+    if (removeIfQuantityIs0 && producto.cantidad <= 0) {
       // console.log("eliminando")
-      this.products.splice(index, 1);
+      this.products.splice(productIndex, 1);
+    } else {
+      producto.updateSubtotal();
     }
 
     //si tiene extras tengo que actualizar cantidades de agregados
@@ -212,8 +230,8 @@ class Sales {
     //   console.log("keyDelProductoAgregado", keyDelProductoAgregado)
     //   // var productoAgregado = System.clone(this.products[keyDelProductoAgregado])
     //   // console.log("productoAgregado", productoAgregado)
-    //   this.products[keyDelProductoAgregado].quantity = newQuantity
-    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
+    //   this.products[keyDelProductoAgregado].cantidad = newQuantity
+    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].cantidad
     //   // console.log("newQuantity", newQuantity)
     // } else {
     //   //resta
@@ -224,10 +242,10 @@ class Sales {
     //   // console.log("productoAgregado", productoAgregado)
     //   // console.log("newQuantity", newQuantity)
 
-    //   this.products[keyDelProductoAgregado].quantity = newQuantity
-    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].quantity
+    //   this.products[keyDelProductoAgregado].cantidad = newQuantity
+    //   this.products[keyDelProductoAgregado].cantidad = this.products[keyDelProductoAgregado].cantidad
 
-    //   if (productoAgregado.quantity <= 0) {
+    //   if (productoAgregado.cantidad <= 0) {
     //     this.removeFromIndex(keyDelProductoAgregado)
     //   }
     // }
@@ -239,103 +257,140 @@ class Sales {
   }
 
 
-  addProduct(product, quantity: number | null = null): ProductSold[] {
-    // console.log("Sales: add product de sales", product)
-    const newPrice = product.precioVenta || 0;
-    if (quantity == null && product.cantidad > 0) quantity = product.cantidad
-    if (quantity == null) quantity = 1
 
-    // if(product.idProducto == 0) {
+
+
+  addProductExist(productNew: any, newQuantity: number, indexExist: number) {
+    // console.log("parece que ya esta agregado el producto..vamos a actualizar su cantidad")
+    const cantAct = parseFloat(this.products[indexExist].cantidad + "")
+    const cantNue = parseFloat(this.products[indexExist].cantidad + "") + parseFloat(newQuantity + "")
+
+    // console.log("tipos de cantidad actual: ", typeof (cantAct), "..la nueva sera:", typeof (cantNue))
+    // console.log("cantidad actual: ", cantAct, "..la nueva sera:", cantNue)
+
+    const productExistente = this.products[indexExist]
+    // console.log("productExistente: ", productExistente)
+
+    if (
+      productNew.preVenta
+      && productExistente.preVenta
+      && productNew.preVenta.indexOf(productExistente.preVenta) === -1
+    ) {
+      // console.log("revisamos has preventa")
+      const updatedSalesData = [...this.products];
+      updatedSalesData[indexExist].preVenta += "," + productNew.preVenta
+      this.products = updatedSalesData;
+      // console.log("finc de has preventa")
+    }
+    // this.products = this.incrementQuantityByIndex(indexExist, quantity, newPrice);
+    // console.log("antes de changeQuantityByIndex")
+    this.products = this.changeQuantityByIndex(indexExist, cantNue);
+    // console.log("antes de checkQuantityEnvase")
+    this.checkQuantityEnvase(indexExist, productNew)
+  }
+
+
+
+
+
+
+  addProductNew(productNew: any, newQuantity: number) {
+    const newPrice = productNew.precioVenta;
+    // console.log("es un producto que no esta en la lista.. no se agrupa o es pesable")
+    const newProductSold = new ProductSold()
+    newProductSold.fill(productNew)
+    // newProductSold.idProducto = product.idProducto
+    newProductSold.description = productNew.nombre
+    // newProductSold.nombre = product.nombre
+    newProductSold.cantidad = newQuantity
+    newProductSold.cantidad = newQuantity
+    newProductSold.pesable = (productNew.tipoVenta == 2)
+    // newProductSold.tipoVenta = product.tipoVenta
+    newProductSold.precioVenta = newPrice
+    newProductSold.precioVenta = newProductSold.precioVenta
+    newProductSold.key = this.products.length + 0
+    // newProductSold.precioCosto = product.precioCosto
+    // if (product.preVenta) {
+    //   newProductSold.preVenta = product.preVenta
+    //   // console.log("es preventa")
+    // }
+
+    newProductSold.extras = System.clone(extraDefaultLlevar)
+
+    this.products = [...this.products, newProductSold]
+
+    //si viene con envases desde back agrego como un producto especial
+    if (ProductSold.tieneEnvases(productNew)) {
+      // console.log("tiene envase")
+      const envase = new ProductSold()
+      envase.idProducto = 0
+      envase.description = productNew.envase[0].descripcion
+      envase.nombre = productNew.envase[0].descripcion
+      if (productNew.envase[0].cantidad !== undefined) {
+        envase.cantidad = productNew.envase[0].cantidad
+      } else {
+        envase.cantidad = newQuantity
+      }
+      envase.cantidad = newQuantity
+      envase.pesable = false
+      envase.tipoVenta = 1
+      envase.ownerEnvaseId = productNew.idProducto
+      envase.precioVenta = productNew.envase[0].costo
+      envase.precioVenta = envase.precioVenta
+
+      envase.precioCosto = productNew.envase[0].costo
+      envase.updateSubtotal()
+      this.products = [...this.products, envase]
+
+      const lastProductIndex = this.findKeyAndPriceAndNameInProducts(
+        productNew.idProducto,
+        productNew.precioVenta,
+        productNew.nombre
+      )
+      const lastProduct = this.products[lastProductIndex]
+
+      lastProduct.hasEnvase = true
+      envase.isEnvase = true
+    }
+
+
+    newProductSold.updateSubtotal()
+  }
+
+
+  addProduct(productoAAgregar: any, cantidad: number | null = null): ProductSold[] {
+    // console.log("Sales: add product de sales", productoAAgregar)
+    if (!productoAAgregar.precioVenta) return this.products;
+
+    if (!cantidad && productoAAgregar.cantidad) cantidad = productoAAgregar.cantidad
+    if (!cantidad) cantidad = 1
+
+    // if(productoAAgregar.idProducto == 0) {
     //si tiene id en 0 deberia ser un envase que viene de preventa
-    // console.log("producto con idProducto en 0")
+    // console.log("productoAAgregar con idProducto en 0")
     // }
 
     const agruparProductoLinea = ModelConfig.get("agruparProductoLinea")
 
     // const existingProductIndex = this.findKeyAndPriceAndNameInProducts(product.idProducto, product.precioVenta, product.nombre)
-    const existingProductIndex = this.findKeyAndPriceInProducts(product.idProducto, product.precioVenta)
+    const existingProductIndex = this.findKeyAndPriceInProducts(productoAAgregar.idProducto, productoAAgregar.precioVenta)
+
+    // console.log("agruparProductoLinea", agruparProductoLinea)
+    // console.log("existingProductIndex", existingProductIndex)
     if (
-      (agruparProductoLinea) &&
-      !ProductSold.getInstance().esPesable(product)
+      agruparProductoLinea
+      // && !ProductSold.esPesable(productoAAgregar)
       && existingProductIndex !== -1
     ) {
-
-      // console.log("parece que ya esta agregado el producto..vamos a actualizar su cantidad")
-      // console.log("cantidad actual: ", this.products[existingProductIndex].quantity, "..la nueva sera:", this.products[existingProductIndex].quantity + quantity)
-      const productExistente = this.products[existingProductIndex]
-      if (product.preVenta && productExistente.preVenta && product.preVenta.indexOf(productExistente.preVenta) === -1) {
-        const updatedSalesData = [...this.products];
-        updatedSalesData[existingProductIndex].preVenta += "," + product.preVenta
-        this.products = updatedSalesData;
-      }
-
-      // this.products = this.incrementQuantityByIndex(existingProductIndex, quantity, newPrice);
-      this.products = this.changeQuantityByIndex(existingProductIndex, productExistente.cantidad + 1);
-      this.checkQuantityEnvase(existingProductIndex, product)
+      this.addProductExist(productoAAgregar, cantidad, existingProductIndex)
     } else {
-      // console.log("es un producto que no esta en la lista")
-      const newProductSold = new ProductSold()
-      newProductSold.fill(product)
-      // newProductSold.idProducto = product.idProducto
-      newProductSold.description = product.nombre
-      // newProductSold.nombre = product.nombre
-      newProductSold.quantity = quantity
-      newProductSold.cantidad = quantity
-      newProductSold.pesable = (product.tipoVenta == 2)
-      // newProductSold.tipoVenta = product.tipoVenta
-      newProductSold.price = newPrice
-      newProductSold.precioVenta = newProductSold.price
-      newProductSold.key = this.products.length + 0
-      // newProductSold.precioCosto = product.precioCosto
-      // if (product.preVenta) {
-      //   newProductSold.preVenta = product.preVenta
-      //   // console.log("es preventa")
-      // }
-
-      newProductSold.extras = System.clone(extraDefaultLlevar)
-
-      this.products = [...this.products, newProductSold]
-
-      //si viene con envases desde back agrego como un producto especial
-      if (ProductSold.tieneEnvases(product)) {
-        // console.log("tiene envase")
-        const envase = new ProductSold()
-        envase.idProducto = 0
-        envase.description = product.envase[0].descripcion
-        envase.nombre = product.envase[0].descripcion
-        if (product.envase[0].cantidad !== undefined) {
-          envase.quantity = product.envase[0].cantidad
-        } else {
-          envase.quantity = quantity
-        }
-        envase.cantidad = quantity
-        envase.pesable = false
-        envase.tipoVenta = 1
-        envase.ownerEnvaseId = product.idProducto
-        envase.price = product.envase[0].costo
-        envase.precioVenta = envase.price
-
-        envase.precioCosto = product.envase[0].costo
-        envase.updateSubtotal()
-        this.products = [...this.products, envase]
-
-        const lastProductIndex = this.findKeyAndPriceAndNameInProducts(product.idProducto, product.precioVenta, product.nombre)
-        const lastProduct = this.products[lastProductIndex]
-
-        lastProduct.hasEnvase = true
-        envase.isEnvase = true
-      }
-
-
-      newProductSold.updateSubtotal()
-
-
+      this.addProductNew(productoAAgregar, cantidad)
     }
     this.sesionProducts.guardar(this.products)
     return this.products;
   }
 
-  removeFromIndex(index) {
+  removeFromIndex(index: number) {
     const productoAEliminar = this.products[index];
     if (ProductSold.tieneEnvases(productoAEliminar)) {
       this.products = this.products.filter((pro_, i) => {
@@ -347,7 +402,7 @@ class Sales {
     return this.products
   }
 
-  replaceProduct(keyProductRemove, productPut) {
+  replaceProduct(keyProductRemove: number, productPut: any) {
     var copiaProducts: any[] = []
     this.products.forEach((prod, ix) => {
       if (ix === keyProductRemove) {
@@ -371,7 +426,7 @@ class Sales {
   }
 
 
-  static prepararProductosParaPagar(productos: ProductSold[], requestData) {
+  static prepararProductosParaPagar(productos: ProductSold[], requestData: any) {
     const productosFiltrados: any[] = []
 
     productos.forEach((producto) => {
@@ -379,12 +434,12 @@ class Sales {
       const esEnvase = ProductSold.esEnvase(producto)
       if (esEnvase) {
         const owner = ProductSold.getOwnerByEnvase(producto, productos)
-        const difcant = owner.quantity - producto.quantity
+        const difcant = owner.cantidad - producto.cantidad
         productosFiltrados.push({
           codProducto: 0,
           codbarra: (producto.idProducto + ""),
           cantidad: System.getInstance().typeIntFloat(difcant),
-          precioUnidad: producto.price,
+          precioUnidad: producto.precioVenta,
           descripcion: producto.description,
           extras: System.clone(extraDefaultLlevar)
         })
@@ -402,8 +457,8 @@ class Sales {
         const itemProducto: any = {
           codProducto: 0,
           codbarra: (producto.idProducto + ""),
-          cantidad: System.getInstance().typeIntFloat(producto.quantity),
-          precioUnidad: producto.price,
+          cantidad: System.getInstance().typeIntFloat(producto.cantidad),
+          precioUnidad: producto.precioVenta,
           descripcion: producto.description,
         }
 
@@ -418,7 +473,7 @@ class Sales {
     return productosFiltrados
   }
 
-  async getFromMirror(callbackOk, callbackWrong) {
+  async getFromMirror(callbackOk: any, callbackWrong: any) {
     var url = "https://softus.com.ar/easypos/get-mirror"
 
     url += "?sucursal=" + ModelConfig.get("sucursal")
@@ -431,12 +486,12 @@ class Sales {
 
     url += "&url=" + uu
 
-    EndPoint.sendGet(url, (responseData, response) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       callbackOk(responseData.prods, response);
     }, callbackWrong)
   }
 
-  async sendToMirror(prods, callbackOk, callbackWrong) {
+  async sendToMirror(prods: any, callbackOk: any, callbackWrong: any) {
     var url = "https://softus.com.ar/easypos/update-mirror"
 
     var uu = window.location.href
@@ -452,7 +507,7 @@ class Sales {
     }
 
 
-    EndPoint.sendPost(url, data, (responseData, response) => {
+    EndPoint.sendPost(url, data, (responseData: any, response: any) => {
       callbackOk(responseData.prods, response);
     }, callbackWrong)
   }

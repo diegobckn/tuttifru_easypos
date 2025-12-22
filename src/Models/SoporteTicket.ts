@@ -13,7 +13,7 @@ class SoporteTicket extends Singleton {
 
   static reportarError = true
 
-  static catchRequest(requestData:any) {
+  static catchRequest(requestData: any) {
     if (SoporteTicket.reportarError) console.log("capturando request desde SoporteTicket", requestData)
 
     var data: any = {
@@ -49,9 +49,11 @@ class SoporteTicket extends Singleton {
   }
 
   static catchRequestError(error: any) {
+    console.log("catchRequestError..error", error)
     if (SoporteTicket.reportarError) console.log("capturando error desde SoporteTicket catch", error)
     console.log("Error", error)
     if (!error.config) {
+      console.log("salgo porque no tiene config")
       return
     }
     var data: any = {
@@ -90,7 +92,7 @@ class SoporteTicket extends Singleton {
     this.enviarError(data, () => { }, () => { })
   }
 
-  static async enviarError(data:any, callbackOk:any, callbackWrong:any) {
+  static async enviarError(data: any, callbackOk: any, callbackWrong: any) {
     if (!SoporteTicket.reportarError) return
     if (data.configDispositivoCliente.afterLogin && typeof data.configDispositivoCliente.afterLogin === "number") {
       const types = Object.keys(TiposPasarela)

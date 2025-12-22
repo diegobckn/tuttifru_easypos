@@ -24,9 +24,6 @@ import User from "../Models/User";
 import ModelConfig from "../Models/ModelConfig";
 import Licencia from "../Models/Licencia";
 import { useNavigate } from "react-router-dom";
-import BoxProductoFamilia from "../Components/BoxOptionsLite/BoxProductoFamilia";
-import BoxFamiliaFija from "../Components/BoxOptionsLite/BoxFamiliaFija";
-import BoxBusquedaRapidaFija from "../Components/BoxOptionsLite/BoxBusquedaRapidaFija";
 import SelUsuariosVolantes from "../Components/ScreenDialog/SelUsuariosVolantes";
 import Suspender from "../Models/Suspender";
 import Product from "../Models/Product";
@@ -65,7 +62,7 @@ const VentasVolantes = () => {
         codigoProducto: product.codProducto,
         codigoCliente: 0
       }, (prodsEncontrados) => {
-        prodsEncontrados[0].quantity = product.cantidad
+        prodsEncontrados[0].cantidad = product.cantidad
         prodsEncontrados[0].cantidad = product.cantidad
         addToSalesData(prodsEncontrados[0])
 

@@ -6,7 +6,7 @@ import {
   InputLabel
 } from "@mui/material";
 import { SelectedOptionsContext } from "../../Context/SelectedOptionsProvider";
-import { ProviderModalesContext} from "../../Context/ProviderModales";
+import { ProviderModalesContext } from "../../Context/ProviderModales";
 import ModelConfig from "../../../Models/ModelConfig";
 import { Check, Dangerous } from "@mui/icons-material";
 import User from "../../../Models/User";
@@ -19,7 +19,9 @@ const InputCheckboxAutorizar = ({
   withLabel = true,
   fieldName = "check",
   label = fieldName[0].toUpperCase() + fieldName.substr(1),
-  vars = null
+  vars = null,
+  onAuthorize = () => { },
+  ignorarPorGrupo = false, // para manejar si pedir o no autorizacion por varios inputs en la misma pantalla
 }) => {
 
   const {
@@ -33,15 +35,20 @@ const InputCheckboxAutorizar = ({
   const [inputValue, setInputValue] = inputState ? inputState : vars ? vars[0][fieldName] : useState("")
 
   const checkCambio = () => {
-    pedirSupervision(label, () => {
+    if (ignorarPorGrupo) {
       setInputValue(!inputValue)
-    })
+    } else {
+      pedirSupervision(label, () => {
+        onAuthorize()
+        setInputValue(!inputValue)
+      })
+    }
   }
   return (
     <>
       {withLabel && (
 
-        <label onClick={ checkCambio }
+        <label onClick={checkCambio}
           style={{
             userSelect: "none",
             fontSize: "19px",

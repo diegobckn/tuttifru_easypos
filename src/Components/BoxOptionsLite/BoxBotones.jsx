@@ -18,11 +18,7 @@ import ScreenRetiro from "../ScreenDialog/Retiro";
 import ScreenDevolucion from "../ScreenDialog/Devolucion";
 import ScreenProductoAbierto from "../ScreenDialog/ProductoAbierto";
 import CierreCaja from "../ScreenDialog/CierreCaja";
-import MessageDialog from "../Dialogs/Alert";
 import UserEvent from "../../Models/UserEvent";
-import BoxProductoFamilia from "./BoxProductoFamilia";
-import BoxBusquedaRapida from "./BoxBusquedaRapida";
-import ModelConfig from "../../Models/ModelConfig";
 import System from "../../Helpers/System";
 
 
@@ -57,7 +53,7 @@ const BoxBotones = () => {
   const [showScreenCierreCaja, setShowScreenCierreCaja] = useState(false)
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   return (

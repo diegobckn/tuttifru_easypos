@@ -29,6 +29,7 @@ const TouchInputEmail = ({
   canAutoComplete = false,
   maxLength = 20,
   required = false,
+  disabled = false,
   vars = null,
   onEnter = () => { },
 }) => {
@@ -62,9 +63,10 @@ const TouchInputEmail = ({
         canAutoComplete={canAutoComplete}
         required={required}
         vars={vars}
+        disabled={disabled}
 
-        onEnter = {onEnter}
-        onRef={(r)=>(ref.current = r.current)}
+        onEnter={onEnter}
+        onRef={(r) => (ref.current = r.current)}
 
         onClick={() => {
           const debeAbrir = ModelConfig.get("abirTecladosTouchSiempre")

@@ -25,6 +25,7 @@ import MainButton from "../Elements/MainButton";
 import DetectarPeso from "./DetectarPeso";
 import ModelConfig from "../../Models/ModelConfig";
 import dayjs from "dayjs";
+import ProductSold from "../../Models/ProductSold";
 
 
 const AsignarPeso = ({
@@ -94,7 +95,8 @@ const AsignarPeso = ({
             {product ? (
               <>
                 <Typography>
-                  Precio unitario: ${System.formatMonedaLocal(product.precioVenta)}
+                  Precio unitario:
+                  ${System.formatMonedaLocal(ProductSold.createByValues(product).getPrecioCantidad(peso))}
                 </Typography>
 
                 <Typography >
@@ -104,7 +106,10 @@ const AsignarPeso = ({
                   fontSize: "30px",
                   textAlign: "center"
                 }}>
-                  ${System.formatMonedaLocal(product.precioVenta * peso)}
+                  ${System.formatMonedaLocal(ProductSold.createByValues({
+                    ...product,
+                    cantidad: peso
+                  }).getSubTotal())}
                 </Typography>
               </>
             ) : null}

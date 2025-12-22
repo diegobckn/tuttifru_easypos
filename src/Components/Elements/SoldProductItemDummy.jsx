@@ -65,7 +65,7 @@ const SoldProductItemDummy = ({
 
     if(esEnvase){
       const owner = ProductSold.getOwnerByEnvase(product,products)
-      const cantOwner = owner.quantity
+      const cantOwner = owner.cantidad
       // console.log("owner")
       // console.log(owner)
       // console.log("cantOwner")
@@ -95,7 +95,7 @@ const SoldProductItemDummy = ({
 
 
   const decQuantity = () =>{
-    const newQuantity = parseInt(product.quantity-1);
+    const newQuantity = parseInt(product.cantidad-1);
     const esEnvase = ProductSold.esEnvase(product)
 
     if(esEnvase && newQuantity < 0) return
@@ -104,7 +104,7 @@ const SoldProductItemDummy = ({
   }
 
   const addQuantity = () =>{
-    const newQuantity = parseInt(product.quantity+1);
+    const newQuantity = parseInt(product.cantidad+1);
     changeQuantity(newQuantity)
   }
 
@@ -125,7 +125,7 @@ const SoldProductItemDummy = ({
     
   
     const prepareTecladoChangeQuantity = ()=>{
-      setNewQuantityValue(product.quantity)
+      setNewQuantityValue(product.cantidad)
       setShowTecladoQuantity(true)
     }
   
@@ -197,7 +197,7 @@ const SoldProductItemDummy = ({
             if(!product.isEnvase) prepareTecladoChangeQuantity()
           }}
 
-          >{product.quantity === 0 ? "" : product.quantity}</Typography>
+          >{product.cantidad === 0 ? "" : product.cantidad}</Typography>
         ) :(
           <div>
             
@@ -224,7 +224,7 @@ const SoldProductItemDummy = ({
 
 
               <TextField
-              value={product.quantity}
+              value={product.cantidad}
               onChange={(event) => {
                 handleChangeQuantityProductSold(event)
               }}
@@ -278,7 +278,7 @@ const SoldProductItemDummy = ({
                 borderRadius: "4px",
                 padding: "0 15px",
               }}
-              >{ product.quantity === 0 ? "" : product.quantity }</Typography>
+              >{ product.cantidad === 0 ? "" : product.cantidad }</Typography>
             )} */}
 
 
@@ -287,7 +287,7 @@ const SoldProductItemDummy = ({
       }
     </TableCell>
     <TableCell sx={{fontSize:"20px"}}>{product.description}</TableCell>
-    <TableCell sx={{fontSize:"20px"}}>${System.getInstance().en2Decimales(product.price)}</TableCell>
+    <TableCell sx={{fontSize:"20px"}}>${System.getInstance().en2Decimales(product.precioVenta)}</TableCell>
     <TableCell sx={{fontSize:"20px"}}>
       ${System.getInstance().en2Decimales(product.total)}
     </TableCell>

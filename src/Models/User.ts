@@ -4,6 +4,7 @@ import ModelConfig from './ModelConfig.ts';
 import SoporteTicket from './SoporteTicket.ts';
 import EndPoint from './EndPoint.ts';
 import ModelSingleton from './ModelSingleton.ts';
+import Model from './Model.js';
 
 
 class User extends ModelSingleton {
@@ -84,7 +85,11 @@ class User extends ModelSingleton {
                 && response.data.responseUsuario.codigoUsuario != -1
             ) {
                 if (!response.data.responseUsuario.activo) {
-                    callbackOk(responseData);
+                    Model.informeInisioSesion(response.data.responseUsuario, () => {
+                        callbackOk(responseData);
+                    }, () => {
+                        callbackOk(responseData);
+                    })
                 } else {
                     callbackWrong("Usuario activo en otra sesión");
                 }

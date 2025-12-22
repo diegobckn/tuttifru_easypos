@@ -78,7 +78,7 @@ const BoxTotales = () => {
   const [showPreventa, setShowPreventa] = useState(false)
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   const navigate = useNavigate();
@@ -142,10 +142,10 @@ const BoxTotales = () => {
       codigoUsuarioVenta: userData.codigoUsuario, // despues abajo se cambia si es necesario
       total: grandTotal,
       products: salesData.map((producto) => ({
-        codProducto: 0,
+        codProducto: "0",
         codbarra: producto.idProducto + "",
-        cantidad: System.getInstance().typeIntFloat(producto.quantity),
-        precioUnidad: producto.price,
+        cantidad: System.getInstance().typeIntFloat(producto.cantidad),
+        precioUnidad: producto.precioVenta,
         descripcion: producto.description,
         costo: producto.precioCosto ?? 0,
       })),

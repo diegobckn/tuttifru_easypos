@@ -7,21 +7,8 @@ import {
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 import MainButton from "../Elements/MainButton";
-import ScreenDialogCreateClient from "../ScreenDialog/CreateClient";
 import ScreenDialogShowFamilies from "../ScreenDialog/ShowFamilies";
-import ScreenDialogConfig from "../ScreenDialog/AdminConfig";
 import BusquedaRapida from "../ScreenDialog/BusquedaRapida";
-import ScreenSuspend from "../ScreenDialog/SuspenderVenta";
-import ScreenRecuperarVenta from "../ScreenDialog/RecuperarVenta";
-import ScreenIngreso from "../ScreenDialog/Ingreso";
-import ScreenRetiro from "../ScreenDialog/Retiro";
-import ScreenDevolucion from "../ScreenDialog/Devolucion";
-import ScreenProductoAbierto from "../ScreenDialog/ProductoAbierto";
-import CierreCaja from "../ScreenDialog/CierreCaja";
-import MessageDialog from "../Dialogs/Alert";
-import UserEvent from "../../Models/UserEvent";
-import BoxProductoFamilia from "./BoxProductoFamilia";
-import BoxBusquedaRapida from "./BoxBusquedaRapida";
 import ModelConfig from "../../Models/ModelConfig";
 import Suspender from "../../Models/Suspender";
 import dayjs from "dayjs";
@@ -73,7 +60,7 @@ const BoxBotonesVendedoresVolantes = () => {
     const ventaSuspenderDetalle = [];
     salesData.forEach(sale => {
       ventaSuspenderDetalle.push({
-        cantidad: parseFloat(sale.quantity),
+        cantidad: parseFloat(sale.cantidad),
         descripcion: sale.description,
         codProducto: sale.idProducto + ""
       });
@@ -119,7 +106,7 @@ const BoxBotonesVendedoresVolantes = () => {
   }, [salesData])
 
   const focusSearchInput = () => {
-    System.intentarFoco(searchInputRef)
+    System.darFocoEnBuscar(searchInputRef)
   }
 
   return (

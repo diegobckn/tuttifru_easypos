@@ -4,7 +4,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Paper,
@@ -30,12 +30,16 @@ import TableSelec from "../TableSelect/TableSelec";
 import DialogDeudasUsuarios from "./DialogDeudasUsuarios";
 import BoxSelectPayMethod from './../BoxSelectPayMethod'
 import Validator from "../../../Helpers/Validator";
+import { ProviderModalesContext} from "./../../Context/ProviderModales";
 
 const BoxIngresoTabUsuario = ({
   tabNumber,
   info,
   setInfo
 }) => {
+  const {
+    pedirSupervision,
+  } = useContext(ProviderModalesContext);
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null)
   const [monto, setMonto] = useState(0)
@@ -44,37 +48,37 @@ const BoxIngresoTabUsuario = ({
   const [deudas, setDeudas] = useState([])
   const [metodoPago, setMetodoPago] = useState("EFECTIVO")
 
-  useEffect(()=>{
-  },[])
+  useEffect(() => {
+  }, [])
 
 
-  useEffect(()=>{
-    if(usuarioSeleccionado != null){
+  useEffect(() => {
+    if (usuarioSeleccionado != null) {
       setShowSelectDeuda(true)
     }
-  },[usuarioSeleccionado])
+  }, [usuarioSeleccionado])
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
     const infox = {}
-    if(usuarioSeleccionado != null){
+    if (usuarioSeleccionado != null) {
       setShowSelectDeuda(false)
       infox.usuario = usuarioSeleccionado
     }
-    if(deudas.length>0){
+    if (deudas.length > 0) {
       infox.deudas = deudas
     }
-    if(parseFloat(monto)>0)
+    if (parseFloat(monto) > 0)
       infox.monto = monto
-    if(metodoPago != null)
+    if (metodoPago != null)
       infox.metodoPago = metodoPago
 
     setInfo(infox)
-  },[usuarioSeleccionado, monto, metodoPago])
+  }, [usuarioSeleccionado, monto, metodoPago])
 
-  const onSelectUsuario = (usuarioYDeudas)=>{
-    if(usuarioYDeudas.length<1) {
+  const onSelectUsuario = (usuarioYDeudas) => {
+    if (usuarioYDeudas.length < 1) {
       setMonto(0)
       setUsuarioSeleccionado(null)
       setDeudas([])
@@ -91,7 +95,7 @@ const BoxIngresoTabUsuario = ({
 
     var montoTotal = 0
     const deudasx = []
-    usuarioYDeudas.forEach((deuda)=>{
+    usuarioYDeudas.forEach((deuda) => {
       montoTotal += deuda.total
       deudasx.push({
         idCuentaCorriente: deuda.id,
@@ -103,27 +107,27 @@ const BoxIngresoTabUsuario = ({
     setMonto(montoTotal)
   }
 
-  const onChangePayMethod = (method)=>{
+  const onChangePayMethod = (method) => {
     setMetodoPago(method);
   }
 
-  const calcularTotalDeudas = (deudasx)=>{
+  const calcularTotalDeudas = (deudasx) => {
     var total = 0;
-    if(!deudasx) deudasx = deudas
-    deudasx.forEach((d)=>{
+    if (!deudasx) deudasx = deudas
+    deudasx.forEach((d) => {
       total += d.total
     })
     return total
   }
 
-  
+
 
   return (
     <TabPanel value={tabNumber} index={1}>
-      <Grid container spacing={2} 
+      <Grid container spacing={2}
       >
-          <Grid item xs={12} sm={5} md={5} lg={5}>
-            
+        <Grid item xs={12} sm={5} md={5} lg={5}>
+
 
           <TextField
             margin="normal"
@@ -132,12 +136,12 @@ const BoxIngresoTabUsuario = ({
             type="number" // Cambia dinámicamente el tipo del campo de contraseña
             value={monto}
             onChange={(e) => {
-              if(Validator.isMonto(e.target.value)){
+              if (Validator.isMonto(e.target.value)) {
                 setMonto(parseFloat(e.target.value))
               }
             }}
           />
-          
+
           <DialogDeudasUsuarios
             openDialog={showSelectDeuda}
             setOpenDialog={setShowSelectDeuda}
@@ -146,13 +150,15 @@ const BoxIngresoTabUsuario = ({
 
           {!usuarioSeleccionado && (
             <div>
-              <Button onClick={()=>{
-                setUsuarioSeleccionado(null)
-                setShowSelectDeuda(true)
-                setMonto(0)
+              <Button onClick={() => {
+                pedirSupervision("Ingreso para usuario", () => {
+                  setUsuarioSeleccionado(null)
+                  setShowSelectDeuda(true)
+                  setMonto(0)
+                })
               }} style={{
-                background:"#0e59df",
-                color:"white"
+                background: "#0e59df",
+                color: "white"
               }}
               >Seleccionar usuario</Button>
             </div>
@@ -161,74 +167,74 @@ const BoxIngresoTabUsuario = ({
           {usuarioSeleccionado && (
             <Table>
               <TableBody>
-            <TableRow>
-            <TableCell>
-              <Typography>Usuario: {usuarioSeleccionado.nombre}</Typography>
-            </TableCell>
-            </TableRow>
-            </TableBody>
-            </Table>
-          )}
-
-          {deudas.length>0 && (
-            <Table>
-            <TableBody>
-            <TableRow>
-            <TableCell>
-              <Typography>Deudas: ${calcularTotalDeudas()}</Typography>
-            </TableCell>
-            <TableCell>
-              <Button onClick={()=>{
-                setUsuarioSeleccionado(null)
-                setDeudas([])
-                setShowSelectDeuda(true)
-                setMonto(0)
-              }} style={{
-                background:"#0e59df",
-                color:"white"
-              }}
-              >Cambiar deudas</Button>
-            </TableCell>
-            </TableRow>
-            </TableBody>
-            </Table>
-          )}
-
-          { usuarioSeleccionado && deudas.length>0 &&(
-            <Table>
-            <TableBody>
-            <TableRow>
-            <TableCell>
-              <BoxSelectPayMethod 
-                metodoPago={metodoPago} 
-                onChange={onChangePayMethod}
-                excludes={[
-                  "TRANSFERENCIA",
-                  "CUENTACORRIENTE"
-                ]}
-              />
-              </TableCell>
-              </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Typography>Usuario: {usuarioSeleccionado.nombre}</Typography>
+                  </TableCell>
+                </TableRow>
               </TableBody>
-              </Table>
-            )}
+            </Table>
+          )}
+
+          {deudas.length > 0 && (
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <Typography>Deudas: ${calcularTotalDeudas()}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={() => {
+                      setUsuarioSeleccionado(null)
+                      setDeudas([])
+                      setShowSelectDeuda(true)
+                      setMonto(0)
+                    }} style={{
+                      background: "#0e59df",
+                      color: "white"
+                    }}
+                    >Cambiar deudas</Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          )}
+
+          {usuarioSeleccionado && deudas.length > 0 && (
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <BoxSelectPayMethod
+                      metodoPago={metodoPago}
+                      onChange={onChangePayMethod}
+                      excludes={[
+                        "TRANSFERENCIA",
+                        "CUENTACORRIENTE"
+                      ]}
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          )}
 
 
-          </Grid>
+        </Grid>
 
-          <Grid item xs={12} sm={7} md={7} lg={7}>
+        <Grid item xs={12} sm={7} md={7} lg={7}>
           <TecladoPagoCaja
             maxValue={100000}
             showFlag={true}
             varValue={monto}
             varChanger={setMonto}
-            onEnter={()=>{}}
-            />
+            onEnter={() => { }}
+          />
         </Grid>
 
 
-        </Grid>
-      </TabPanel>
+      </Grid>
+    </TabPanel>
   );
 };
 

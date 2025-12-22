@@ -18,7 +18,7 @@ export const BotonSuspender = () => {
 
         // Assuming you want the selectedQuantity from the sum of quantities in salesData
         const currentSelectedQuantity = salesData.reduce(
-          (total, sale) => total + sale.quantity,
+          (total, sale) => total + sale.cantidad,
           0
         );
 

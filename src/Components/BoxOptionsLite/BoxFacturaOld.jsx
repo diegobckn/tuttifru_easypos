@@ -293,8 +293,8 @@ const BoxFactura = ({
         products: productosConEnvases.map((producto) => ({
           codProducto: 0,
           codbarra: (producto.idProducto + ""),
-          cantidad: System.getInstance().typeIntFloat(producto.quantity),
-          precioUnidad: producto.price,
+          cantidad: System.getInstance().typeIntFloat(producto.cantidad),
+          precioUnidad: producto.precioVenta,
           descripcion: producto.description,
         })),
         metodoPago: metodoPago,
@@ -374,7 +374,7 @@ const BoxFactura = ({
     copiaSales.forEach((pro)=>{
       if(pro.isEnvase){
         tieneAlguno = true
-        // pro.quantity = 0
+        // pro.cantidad = 0
         // pro.updateSubtotal()
         descuentosDeEnvases += pro.total
       }
@@ -390,13 +390,13 @@ const BoxFactura = ({
     if(newQuantity !==0 && !Validator.isCantidad(newQuantity))return false
 
     const orig = ProductSold.getOwnerByEnvase(prod, productosConEnvases)
-    if(newQuantity> orig.quantity || newQuantity<0) {
+    if(newQuantity> orig.cantidad || newQuantity<0) {
       return
     }
 
     const prods = productosConEnvases
     var stSold = ProductSold.getInstance()
-    prods[index].quantity = newQuantity
+    prods[index].cantidad = newQuantity
     stSold.fill(prods[index])
     prods[index].total = stSold.getSubTotal()
 
@@ -525,7 +525,7 @@ const BoxFactura = ({
                         backgroundColor:"#f5f5f5",
                         textAlign:"center"
                       }}
-                      >{prod.quantity === 0 ? "0" : prod.quantity}</Typography>
+                      >{prod.cantidad === 0 ? "0" : prod.cantidad}</Typography>
                       </td>
                       <td style={{textAlign:"left"}}>
                         <SmallButton style={{
@@ -539,7 +539,7 @@ const BoxFactura = ({
                         }}
                         withDelay={false}
                         actionButton={()=>{
-                          changeQuantityIfEnvase(prod,index,prod.quantity-1)
+                          changeQuantityIfEnvase(prod,index,prod.cantidad-1)
                         }}
                         textButton={"-"} />
                       </td>
@@ -554,7 +554,7 @@ const BoxFactura = ({
                         }}
                         withDelay={false}
                         actionButton={()=>{
-                          changeQuantityIfEnvase(prod,index,prod.quantity+1)
+                          changeQuantityIfEnvase(prod,index,prod.cantidad+1)
                         }}
                         textButton={"+"} />
                       </td>

@@ -13,8 +13,8 @@ import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
 class ProductFastSearch extends ModelSingleton {
     productosOffline: Product[] = []
 
-    async getProductsFastSearch(callbackOk:any, callbackWrong:any, forzarDescarga = false) {
-        // console.log("getProductsFastSearch")
+    async getProductsFastSearch(callbackOk: any, callbackWrong: any, forzarDescarga = false) {
+        console.log("getProductsFastSearch")
 
         const me = this
         const configs = ModelConfig.get()
@@ -42,11 +42,11 @@ class ProductFastSearch extends ModelSingleton {
             }
         }
 
-        // console.log("carga normal online")
+        console.log("carga normal online")
 
-        EndPoint.sendGet(url, (responseData:any, response:any) => {
+        EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productosVentaRapidas, response);
-        }, (err:any) => {
+        }, (err: any) => {
             // si esta offline cargamos desde la sesion
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
@@ -70,26 +70,32 @@ class ProductFastSearch extends ModelSingleton {
         })
     }
 
-    async addProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
+    async addProductFastSearch(product: any, callbackOk: any, callbackWrong: any) {
+        console.log("addProductFastSearch..")
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase + "/api/ProductosTmp/ProductosVentaRapidaPost"
 
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
+        console.log("addProductFastSearch..url", url)
 
-        EndPoint.sendPost(url, product, (responseData:any, response:any) => {
+        EndPoint.sendPost(url, product, (responseData: any, response: any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
-            // console.log("modo", modo)
-            if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
+            console.log("modo", modo)
+            if (
+                modo == ModosTrabajoConexion.SOLO_OFFLINE
+                || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
                 me.almacenarParaOffline(() => {
                     callbackOk(responseData, response);
                 }, callbackWrong)
+            } else {
+                callbackOk(responseData, response);
             }
         }, callbackWrong)
     }
 
-    async changeProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
+    async changeProductFastSearch(product: any, callbackOk: any, callbackWrong: any) {
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase
@@ -97,18 +103,22 @@ class ProductFastSearch extends ModelSingleton {
 
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
-        EndPoint.sendPut(url, product, (responseData:any, response:any) => {
+        EndPoint.sendPut(url, product, (responseData: any, response: any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
             // console.log("modo", modo)
-            if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
+            if (modo == ModosTrabajoConexion.SOLO_OFFLINE
+                || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
                 me.almacenarParaOffline(() => {
                     callbackOk(responseData, response);
                 }, callbackWrong)
+            } else {
+                callbackOk(responseData, response);
             }
         }, callbackWrong)
     }
 
-    async removeProductFastSearch(product:any, callbackOk:any, callbackWrong:any) {
+    async removeProductFastSearch(product: any, callbackOk: any, callbackWrong: any) {
+        console.log("removeProductFastSearch..")
         var me = this
         const configs = ModelConfig.get()
         var url = configs.urlBase
@@ -117,22 +127,26 @@ class ProductFastSearch extends ModelSingleton {
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
 
+        console.log("removeProductFastSearch..url", url)
         EndPoint.sendDelete(url, {
             params: product
-        }, (responseData:any, response:any) => {
+        }, (responseData: any, response: any) => {
             const modo = ModelConfig.get("modoTrabajoConexion")
-            // console.log("modo", modo)
-            if (modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
+            console.log("modo", modo)
+            if (modo == ModosTrabajoConexion.SOLO_OFFLINE
+                || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR) {
                 me.almacenarParaOffline(() => {
                     callbackOk(responseData, response);
                 }, callbackWrong)
+            } else {
+                callbackOk(responseData, response);
             }
         }, callbackWrong)
     }
 
-    async almacenarParaOffline(callbackOk:any, callbackWrong:any) {
+    async almacenarParaOffline(callbackOk: any, callbackWrong: any) {
         var me = this
-        this.getProductsFastSearch((prods:any, resp:any) => {
+        this.getProductsFastSearch((prods: any, resp: any) => {
             me.sesion.guardar({
                 id: 1,
                 productos: prods

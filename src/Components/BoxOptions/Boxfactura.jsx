@@ -188,7 +188,7 @@ const Boxfactura = ({ onClose }) => {
   //       total: grandTotal,
   //       products: salesData.map((sale) => ({
   //         codProducto: sale.idProducto,
-  //         cantidad: sale.quantity,
+  //         cantidad: sale.cantidad,
   //         precioUnidad: sale.precio,
   //         descripcion: sale.descripcion,
   //       })),
@@ -242,7 +242,7 @@ const Boxfactura = ({ onClose }) => {
         total: grandTotal,
         products: salesData.map((producto) => ({
           codProducto: producto.idProducto,
-          cantidad: producto.quantity,
+          cantidad: producto.cantidad,
           precioUnidad: producto.precio,
           descripcion: producto.descripcion,
         })),

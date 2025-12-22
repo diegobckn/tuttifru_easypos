@@ -9,20 +9,26 @@ import ModelSingleton from './ModelSingleton.ts';
 import ParaEnviar from './ParaEnviar.ts';
 import System from '../Helpers/System.ts';
 import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
+import Shop from './Shop.ts';
+import Client from './Client.ts';
 
 
 class Product extends ModelSingleton {
     idProducto: number = 0
     description: string | null = ""
     nombre: string | null = ""
-    price: number | undefined = 0
-    priceVenta: number | undefined = 0
 
     precioCosto: string | null | undefined;
 
     static enviando = false
 
     productosOffline: Product[] = []
+
+    constructor() {
+        super()
+        this.sesion = new StorageSesion("productos");
+    }
+
 
     static logicaRedondeoUltimoDigito(valor: number) {
         const totalStr = valor + ""
@@ -80,7 +86,9 @@ class Product extends ModelSingleton {
     }
 
     async almacenarParaOffline(callbackOk: any, callbackWrong: any) {
+        console.log("almacenarParaOffline")
         var me = this
+        console.log("me.sesion", me.sesion)
         this.getAll((prods: any, resp: any) => {
             me.sesion.guardar({
                 id: 1,
@@ -106,17 +114,17 @@ class Product extends ModelSingleton {
             return
         }
         if (Product.enviando) {
-            console.log("enviando en true.. saliendo")
+            // console.log("enviando en true.. saliendo")
             return
         }
 
-        console.log("buscarPorNombreOffline")
+        // console.log("buscarPorNombreOffline")
         if (this.productosOffline.length < 1 && this.sesion.hasOne()) {
             this.loadFromSesion()
         }
 
         if (this.productosOffline.length > 0) {
-            console.log("hay productos")
+            // console.log("hay productos")
             const coinciden: any[] = []
             Product.enviando = true
             const buscarLower = nombreBuscar.toLocaleLowerCase()
@@ -129,10 +137,10 @@ class Product extends ModelSingleton {
                 }
             })
             Product.enviando = false
-            console.log("coinciden", coinciden)
+            // console.log("coinciden", coinciden)
             callbackOk(coinciden)
         } else {
-            console.log("no hay productos")
+            // console.log("no hay productos")
             callbackWrong("No hay productos descargados para trabajar offline")
         }
     }
@@ -141,7 +149,7 @@ class Product extends ModelSingleton {
         // console.log("buscarPorCodBarraOffline")
         // console.log("Product.enviando", Product.enviando)
         if (Product.enviando) {
-            console.log("enviando en true.. saliendo")
+            // console.log("enviando en true.. saliendo")
             return
         }
         // console.log("buscarPorCodBarraOffline2")
@@ -164,7 +172,7 @@ class Product extends ModelSingleton {
             })
             setTimeout(() => {
                 Product.enviando = false
-                console.log("listo")
+                // console.log("listo")
             }, 300);
             // console.log("coinciden", coinciden)
             callbackOk(coinciden)
@@ -212,14 +220,14 @@ class Product extends ModelSingleton {
 
         const revisarOff = (err: any) => {
             // buscamos offline
-            console.log("modo", modo)
+            // console.log("modo", modo)
 
             if (
                 modo == ModosTrabajoConexion.SOLO_OFFLINE
                 || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
                 || modo == ModosTrabajoConexion.PREGUNTAR
             ) {
-                console.log("buscar offline")
+                // console.log("buscar offline")
                 this.buscarPorNombreOffline(description, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
@@ -234,7 +242,7 @@ class Product extends ModelSingleton {
         }
 
         if (modo == ModosTrabajoConexion.SOLO_OFFLINE) {
-            console.log("buscar offline")
+            // console.log("buscar offline")
             this.buscarPorNombreOffline(description, (dataProds: any) => {
                 callbackOk(dataProds, {
                     data: {
@@ -282,9 +290,9 @@ class Product extends ModelSingleton {
     }
 
     async findByCodigoBarras({ codigoProducto, codigoCliente }: any, callbackOk: any, callbackWrong: any, soloOnline = false) {
-        console.log("findByCodigoBarras codigoProducto", codigoProducto + "")
+        // console.log("findByCodigoBarras codigoProducto", codigoProducto + "")
         if (Product.enviando) {
-            console.log("saliendo porque ya esta enviando")
+            // console.log("saliendo porque ya esta enviando")
             return
         }
 
@@ -294,6 +302,12 @@ class Product extends ModelSingleton {
         const configs = ModelConfig.get()
         var url = configs.urlBase +
             "/api/ProductosTmp/GetProductosByCodigoBarra?codbarra=" + codigoProducto
+
+        if (!codigoCliente && Client.getInstance().sesion.hasOne()) {
+            const clt = Client.getInstance().getFromSesion()
+            console.log("clt", clt)
+            codigoCliente = clt.codigoCliente
+        }
         if (codigoCliente) {
             url += "&codigoCliente=" + codigoCliente
         }
@@ -305,13 +319,13 @@ class Product extends ModelSingleton {
         if (!soloOnline) {
             Product.enviando = false
             const modo = ModelConfig.get("modoTrabajoConexion")
-            console.log("modo", modo)
+            // console.log("modo", modo)
 
             if (
                 modo == ModosTrabajoConexion.SOLO_OFFLINE
                 || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
             ) {
-                console.log("buscar offline")
+                // console.log("buscar offline")
                 var encontroOffline = false
                 await this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                     callbackOk(dataProds, {
@@ -327,14 +341,14 @@ class Product extends ModelSingleton {
                 },)
 
                 if (encontroOffline) {
-                    console.log("return de find by codigo barras..encontro algo con ", codigoProducto)
+                    // console.log("return de find by codigo barras..encontro algo con ", codigoProducto)
                     return
                 }
 
             }
         }
 
-        console.log("sigo con busqueda con conexion")
+        // console.log("sigo con busqueda con conexion")
 
         EndPoint.sendGet(url, (responseData: any, response: any) => {
             callbackOk(responseData.productos, response);
@@ -349,7 +363,7 @@ class Product extends ModelSingleton {
                 modo == ModosTrabajoConexion.SOLO_OFFLINE
                 || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
             ) {
-                console.log("buscar offline")
+                // console.log("buscar offline")
                 this.buscarPorCodBarraOffline(codigoProducto, (dataProds: any) => {
                     callbackOk(dataProds, {
                         data: {
@@ -456,9 +470,48 @@ class Product extends ModelSingleton {
         url += "&codigoSucursal=" + ModelConfig.get("sucursal")
         url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-        EndPoint.sendGet(url, (responseData: any, response: any) => {
-            callbackOk(responseData.productos, response);
-        }, callbackWrong)
+
+        const modo = ModelConfig.get("modoTrabajoConexion")
+        // console.log("modo", modo)
+
+        if (
+            modo == ModosTrabajoConexion.SOLO_OFFLINE
+            || modo == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
+        ) {
+
+
+            if (this.productosOffline.length > 0) {
+                // console.log("hay productos")
+                const coinciden: any[] = []
+
+                Product.enviando = true
+                this.productosOffline.forEach((prodOffline: any) => {
+                    if (
+                        prodOffline.idCategoria == catId
+                        && prodOffline.idFamilia == famId
+                        && prodOffline.idSubCategoria == subcatId
+                        && prodOffline.idSubFamilia == subFamId
+                    ) {
+                        // console.log("coinciden ", prodOffline.idProducto, "..con..", codigoBuscar)
+                        coinciden.push(prodOffline)
+                    }
+                })
+                setTimeout(() => {
+                    Product.enviando = false
+                    // console.log("listo")
+                }, 300);
+                // console.log("coinciden", coinciden)
+                callbackOk(coinciden)
+            } else {
+                // console.log("no hay productos")
+                callbackWrong("No hay productos descargados para trabajar offline")
+            }
+        } else {
+
+            EndPoint.sendGet(url, (responseData: any, response: any) => {
+                callbackOk(responseData.productos, response);
+            }, callbackWrong)
+        }
     }
 
     async assignPrice(product: any, callbackOk: any, callbackWrong: any) {
@@ -566,6 +619,109 @@ class Product extends ModelSingleton {
             console.error("Error fetching products:", error);
             callbackWrong(error)
         }
+    }
+
+    static nombreImagen(producto: any, enElServidor = true, evitarCache = true) {
+        // console.log("nombreImagen de ", producto)
+        var nombreImg = ""
+        //revisamos si es un producto, categoria, subcategoria, familia o subfamilia
+        // segun que propiedad tiene
+        if (producto.nombre) {
+            nombreImg = (producto.nombre + ".jpg").toLowerCase()
+        } else if (producto.descripcion) {
+            nombreImg = (producto.descripcion + ".jpg").toLowerCase()
+        }
+
+        if (enElServidor) {
+            nombreImg = ModelConfig.get("urlBase") + "/imagenes/" + nombreImg
+            nombreImg = nombreImg.replace("/api/", "/")
+        }
+
+        if (evitarCache) {
+            var dt = new Date()
+            nombreImg = nombreImg + "?v=" + dt.getTime()
+        }
+        return nombreImg
+    }
+
+    static async cargarImagen(product: any, callbackOk: any) {
+        var url = this.nombreImagen(product, true, true)
+
+        try {
+            const response = await axios.get(url);
+            // console.log("response de cargarImagen", response)
+            callbackOk(url)
+        } catch (err) {
+            callbackOk(BaseConfig.sinImagen)
+        } finally {
+        }
+        // EndPoint.sendGet(url, (responseData: any, response: any) => {
+        //     callbackOk(BaseConfig.productoSinImagen)
+        // }, (err: any) => {
+        //     callbackOk(BaseConfig.productoSinImagen)
+        // })
+    }
+
+    static async getIngredientesExternos(prod: any, callbackOk: any, callbackWrong: any) {
+        console.log("buscando extras para ", prod)
+        var comSes = new StorageSesion("comercio")
+        if (!comSes.hasOne()) {
+            console.log("no tiene configurado el comercio en el back")
+            callbackWrong("no tiene configurado el comercio en el back")
+            return false
+        }
+
+        const infoComercio = comSes.cargar(1)
+
+        Shop.getProperty("producto", prod.idProducto, "ingredientes", infoComercio, (resp: any) => {
+            // console.log("respuesta del servidor", resp)
+            if (resp.info != "") {
+                callbackOk(JSON.parse(resp.info))
+            } else if (resp.info == "[object Object]") {
+                callbackWrong("problemas de formato")
+            } else {
+                callbackWrong("sin datos")
+            }
+        }, (er: string) => {
+            callbackWrong(er)
+        })
+
+    }
+
+    static async getAgregadosExternos(prod: any, callbackOk: any, callbackWrong: any) {
+        console.log("buscando extras para ", prod)
+        var comSes = new StorageSesion("comercio")
+        if (!comSes.hasOne()) {
+            console.log("no tiene configurado el comercio en el back")
+            callbackWrong("no tiene configurado el comercio en el back")
+            return false
+        }
+
+        const infoComercio = comSes.cargar(1)
+
+        Shop.getProperty("producto",
+            prod.idCategoria + "-" +
+            prod.idSubCategoria + "-"
+            + prod.idFamilia + "-"
+            + prod.idSubFamilia,
+            "agregados",
+            infoComercio,
+            (resp: any) => {
+                // console.log("respuesta del servidor", resp)
+                if (resp.info != "") {
+                    callbackOk(JSON.parse(resp.info))
+                } else if (resp.info == "[object Object]") {
+                    callbackWrong("problemas de formato")
+                } else {
+                    callbackWrong("sin datos")
+                }
+            },
+            (er: string) => {
+                console.log("cae por error")
+                callbackWrong(er)
+            }
+        )
+
     }
 
 };

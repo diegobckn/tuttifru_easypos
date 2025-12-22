@@ -119,7 +119,7 @@ class Atudepa extends ModelSingleton {
 
         me.data.lastPurchaseId = Atudepa.ultimoIdPedido
         // console.log("a enviar ", me.data);
-        const url = "https://softus.com.ar/easypos/check-news-purchases-tohome-atudepa"
+        const url = "https://softus.com.ar/easypos/check-news-purchases-atudepa-pos"
 
         console.log("buscarNuevosPedidos..")
         const vl = SoporteTicket.reportarError
@@ -240,7 +240,7 @@ class Atudepa extends ModelSingleton {
 
         // console.log("a enviar ", me.data);
 
-        const url = "https://softus.com.ar/easypos/get-purchases-tohome-atudepa"
+        const url = "https://softus.com.ar/easypos/get-purchases-atudepa-pos"
 
         me.data.date = dayjs().format("YYYY-MM-DD")
 
@@ -368,8 +368,8 @@ class Atudepa extends ModelSingleton {
         pedido.items.forEach((item: any, ix: number) => {
             var origInfo = JSON.parse(item.extras)
             // console.log("origInfo", origInfo)
-            origInfo.price = parseFloat(origInfo.precioVenta)
-            origInfo.quantity = parseFloat(origInfo.cantidad)
+            origInfo.precioVenta = parseFloat(origInfo.precioVenta)
+            origInfo.cantidad = parseFloat(origInfo.cantidad)
             origInfo.description = (origInfo.nombre)
 
             if (origInfo.extras) {
