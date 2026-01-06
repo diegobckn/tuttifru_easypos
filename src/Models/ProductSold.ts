@@ -23,6 +23,7 @@ class ProductSold extends Product implements IProductSold {
     extras: any | undefined;
     precioVenta: number | undefined
     mostrarPrecioRangos: any | undefined
+    precioVentaCliente: number | undefined
 
 
     static instance: ProductSold | null = null;
@@ -48,7 +49,10 @@ class ProductSold extends Product implements IProductSold {
         return false
     }
 
-    getPrecioCantidad(otraCantidad = null) {
+    getPrecioCantidad(otraCantidad: number | null | undefined = null) {
+        if (this.precioVentaCliente) {
+            return this.precioVentaCliente
+        }
 
         const cl = Client.getInstance()
         if (cl.sesion.hasOne()) {

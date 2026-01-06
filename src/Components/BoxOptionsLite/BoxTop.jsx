@@ -75,6 +75,8 @@ const BoxTop = () => {
   const [widthPrinter, setWidthPrinter] = useState(null);
   const [stockCriticoSuperados, setStockCriticoSuperados] = useState(0);
   const [showAdmPedidosProgramados, setShowAdmPedidosProgramados] = useState(false);
+  const [showFoliosFacturas, setShowFoliosFacturas] = useState(false);
+  const [foliosMostrar, setFoliosMostrar] = useState("");
 
 
   const focusSearchInput = () => {
@@ -145,6 +147,8 @@ const BoxTop = () => {
     cargarStockCriticoSuperados()
     cargarVentasOfllines()
 
+
+
     // console.log("listSalesOffline", listSalesOffline)
   }, [])
 
@@ -161,6 +165,13 @@ const BoxTop = () => {
 
       clearSessionData();
       navigate("/login");
+    } else {
+      if (ModelConfig.get("verBotonPagarFactura")) {
+        setShowFoliosFacturas(true)
+        const userInfo = User.getInstance().getFromSesion()
+
+        setFoliosMostrar("Folios de facturas \n Desde: " + userInfo.nFolioFactura + ".. Hasta:" + userInfo.nFolioFacturaHasta)
+      }
     }
   }, [userData]);
 
@@ -273,6 +284,24 @@ const BoxTop = () => {
 
                   }}>
                     {widthPrinter}
+                  </Button>
+                )}
+
+                {showFoliosFacturas && (
+                  <Button style={{
+                    color: "#FFFFFF",
+                    display: "inline-block",
+                    border: "1px solid #ccc",
+                    margin: "0 10px",
+                    padding: "2px 5px",
+                    position: "relative"
+                  }} onClick={() => {
+                    showAlert(foliosMostrar, "", () => {
+                      focusSearchInput()
+                    })
+
+                  }}>
+                    Folios F.
                   </Button>
                 )}
               </Typography>

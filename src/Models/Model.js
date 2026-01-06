@@ -10,6 +10,8 @@ import User from './User.ts';
 class Model {
   // sesion: StorageSesion;
 
+  static gettingConection = false
+
   constructor() {
     this.sesion = new StorageSesion(eval("this.__proto__.constructor.name"));
   }
@@ -85,15 +87,19 @@ class Model {
   }
 
   static async getConexion(callbackOk, callbackWrong) {
+    if (this.gettingConection) return
+    this.gettingConection = true
     const url = ModelConfig.get("urlBase") + "/api/Cajas/EstadoApi"
     const reportarErrorAntes = SoporteTicket.reportarError
     SoporteTicket.reportarError = false
     EndPoint.sendGet(url, (responseData, response) => {
       SoporteTicket.reportarError = reportarErrorAntes
       callbackOk(responseData.sucursals, response)
+      this.gettingConection = false
     }, (x) => {
       SoporteTicket.reportarError = reportarErrorAntes
       callbackWrong(x)
+      this.gettingConection = false
     })
 
 
@@ -115,8 +121,26 @@ class Model {
     }, callbackWrong)
   }
 
+  static async getComprobante(data = {
+    nroFolio,
+    codigoSucursal: null,
+    codigoCaja: null
+  }, callbackOk, callbackWrong) {
+    var url = ModelConfig.get("urlBase") + "/api/Reportes/GetHTMLComprobanteByNumComprobante"
 
-  static async informeInisioSesion(infoUser,callbackOk, callbackWrong) {
+    const sucursal = data.codigoSucursal ? data.codigoSucursal : ModelConfig.get("sucursal")
+    const caja = data.codigoCaja ? data.codigoCaja : ModelConfig.get("puntoVenta")
+
+    url += "?NroComprobante=" + data.nroFolio
+    url += "&codigoSucursal=" + sucursal
+    url += "&puntoVenta=" + caja
+    EndPoint.sendGet(url, (responseData, response) => {
+      callbackOk(responseData, response)
+    }, callbackWrong)
+  }
+
+
+  static async informeInisioSesion(infoUser, callbackOk, callbackWrong) {
     const configs = ModelConfig.get()
 
     if (!configs.enviarEmailInicioSesion) {

@@ -295,7 +295,6 @@ class Sales {
 
 
   addProductNew(productNew: any, newQuantity: number) {
-    const newPrice = productNew.precioVenta;
     // console.log("es un producto que no esta en la lista.. no se agrupa o es pesable")
     const newProductSold = new ProductSold()
     newProductSold.fill(productNew)
@@ -306,8 +305,7 @@ class Sales {
     newProductSold.cantidad = newQuantity
     newProductSold.pesable = (productNew.tipoVenta == 2)
     // newProductSold.tipoVenta = product.tipoVenta
-    newProductSold.precioVenta = newPrice
-    newProductSold.precioVenta = newProductSold.precioVenta
+    newProductSold.precioVenta = ProductSold.createByValues(newProductSold).getPrecioCantidad(1)
     newProductSold.key = this.products.length + 0
     // newProductSold.precioCosto = product.precioCosto
     // if (product.preVenta) {
@@ -372,11 +370,12 @@ class Sales {
 
     const agruparProductoLinea = ModelConfig.get("agruparProductoLinea")
 
+    const precio = ProductSold.createByValues(productoAAgregar).getPrecioCantidad(cantidad) ?? productoAAgregar.precioVenta
     // const existingProductIndex = this.findKeyAndPriceAndNameInProducts(product.idProducto, product.precioVenta, product.nombre)
-    const existingProductIndex = this.findKeyAndPriceInProducts(productoAAgregar.idProducto, productoAAgregar.precioVenta)
+    const existingProductIndex = this.findKeyAndPriceInProducts(productoAAgregar.idProducto, precio)
 
     // console.log("agruparProductoLinea", agruparProductoLinea)
-    // console.log("existingProductIndex", existingProductIndex)
+    console.log("existingProductIndex", existingProductIndex)
     if (
       agruparProductoLinea
       // && !ProductSold.esPesable(productoAAgregar)

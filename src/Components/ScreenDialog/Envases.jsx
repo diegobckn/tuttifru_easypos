@@ -31,23 +31,23 @@ const Envases = ({
 
 
 
-  const[step, setStep] = useState(1)
-  const[folio, setFolio] = useState(0)
-  const[qr, setQr] = useState("")
-  const[dataBusqueda, setdataBusqueda] = useState("")
-  const[dataDevolver, setDataDevolver] = useState(null)
-  
+  const [step, setStep] = useState(1)
+  const [folio, setFolio] = useState(0)
+  const [qr, setQr] = useState("")
+  const [dataBusqueda, setdataBusqueda] = useState("")
+  const [indexSelected, setIndexSelected] = useState(0)
+  const [dataDevolver, setDataDevolver] = useState(null)
 
 
-  useEffect(()=>{
-    if(!openDialog) return
+  useEffect(() => {
+    if (!openDialog) return
 
     setStep(1)
 
-  },[openDialog])
+  }, [openDialog])
 
 
-  const handleBuscar = ()=>{
+  const handleBuscar = () => {
 
     const data = {
       nfolio: folio,
@@ -56,25 +56,25 @@ const Envases = ({
 
     showLoading("Buscando...")
     Envase.buscar({
-      folio,qr
-    },(res)=>{
+      folio, qr
+    }, (res) => {
       console.log("res")
       console.log(res)
       hideLoading()
-      if(res.gestionEnvases.length< 1){
+      if (res.gestionEnvases.length < 1) {
         showMessage("Ya estan devueltos los envases de este ticket")
-      }else{
+      } else {
         setdataBusqueda(res)
-        setStep(step+1)
+        setStep(step + 1)
       }
-    }, (err)=>{
+    }, (err) => {
       showMessage(err)
       hideLoading()
     })
 
   }
 
-  const handleDevolver = ()=>{
+  const handleDevolver = () => {
 
     const data = {
       "fechaIngreso": System.getInstance().getDateForServer(),
@@ -85,22 +85,22 @@ const Envases = ({
       "nFolio": 0
     }
     data.cantidad = dataDevolver.cantidad
-    data.qr = dataBusqueda.gestionEnvases[0].qr
-    data.nFolio = dataBusqueda.gestionEnvases[0].nFolio
-    data.precioUnitario = dataBusqueda.gestionEnvases[0].precioUnitario
+    data.qr = dataBusqueda.gestionEnvases[indexSelected].qr
+    data.nFolio = dataBusqueda.gestionEnvases[indexSelected].nFolio
+    data.precioUnitario = dataBusqueda.gestionEnvases[indexSelected].precioUnitario
 
     // console.log("para enviar")
     // console.log(data)
 
     showLoading("Devolviendo")
-    Envase.devolver(data,(res)=>{
+    Envase.devolver(data, (res) => {
       // console.log("res")
       // console.log(res)
       Printer.printAll(res)
       showMessage("Realizado correctamente")
       hideLoading()
       setOpenDialog(false)
-    }, (err)=>{
+    }, (err) => {
       console.log(err)
       showMessage("No se pudo realizar")
       hideLoading()
@@ -109,52 +109,54 @@ const Envases = ({
   }
 
   return (
-    <Dialog open={openDialog} onClose={()=>{setOpenDialog(false)}} maxWidth="lg">
+    <Dialog open={openDialog} onClose={() => { setOpenDialog(false) }} maxWidth="sm" fullWidth>
       <DialogTitle>Devolucion de Envases</DialogTitle>
-      <DialogContent onClose={()=>{setOpenDialog(false)}}>
-      { (step == 1) && (
-        <BoxBuscarEnvases 
-        openDialog={openDialog} 
-        onClose={()=>{setOpenDialog(false)}}
-        folio={folio}
-        setFolio={setFolio}
-        qr={qr}
-        setQr={setQr}
+      <DialogContent onClose={() => { setOpenDialog(false) }}>
+        {(step == 1) && (
+          <BoxBuscarEnvases
+            openDialog={openDialog}
+            onClose={() => { setOpenDialog(false) }}
+            folio={folio}
+            setFolio={setFolio}
+            qr={qr}
+            setQr={setQr}
 
-        onEnter={()=>{
-          handleBuscar()
-        }}
-        />
-      )}
+            onEnter={() => {
+              handleBuscar()
+            }}
+          />
+        )}
 
-      { (step == 2) && (
-        <BoxDevolverEnvases 
-        openDialog={openDialog} 
-        onClose={()=>{setOpenDialog(false)}}
-        dataBusqueda={dataBusqueda}
-        step={step}
-        onChange={setDataDevolver}
-        />
-      )}
+        {(step == 2) && (
+          <BoxDevolverEnvases
+            openDialog={openDialog}
+            onClose={() => { setOpenDialog(false) }}
+            dataBusqueda={dataBusqueda}
+            step={step}
+            indexSelect={indexSelected}
+            setIndexSelect={setIndexSelected}
+            onChange={setDataDevolver}
+          />
+        )}
 
       </DialogContent>
       <DialogActions>
-        { (step > 1) && (
-          <SmallButton textButton="Anterior" actionButton={()=>{
+        {(step > 1) && (
+          <SmallButton textButton="Anterior" actionButton={() => {
             setStep(step - 1)
-          }}/>
-        ) }
-          <SmallButton textButton="Continuar" actionButton={()=>{
-            if(step == 1){
-              handleBuscar()
-            }else if(step == 2){
-              handleDevolver()
-            }
-            // setStep(step + 1)
-          }}/>
+          }} />
+        )}
+        <SmallButton textButton="Continuar" actionButton={() => {
+          if (step == 1) {
+            handleBuscar()
+          } else if (step == 2) {
+            handleDevolver()
+          }
+          // setStep(step + 1)
+        }} />
 
-        </DialogActions>
-      </Dialog>
+      </DialogActions>
+    </Dialog>
   );
 };
 

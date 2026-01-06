@@ -40,10 +40,13 @@ import Validator from "../../Helpers/Validator";
 import SmallButton from "../Elements/SmallButton";
 import SendingButton from "../Elements/SendingButton";
 import TecladoNumeros from "../Teclados/TecladoNumeros";
+import BoxOptionList from "./BoxOptionList";
 
-const BoxDevolverEnvases = ({ 
+const BoxDevolverEnvases = ({
   dataBusqueda,
   step,
+  indexSelect = 0,
+  setIndexSelect = (ix) => { },
   onChange
 }) => {
   const {
@@ -83,114 +86,147 @@ const BoxDevolverEnvases = ({
   const [cantidadMax, setcantidadMax] = useState(0)
   const [precioUnitario, setprecioUnitario] = useState(0)
 
-  useEffect(()=>{
-    if(step!= 2) return
-
-    console.log("paso 2 correcto")
-    setcantidadMax(dataBusqueda.gestionEnvases[0].cantidad)
-    setcantidad(1)
-    setprecioUnitario(dataBusqueda.gestionEnvases[0].precioUnitario)
+  const [tipoEnvase, setTipoEnvase] = useState(null)
+  const [tiposEnvases, setTiposEnvases] = useState([])
 
 
-  },[step])
+  useEffect(() => {
+    if (step != 2) return
+    // console.log("paso 2 correcto")
 
-  const decQuantity = ()=>{
-    if(cantidad <= 1 ) return
-    
+
+    if (dataBusqueda.gestionEnvases.length > 0) {
+      setTiposEnvases(dataBusqueda.gestionEnvases)
+      setTipoEnvase(dataBusqueda.gestionEnvases[0].nFolio)
+    } else {
+      setTipoEnvase[null]
+      setTiposEnvases([])
+    }
+    setIndexSelect(0)
+  }, [step])
+
+  useEffect(() => {
+    if (tipoEnvase && tiposEnvases.length > 0) {
+      var found = -1
+      tiposEnvases.forEach((tipoEnv, ix) => {
+        if (tipoEnv.nFolio == tipoEnvase) {
+          found = ix
+        }
+      })
+      if (found > -1) {
+        setIndexSelect(found)
+        setcantidadMax(dataBusqueda.gestionEnvases[found].cantidad)
+        setcantidad(1)
+        setprecioUnitario(dataBusqueda.gestionEnvases[found].precioUnitario)
+      }
+    }
+  }, [tipoEnvase])
+
+  const decQuantity = () => {
+    if (cantidad <= 1) return
+
     setcantidad(cantidad - 1)
   }
-  
-  const addQuantity = ()=>{
-    if(cantidad >= cantidadMax ) return
+
+  const addQuantity = () => {
+    if (cantidad >= cantidadMax) return
     setcantidad(cantidad + 1)
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     onChange({
       cantidad: cantidad
     })
-  },[cantidad])
+  }, [cantidad])
 
   return (
     <Box sx={{
-      width:"100%"
+      width: "100%"
     }}>
 
       <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12} lg={12}>
+          {tiposEnvases.length > 1 && (
+            <BoxOptionList
+              optionSelected={tipoEnvase}
+              setOptionSelected={setTipoEnvase}
+              options={System.arrayIdValueFromObject(
+                System.objectPropValueFromIdValueArray(tiposEnvases, "nFolio", "descripcionGrupo")
+              )}
+            />
+          )}
+        </Grid>
         <Grid item xs={12} md={5} lg={5}>
 
           <table style={{
-            maxWidth: "400px",
+            // maxWidth: "400px",
             maxHeight: "inherit",
           }}>
-            <tr>
-            <td colSpan={5} style={{ textAlign:"center"}}>
-              <Typography>Cantidad a devolver</Typography>
-              </td>
+            <tbody>
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center" }}>
+                  <Typography>Cantidad a devolver</Typography>
+                </td>
               </tr>
-            <tr>
-              <td>
+              <tr>
+                <td>
+                  <SmallButton style={{
+                    position: "relative",
+                    height: "52px",
+                    top: "2px",
+                    width: "45px",
+                    backgroundColor: "#6c6ce7",
+                    fontSize: "25px",
+                    margin: "0",
+                    color: "white"
+                  }}
+                    withDelay={false}
+                    actionButton={() => {
+                      decQuantity()
+                    }}
+                    textButton={"-"} />
+                </td>
+                <td>
 
-              <SmallButton style={{
-                position:"relative",
-                height:"52px",
-                top:"2px",
-                width:"45px",
-                backgroundColor:"#6c6ce7",
-                fontSize:"25px",
-                margin:"0",
-                color:"white"
-              }}
-              withDelay={false}
-              actionButton={()=>{
-                decQuantity()
-              }}
-              textButton={"-"} />
-              </td>
-              <td>
-            
-            
+                  <TextField
+                    value={cantidad}
+                    onChange={(event) => {
+                      // handleChangeQuantityProductSold(event)
+                    }}
 
+                    onClick={() => {
+                      // if(!product.isEnvase) prepareTecladoChangeQuantity()
+                    }}
+                    style={{
+                      marginLeft: "0",
+                      width: 60,
+                      fontSize: 2,
+                      height: "52px",
+                      alignContent: "center",
+                      alignItems: "center",
+                      textAign: "center"
+                    }}
+                  />
+                </td>
+                <td>
 
-              <TextField
-              value={cantidad}
-              onChange={(event) => {
-                // handleChangeQuantityProductSold(event)
-              }}
-              
-              onClick={()=>{
-                // if(!product.isEnvase) prepareTecladoChangeQuantity()
-              }}
-              style={{
-                marginLeft: "0",
-                width: 60,
-                fontSize: 2,
-                height:"52px",
-                alignContent:"center",
-                alignItems:"center",
-                textAign:"center"
-              }}
-              />
-              </td>
-              <td>
-              
-                <SmallButton style={{
-                  position:"relative",
-                  height:"52px",
-                  top:"2px",
-                  
-                  width:"45px",
-                  backgroundColor:"#6c6ce7",
-                  fontSize:"25px",
-                  margin:"0",
-                  color:"white"
-                }}
-                withDelay={false}
-                actionButton={()=>{
-                  addQuantity()
-                }}
-                textButton={"+"} />
-              </td>
+                  <SmallButton style={{
+                    position: "relative",
+                    height: "52px",
+                    top: "2px",
+
+                    width: "45px",
+                    backgroundColor: "#6c6ce7",
+                    fontSize: "25px",
+                    margin: "0",
+                    color: "white"
+                  }}
+                    withDelay={false}
+                    actionButton={() => {
+                      addQuantity()
+                    }}
+                    textButton={"+"} />
+                </td>
               </tr>
 
               <tr>
@@ -198,43 +234,42 @@ const BoxDevolverEnvases = ({
               </tr>
 
               <tr>
-                <td colSpan={5} style={{ padding:"20px 0 0 0", textAlign:"right "}}>
-                <Typography>Precio unitario</Typography>
+                <td colSpan={5} style={{ padding: "20px 0 0 0", textAlign: "right " }}>
+                  <Typography>Precio unitario</Typography>
                 </td>
               </tr>
               <tr>
-                <td colSpan={5} style={{ padding:"0 0 20px 0", textAlign:"right "}}>
-                <Typography>${precioUnitario}</Typography>
+                <td colSpan={5} style={{ padding: "0 0 20px 0", textAlign: "right " }}>
+                  <Typography>${precioUnitario}</Typography>
 
                 </td>
               </tr>
 
               <tr>
-                <td colSpan={5} style={{ padding:"20px 0 0 0", textAlign:"right "}}>
-                <Typography>Total</Typography>
+                <td colSpan={5} style={{ padding: "20px 0 0 0", textAlign: "right " }}>
+                  <Typography>Total</Typography>
                 </td>
-                </tr>
-                <tr>
-                <td colSpan={5} style={{ padding:"0 0 20px 0", textAlign:"right "}}>
-                <Typography>${precioUnitario * cantidad}</Typography>
+              </tr>
+              <tr>
+                <td colSpan={5} style={{ padding: "0 0 20px 0", textAlign: "right " }}>
+                  <Typography>${precioUnitario * cantidad}</Typography>
 
                 </td>
               </tr>
 
 
               <tr>
-                <td colSpan={5} style={{ padding:"20px 0 0 0", textAlign:"right "}}>
-                <Typography>Cantidad a saldar</Typography>
-                </td>
-                </tr>
-                <tr>
-                <td colSpan={5} style={{ padding:"0 0 20px 0", textAlign:"right "}}>
-                <Typography>{cantidadMax} unidades</Typography>
-
+                <td colSpan={5} style={{ padding: "20px 0 0 0", textAlign: "right " }}>
+                  <Typography>Cantidad a saldar</Typography>
                 </td>
               </tr>
-
-              </table>
+              <tr>
+                <td colSpan={5} style={{ padding: "0 0 20px 0", textAlign: "right " }}>
+                  <Typography>{cantidadMax} unidades</Typography>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
         </Grid>
 
@@ -247,21 +282,21 @@ const BoxDevolverEnvases = ({
             justifyContent="center"
           >
 
-        <TecladoNumeros 
-          showFlag={true} 
-          varValue={cantidad} 
-          varChanger={(x)=>{
-            setcantidad(x)
-          }} 
-          maxValue={1000}
-          onEnter={()=>{
-            
-          }}
-          />
-          <div style={{
-            height:"100px"
-          }}></div>
-            
+            <TecladoNumeros
+              showFlag={true}
+              varValue={cantidad}
+              varChanger={(x) => {
+                setcantidad(x)
+              }}
+              maxValue={1000}
+              onEnter={() => {
+
+              }}
+            />
+            <div style={{
+              height: "100px"
+            }}></div>
+
           </Grid>
         </Grid>
 

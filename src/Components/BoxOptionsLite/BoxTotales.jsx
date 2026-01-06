@@ -51,6 +51,7 @@ import NumeroAtencion from "../ScreenDialog/NumeroAtencion";
 import User from "../../Models/User";
 import Suspender from "../../Models/Suspender";
 import Product from "../../Models/Product";
+import ReimprimirComprobante from "../ScreenDialog/ReimprimirComprobante";
 
 
 const BoxTotales = () => {
@@ -99,6 +100,7 @@ const BoxTotales = () => {
   const [trabajaConNumeroAtencion, setTrabajaConNumeroAtencion] = useState(false)
 
   const [ingresarNumeroAtencion, setIngresarNumeroAtencion] = useState(false);
+  const [showReimpComprobante, setShowReimpComprobante] = useState(false);
 
   const focusSearchInput = () => {
     System.darFocoEnBuscar(searchInputRef)
@@ -335,21 +337,21 @@ const BoxTotales = () => {
               )}
             </Grid>
 
-            <UltimaVenta
-              openDialog={showScreenLastSale}
-              setOpenDialog={(val) => {
-                if (!val) {
-                  focusSearchInput()
-                }
-                setShowScreenLastSale(val)
-              }}
-            />
 
-            <Grid item xs={12} sm={12} md={12} lg={12} sx={{ marginTop: "6px" }}>
+            <Grid item xs={12} sm={12} md={6} lg={6} sx={{ marginTop: "0px" }}>
+              <UltimaVenta
+                openDialog={showScreenLastSale}
+                setOpenDialog={(val) => {
+                  if (!val) {
+                    focusSearchInput()
+                  }
+                  setShowScreenLastSale(val)
+                }}
+              />
               <Button
                 sx={{
-                  width: "50%",
-                  marginLeft: "25%",
+                  width: "90%",
+                  marginLeft: "5%",
                   height: "40px",
                   backgroundColor: "transparent",
                   color: "black",
@@ -364,7 +366,38 @@ const BoxTotales = () => {
                   setShowScreenLastSale(true)
                 }}
               >
-                <Typography variant="h7">&Uacute;ltima venta</Typography>
+                <Typography variant="h7">&Uacute;ltima <br /> venta</Typography>
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={12} md={6} lg={6} sx={{ marginTop: "0px" }}>
+              <ReimprimirComprobante
+                openDialog={showReimpComprobante}
+                setOpenDialog={(val) => {
+                  if (!val) {
+                    focusSearchInput()
+                  }
+                  setShowReimpComprobante(val)
+                }}
+              />
+              <Button
+                sx={{
+                  width: "90%",
+                  marginLeft: "5%",
+                  height: "40px",
+                  backgroundColor: "transparent",
+                  color: "black",
+                  borderRadius: "0",
+                  "&:hover": {
+                    border: "1px solid black",
+                    color: "black",
+                    backgroundColor: "#D6D5D1 ",
+                  },
+                }}
+                onClick={() => {
+                  setShowReimpComprobante(true)
+                }}
+              >
+                <Typography variant="h7">Reimprimir <br /> comprobante</Typography>
               </Button>
             </Grid>
             <Grid item xs={12} sm={12} md={12} lg={12} sx={{ marginTop: "6px" }}>

@@ -39,116 +39,118 @@ const IngresarTexto = ({
   isUrl = false,
   verOcultar = null,
   setVerOcultar = null,
-  onEnter=()=>{}
+  onEnter = () => { },
+  onConfirm = () => { }
 }) => {
 
   const textInfoRef = useRef(null)
 
 
-  const handlerSaveAction = ()=>{
-    if(varValue == 0){
+  const handlerSaveAction = () => {
+    if (varValue == 0) {
       alert("Debe ingresar un valor");
       return;
     }
     setOpenDialog(false)
+    onConfirm()
   }
 
-  const handleKeydownSearchInput = (e)=>{
+  const handleKeydownSearchInput = (e) => {
     // console.log("handleKeydownSearchInput", e)
-    if(e.keyCode == 13){
+    if (e.keyCode == 13) {
       // console.log("hace enter")
       setOpenDialog(false)
-      if(onEnter) onEnter()
+      if (onEnter) onEnter()
     }
   }
 
 
-  const toggleOcultarCaracteres = ()=>{
-    if(!setVerOcultar)return
+  const toggleOcultarCaracteres = () => {
+    if (!setVerOcultar) return
     setVerOcultar(!verOcultar)
   }
 
 
-  useEffect(()=>{
-    if(openDialog){
+  useEffect(() => {
+    if (openDialog) {
       System.intentarFoco(textInfoRef)
     }
 
     // console.log("cambio el opendialog de ingresartexto", openDialog)
-  },[ openDialog, textInfoRef ])
-  
+  }, [openDialog, textInfoRef])
+
   return (
-    <Dialog open={openDialog} onClose={()=>{
+    <Dialog open={openDialog} onClose={() => {
       setOpenDialog(false)
     }} maxWidth="md">
-        <DialogTitle>
-          {title}
-        </DialogTitle>
-        <DialogContent>
+      <DialogTitle>
+        {title}
+      </DialogTitle>
+      <DialogContent>
 
         <Grid container item xs={12} md={12} lg={12}>
           <Grid item xs={12} sm={12} md={12} lg={12}>
-              <TextField
-                margin="normal"
-                fullWidth
-                ref={textInfoRef}
-                type={verOcultar || verOcultar === null ? "text" : "password"}
-                value={varValue}
-                onChange={(e) => varChanger(e.target.value)}
-                onKeyDown={handleKeydownSearchInput}
-                sx={{
-                  marginBottom:"20px"
-                }}
+            <TextField
+              margin="normal"
+              fullWidth
+              ref={textInfoRef}
+              type={verOcultar || verOcultar === null ? "text" : "password"}
+              value={varValue}
+              onChange={(e) => varChanger(e.target.value)}
+              onKeyDown={handleKeydownSearchInput}
+              sx={{
+                marginBottom: "20px"
+              }}
 
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={()=>{
-                          toggleOcultarCaracteres()
-                        }}
-                        sx={{
-                          color:(setVerOcultar ? "darkgray" : "transparent")
-                        }}
-                        edge="end"
-                      >
-                        {verOcultar ? <VisibilityOff fontSize="small"  /> : <Visibility fontSize="small"  />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => {
+                        toggleOcultarCaracteres()
+                      }}
+                      sx={{
+                        color: (setVerOcultar ? "darkgray" : "transparent")
+                      }}
+                      edge="end"
+                    >
+                      {verOcultar ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
 
 
-              />
+            />
           </Grid>
           <Grid item xs={12} sm={12} md={12} lg={12}>
-          <TecladoAlfaNumerico
-            onEnter={()=>{
-              setOpenDialog(false)
-              if(onEnter) onEnter()
-            }}
-            showFlag={true}
-            isEmail={isEmail}
-            isUrl={isUrl}
-            varChanger={varChanger}
-            varValue={varValue}
-            style={{
-              position:"relative",
-              width:"800px"
-            }}
-          />
+            <TecladoAlfaNumerico
+              onEnter={() => {
+                setOpenDialog(false)
+                if (onEnter) onEnter()
+              }}
+              showFlag={true}
+              isEmail={isEmail}
+              isUrl={isUrl}
+              varChanger={varChanger}
+              varValue={varValue}
+              style={{
+                position: "relative",
+                width: "800px"
+              }}
+            />
           </Grid>
         </Grid>
 
-        </DialogContent>
-        <DialogActions>
-          <SmallButton textButton="Aceptar" actionButton={handlerSaveAction}/>
-          <Button onClick={()=>{
-            setOpenDialog(false)
-          }}>Volver</Button>
-        </DialogActions>
-      </Dialog>
+      </DialogContent>
+      <DialogActions>
+        <SmallButton textButton="Aceptar" actionButton={handlerSaveAction} />
+        <Button onClick={() => {
+          setOpenDialog(false)
+        }}>Volver</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

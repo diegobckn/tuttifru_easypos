@@ -63,27 +63,27 @@ const PedirSupervision = ({
 
 
   //para las transferecias
-  
+
   const [codigoAutorizacion, setCodigoAutorizacion] = useState("")
   const [fecha, setFecha] = useState(null)
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
     // console.log("cambio openDialog", openDialog)
-    if(!openDialog) return
+    if (!openDialog) return
 
     // console.log("iniciando PedirSupervision")
     setFecha(dayjs())
-  },[openDialog])
+  }, [openDialog])
 
-  const checkAll = ()=>{
-    if(codigoAutorizacion){
+  const checkAll = () => {
+    if (codigoAutorizacion) {
       const codigoAutorizacion2 = codigoAutorizacion + ""
       const datos = {
-        CodeAutorizacion:codigoAutorizacion,
+        CodeAutorizacion: codigoAutorizacion,
         fechaIngreso: System.getInstance().getDateForServer(fecha),
-        idUsuario : User.getInstance().getFromSesion().codigoUsuario,
+        idUsuario: User.getInstance().getFromSesion().codigoUsuario,
         // Accion: "Quitar Producto"
         Accion: accion,
         body: infoEnviar
@@ -91,20 +91,20 @@ const PedirSupervision = ({
       SoporteTicket.reportarError = false
       setOpenDialog(false)
       showLoading("Revisando Autorizacion")
-      Model.getSupervision(datos,(res)=>{
-          hideLoading()
-          onConfirm(res)
-          setCodigoAutorizacion("")
-          SoporteTicket.reportarError = true
-        },(err)=>{
-          SoporteTicket.reportarError = true
-          hideLoading()
+      Model.getSupervision(datos, (res) => {
+        hideLoading()
+        onConfirm(res)
+        setCodigoAutorizacion("")
+        SoporteTicket.reportarError = true
+      }, (err) => {
+        SoporteTicket.reportarError = true
+        hideLoading()
         console.log("algo fallo", err)
         setTimeout(() => {
           showMessage(err)
         }, 100);
       })
-    }else{
+    } else {
       showMessage("Completar todos los datos")
     }
 
@@ -112,46 +112,46 @@ const PedirSupervision = ({
 
 
   return (
-      <Dialog open={openDialog} onClose={ ()=> { 
-        setOpenDialog(false)
-        console.log("on close del dialog")
-        } }>
-        <DialogTitle>Autorizar accion</DialogTitle>
-        <DialogContent>
+    <Dialog open={openDialog} onClose={() => {
+      setOpenDialog(false)
+      console.log("on close del dialog")
+    }}>
+      <DialogTitle>Autorizar accion</DialogTitle>
+      <DialogContent>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={12} lg={12}>
-              <InputPassword
-              inputState={[codigoAutorizacion,setCodigoAutorizacion]}
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <InputPassword
+              inputState={[codigoAutorizacion, setCodigoAutorizacion]}
               fieldName="codigoAutorizacion"
               validationState={null}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={12}>
-              <Button
-                sx={{ height: "100%" }}
-                variant="contained"
-                fullWidth
-                color="secondary"
-                // disabled={!metodoPago || montoPagado <= 0 || loading}
-                onClick={()=>{
-                  checkAll()
-                }}
-              >
-                Continuar
-              </Button>
-            </Grid>
+            />
           </Grid>
-        </DialogContent>
 
-        <DialogActions>
-          <Button onClick={()=>{
-            console.log("on close del dialog con boton cerrar")
-            setOpenDialog(false)
-          }}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
+          <Grid item xs={12} sm={12}>
+            <Button
+              sx={{ height: "100%" }}
+              variant="contained"
+              fullWidth
+              color="secondary"
+              // disabled={!metodoPago || montoPagado <= 0 || loading}
+              onClick={() => {
+                checkAll()
+              }}
+            >
+              Continuar
+            </Button>
+          </Grid>
+        </Grid>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={() => {
+          console.log("on close del dialog con boton cerrar")
+          setOpenDialog(false)
+        }}>Cerrar</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

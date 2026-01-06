@@ -103,8 +103,8 @@ class SoporteTicket extends Singleton {
         data.configDispositivoCliente.afterLogin = types[find]
       }
     }
+    var url = "https://softus.com.ar/send-public-ticket-email/2jdsu3471823jasdjm12l3k1012mascd"
     try {
-      var url = "https://softus.com.ar/send-public-ticket-email/2jdsu3471823jasdjm12l3k1012mascd"
 
       const response = await axios.post(url, data);
       if (
@@ -118,6 +118,29 @@ class SoporteTicket extends Singleton {
       }
     } catch (error) {
       callbackWrong(error)
+
+      // this.enviarIncidencia({
+      //   "project": "pos lite",
+      //   "url_api": data.endpointUrl,
+      //   "level": 5,
+      //   "name": "falla endpoint",
+      //   "details": data,
+      // })
+    }
+  }
+
+  //nuevo sistema incidencias
+  static async enviarIncidencia(dataIncidence: any) {
+    try {
+      var url = "https://softus.com.ar/easypos/incidents-add"
+
+      const response = await axios.post(url, dataIncidence);
+      if (
+        response.data.status
+      ) {
+        console.log("incidencia enviada ok")
+      }
+    } catch (error) {
     }
   }
 };

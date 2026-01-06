@@ -43,26 +43,11 @@ class Sucursal extends Model {
 
   static async getAll(callbackOk: any, callbackWrong: any) {
     const url = ModelConfig.get("urlBase") + "/api/Sucursales/GetAllSucursales"
-    var me = new Sucursal();
-    var teniaGuardados = false
-    const guardados = me.sesion.cargarGuardados()[0]
-
-    // console.log("me.sesion", me.sesion.nombreBasicoParaAlmacenado)
-    // console.log("sucursal guardados", guardados)
-    if (guardados && guardados.length > 0) {
-      teniaGuardados = true
-      callbackOk(guardados)
-    }
     EndPoint.sendGet(url, (responseData: any, response: any) => {
-      if (!teniaGuardados) {
-        callbackOk(responseData.sucursals, response)
-      }
+      callbackOk(responseData.sucursals, response)
       // console.log("voy a guardar ", System.clone(responseData.sucursals))
-      me.sesion.guardar(responseData.sucursals)
     }, (er: any) => {
-      if (!teniaGuardados) {
-        callbackWrong(er)
-      }
+      callbackWrong(er)
     })
   }
 }

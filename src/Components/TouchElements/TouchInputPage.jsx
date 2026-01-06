@@ -29,6 +29,9 @@ const TouchInputPage = ({
   required = false,
   vars = null,
   onEnter = () => { },
+  onBlur = () => { },
+  onConfirmModal = () => { },
+  onChangeModal = () => { },
 }) => {
 
   const {
@@ -40,11 +43,26 @@ const TouchInputPage = ({
   const [page, setPage] = inputState ? inputState : vars ? vars[0][fieldName] : useState("")
   const ref = useRef(null)
 
-  // useEffect(()=>{
-  //   if(!showModalTeclado){
-  //     System.intentarFoco(ref)
-  //   }
-  // },[showModalTeclado])
+  const [antesModalValue, setAntesModalValue] = useState("")
+  const [despuesModalValue, setDespuesModalValue] = useState("")
+
+  useEffect(() => {
+    // console.log("detectando cambios en antesModalValue o en despuesModalValue")
+    // console.log("detectando cambios en antesModalValue", antesModalValue)
+    // console.log("detectando cambios en despuesModalValue", despuesModalValue)
+    if (antesModalValue && despuesModalValue && antesModalValue != despuesModalValue) {
+      // console.log("antesModalValue != despuesModalValue")
+      onChangeModal()
+    }
+  }, [despuesModalValue])
+
+  useEffect(() => {
+    if (ref && ref.current) {
+      ref.current.querySelector("input").addEventListener("blur", function () {
+        onBlur()
+      })
+    }
+  }, [ref])
 
   return (
     <>
@@ -61,14 +79,18 @@ const TouchInputPage = ({
         required={required}
         vars={vars}
 
-        onEnter = {onEnter}
-        onRef={(r)=>(ref.current = r.current)}
+        onEnter={onEnter}
+        onRef={(r) => {
+          (ref.current = r.current)
+        }}
 
         onClick={() => {
           const debeAbrir = ModelConfig.get("abirTecladosTouchSiempre")
           if (debeAbrir) {
             setShowModalTeclado(true)
           }
+
+          setAntesModalValue(inputState[0] + "")
 
         }}
 
@@ -102,7 +124,15 @@ const TouchInputPage = ({
         onEnter={() => {
           setTimeout(() => {
             setShowModalTeclado(false)
+            onEnter()
+            setDespuesModalValue(inputState[0] + "")
           }, 300);
+        }}
+
+        onConfirm={(vlMd) => {
+          onConfirmModal()
+          setDespuesModalValue(inputState[0] + "")
+
         }}
       />
     </>

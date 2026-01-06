@@ -152,7 +152,6 @@ const BoxBuscarEnvases = ({
           varChanger={(x)=>{
             changeFolio(x)
           }} 
-          maxValue={1000}
           onEnter={()=>{
             if(onEnter) onEnter()
           }}

@@ -12,8 +12,8 @@ import SoporteTicket from './SoporteTicket.ts';
 class EndPoint extends Singleton {
 
   static admError(error: any, callbackWrong: any) {
-    console.log("arranca admError", error)
-    console.log("arranca admError..callbackWrong", callbackWrong)
+    // console.log("arranca admError", error)
+    // console.log("arranca admError..callbackWrong", callbackWrong)
 
     if (SoporteTicket.reportarError) console.log("admError", error)
     if (SoporteTicket.reportarError) console.log("admError2", callbackWrong)
