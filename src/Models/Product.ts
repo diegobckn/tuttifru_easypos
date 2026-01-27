@@ -521,6 +521,7 @@ class Product extends ModelSingleton {
 
         if (!product.codigoSucursal) product.codigoSucursal = ModelConfig.get("sucursal")
         if (!product.puntoVenta) product.puntoVenta = ModelConfig.get("puntoVenta")
+        if (!product.codbarra && product.idProducto) product.codbarra = product.idProducto
 
         EndPoint.sendPut(url, product, (responseData: any, response: any) => {
             callbackOk(responseData, response);
@@ -616,7 +617,7 @@ class Product extends ModelSingleton {
             }
 
         } catch (error) {
-            console.error("Error fetching products:", error);
+            // console.error("Error fetching products:", error);
             callbackWrong(error)
         }
     }

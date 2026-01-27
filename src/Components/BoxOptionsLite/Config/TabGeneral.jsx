@@ -337,6 +337,9 @@ const TabGeneral = ({
 
             nombreCaja={puntoVentaNombre}
             setNombreCaja={setPuntoVentaNombre}
+
+            afterLogin={afterLogin}
+            setAfterLogin={setAfterLogin}
           />
         </>
       )}

@@ -30,7 +30,7 @@ const TecladoPagoCaja = ({
 }) => {
 
   const [primeraTecla, setPrimeraTecla] = useState(true)
-  
+
   const [esperaInicial, setEsperaInicial] = useState(true)
 
 
@@ -42,8 +42,8 @@ const TecladoPagoCaja = ({
 
   useEffect(() => {
     // console.log("cambio showFlag", showFlag)
-    if(!showFlag) setEsperaInicial(true)
-    if(showFlag){
+    if (!showFlag) setEsperaInicial(true)
+    if (showFlag) {
       setTimeout(() => {
         setEsperaInicial(false)
       }, 100);
@@ -57,7 +57,7 @@ const TecladoPagoCaja = ({
 
 
   const handleKeyButton = (key) => {
-
+    console.log("handleKeyButton.. key", key)
     if (key == "enter") {
       onEnter()
       return
@@ -79,8 +79,11 @@ const TecladoPagoCaja = ({
     const valorAnteriorValido = (parseInt(varValue) > 0) ? varValue : ""
     var nuevoValor = valorAnteriorValido + "" + key
 
+    console.log("primeraTecla", primeraTecla)
     if (primeraTecla) {
+      setPrimeraTecla(false)
       nuevoValor = parseInt(key.replace(".", ""));
+      console.log("nuevoValor", nuevoValor)
 
       if (onChange != null) {
         const changeCustom = onChange(nuevoValor)
@@ -154,7 +157,7 @@ const TecladoPagoCaja = ({
             width: "100%",
             height: "100%",
             position: "absolute"
-          }} onClick={()=>{
+          }} onClick={() => {
             showAlert(textoBloqueoTeclado)
           }}></div>
         )}

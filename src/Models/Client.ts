@@ -90,7 +90,7 @@ class Client extends ModelSingleton {
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Clientes/GetClientesDeudasByIdCliente"
-      + "?codigoClienteSucursal=" + ModelConfig.get("sucursal")
+      + "?codigoClienteSucursal=0" //+ ModelConfig.get("sucursal")
       + "&codigoCliente=" + this.id
 
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
@@ -142,9 +142,9 @@ class Client extends ModelSingleton {
       "&codigoCliente=" + this.codigoCliente +
       "&puntoVenta=" + this.puntoVenta
 
-    EndPoint.sendGet(url, (responseData:any, response:any) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       const { ticketBusqueda } = response.data; // Extraer la sección de ticket de la respuesta
-      var result:any = []
+      var result: any = []
       // Verificar si hay información de tickets antes de procesarla
       if (Array.isArray(ticketBusqueda) && ticketBusqueda.length > 0) {
         ticketBusqueda.forEach((ticket) => {
@@ -165,20 +165,20 @@ class Client extends ModelSingleton {
     }, callbackWrong)
   }
 
-  async getRegions(callbackOk:any, callbackWrong:any) {
+  async getRegions(callbackOk: any, callbackWrong: any) {
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/RegionComuna/GetAllRegiones"
     url += "?codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url, (responseData:any, response:any) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       callbackOk(response.data.regiones)
     }, callbackWrong)
   };
 
 
-  async getComunasFromRegion(regionId:number|string, callbackOk:any, callbackWrong:any) {
+  async getComunasFromRegion(regionId: number | string, callbackOk: any, callbackWrong: any) {
 
     const configs = ModelConfig.get()
     var url = configs.urlBase
@@ -187,37 +187,37 @@ class Client extends ModelSingleton {
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url, (responseData:any, response:any) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       callbackOk(response.data.comunas)
     }, callbackWrong)
   }
 
 
-  async create(data:any, callbackOk:any, callbackWrong:any) {
+  async create(data: any, callbackOk: any, callbackWrong: any) {
     data.usaCuentaCorriente = 0
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Clientes/AddCliente"
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
-    EndPoint.sendPost(url, data, (responseData:any, response:any) => {
+    EndPoint.sendPost(url, data, (responseData: any, response: any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   };
 
-  async update(data:any, callbackOk:any, callbackWrong:any) {
+  async update(data: any, callbackOk: any, callbackWrong: any) {
     data.usaCuentaCorriente = 0
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Clientes/PutClienteCliente"
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
-    EndPoint.sendPut(url, data, (responseData:any, response:any) => {
+    EndPoint.sendPut(url, data, (responseData: any, response: any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   };
 
-  async existByRut(rut:string, callbackOk:any, callbackWrong:any) {
+  async existByRut(rut: string, callbackOk: any, callbackWrong: any) {
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Clientes/GetClientesByRut?rut=" + rut
@@ -225,12 +225,12 @@ class Client extends ModelSingleton {
     url += "&codigoSucursal=" + ModelConfig.get("sucursal")
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
-    EndPoint.sendGet(url, (responseData:any, response:any) => {
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
       callbackOk(responseData, response);
     }, callbackWrong)
   };
 
-  static completoParaFactura(info:any) {
+  static completoParaFactura(info: any) {
     // console.log("revisando si esta para facturar")
     // console.log(info)
     return (

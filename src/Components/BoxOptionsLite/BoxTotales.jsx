@@ -61,6 +61,7 @@ const BoxTotales = () => {
     sales,
     clearSessionData,
     grandTotal,
+    descuentos,
     getUserData,
     showMessage,
     showAlert,
@@ -80,7 +81,6 @@ const BoxTotales = () => {
   } = useContext(SelectedOptionsContext);
   const [vendedor, setVendedor] = useState(null);
   const [recargos, setRecargos] = useState(0);
-  const [descuentos, setDescuentos] = useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -316,7 +316,7 @@ const BoxTotales = () => {
                   justifyContent: "center",
                 }}
               >
-                TOTAL: ${System.formatMonedaLocal(grandTotal, false)}
+                TOTAL: ${System.formatMonedaLocal(grandTotal - descuentos, false)}
               </Typography>
 
               {ultimoVuelto !== null && (
@@ -408,7 +408,7 @@ const BoxTotales = () => {
                   justifyContent: "center",
                 }}
               >
-                DESCUENTOS: ${descuentos}
+                DESCUENTOS: $ {System.formatMonedaLocal(Math.abs(descuentos), false)}
               </Typography>
             </Grid>
 

@@ -40,6 +40,7 @@ import SalesOffline from "../../Models/SalesOffline";
 import Model from "../../Models/Model";
 
 import { ProviderModalesContext } from "../Context/ProviderModales";
+import Ofertas from "../../Models/Ofertas";
 
 export const SelectedOptionsContext = React.createContext();
 
@@ -87,7 +88,9 @@ export const SelectedOptionsProvider = ({ children }) => {
 
 
   const [sales, setSales] = useState(new ModelSales())
+  const [ofertas, setOfertas] = useState(Ofertas.getInstance().getFromSesion() ?? [])
   const [ultimoVuelto, setUltimoVuelto] = useState(null)
+  const [descuentos, setDescuentos] = useState(0)
 
   const [showDialogSelectClient, setShowDialogSelectClient] = useState(false)
   const [cliente, setCliente] = useState(null)
@@ -295,7 +298,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log("cliente", cliente)
+    // console.log("cliente", cliente)
     setClienteModal(null)
     if (cliente) {
       if (cliente.validacionFactura && cliente.validacionFactura.esValidoFactura) {
@@ -674,7 +677,13 @@ export const SelectedOptionsProvider = ({ children }) => {
 
         createQrString,
         ultimoFolioPreventa,
-        setUltimoFolioPreventa
+        setUltimoFolioPreventa,
+
+        ofertas,
+        setOfertas,
+        
+        descuentos,
+        setDescuentos,
       }}
     >
       {children}

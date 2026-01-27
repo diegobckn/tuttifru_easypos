@@ -7,6 +7,13 @@ import * as CryptoJS from 'crypto-js'
 class System {
     static instance: System | null = null;
 
+    getAppVersion() {
+        return CONSTANTS.appVersion
+    }
+
+    getAppNameOnly() {
+        return CONSTANTS.appName
+    }
     getAppName() {
         return CONSTANTS.appName + " " + CONSTANTS.appVersion
     }
@@ -152,7 +159,7 @@ class System {
     }
 
     static darFocoEnBuscar(textInfoRef: any) {
-        console.log("darFocoEnBuscar")
+        // console.log("darFocoEnBuscar")
         const debe = ModelConfig.get("darFocoEnBuscar")
         if (debe) {
             this.intentarFoco(textInfoRef)

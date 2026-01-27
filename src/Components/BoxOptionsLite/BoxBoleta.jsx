@@ -48,7 +48,7 @@ import ModelConfig from "../../Models/ModelConfig";
 import UserEvent from "../../Models/UserEvent";
 import Product from "../../Models/Product";
 import BoxMultiPago from "./BoxMultiPago";
-import Oferta1 from "../../Models/Oferta1";
+import Ofertas from "../../Models/Ofertas";
 import Model from "../../Models/Model";
 import IngresarTexto from "../ScreenDialog/IngresarTexto";
 import Sales from "../../Models/Sales";
@@ -126,6 +126,9 @@ const BoxBoleta = ({
 
   const [tecladoBloqueado, setTecladoBloqueado] = useState(false);
 
+  const [productsConOfertas, setProductsConOfertas] = useState([]);
+
+
   //preparamos los valores unicos para guardar la venta
   const [hashEnvase, setHashEnvase] = useState(null);
   const [nFolioBoleta, setNFolioBoleta] = useState(null);
@@ -168,112 +171,26 @@ const BoxBoleta = ({
     setTrabajaConComanda(ModelConfig.get("trabajarConComanda"))
   }, [openDialog])
 
-  const revisarOfertas = (ofertas) => {
-    if (ofertas.length > 0) {
-      var copiaProductos = salesData
-      var resultadoOfertas = {
-        productosQueAplican: [],
-        productosQueNoAplican: copiaProductos
-      }
 
-      ofertas.forEach((ofer, ix) => {
-        // if (ofer.tipo === 5) {//temporalmente, luego activar
-
-
-        var of = new Oferta1();
-        of.setInfo(ofer)
-
-
-        while (of.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-          const resultadoAplicar = of.aplicar(resultadoOfertas.productosQueNoAplican)
-          // console.log("luego de aplicar queda asi", resultadoAplicar)
-
-          resultadoOfertas.productosQueAplican =
-            resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
-          resultadoOfertas.productosQueNoAplican =
-            resultadoAplicar.productosQueNoAplican
-
-        }
-        // console.log("")
-        // console.log("")
-        // console.log("")
-        // console.log("resultado final", resultadoOfertas)
-
-        var totalVentasx = 0
-        var productosVendidosx = []
-
-        resultadoOfertas.productosQueAplican.forEach((prod) => {
-          totalVentasx += prod.total
-          productosVendidosx.push(prod)
-        })
-
-        resultadoOfertas.productosQueNoAplican.forEach((prod) => {
-          totalVentasx += prod.total
-          productosVendidosx.push(prod)
-        })
-
-        // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
-        setTotalVentas(totalVentasx)
-        setProductosVendidos(productosVendidosx)
-        // }else{//temporalmente, luego activar
-        // setProductosVendidos(salesData)//temporalmente, luego activar
-        // setTotalVentas(grandTotal)//temporalmente, luego activar
-        // }
-      })
-    } else {
-      setProductosVendidos(salesData)
-      setTotalVentas(grandTotal)
-    }
-  }
 
   const aplicarOfertas = () => {
-    // console.log("aplicando ofertas")
+    setProductsConOfertas([])
 
-    if (!ModelConfig.get("checkOfertas")) {
+    Ofertas.aplicarTodas(salesData, (resultadoOfertas, totalConOfertas, productoVendidosConOfertas) => {
+      // AGRUPAMOS
+
+      setProductosVendidos(System.clone(productoVendidosConOfertas))
+      setTotalVentas(totalConOfertas + 0)
+
+      Ofertas.calcularDescuentosFinales(resultadoOfertas, (prodConOfer, totalDescuentos) => {
+        setProductsConOfertas(prodConOfer)
+        console.log("prodConOfer", prodConOfer)
+      })
+
+    }, () => {
       setProductosVendidos(salesData)
       setTotalVentas(grandTotal)
-      return
-    }
-    const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
-
-    if (
-      (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-        || modoTrabajoConexion == ModosTrabajoConexion.SOLO_OFFLINE)
-      && Oferta1.session.hasOne()
-    ) {
-      revisarOfertas(Oferta1.session.cargar(1))
-      return
-    }
-
-    Model.getOfertas((ofertas) => {
-      Oferta1.guardarOffline(ofertas)
-      revisarOfertas(ofertas)
-    }, () => {
-
-      if (
-        (modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-          || modoTrabajoConexion == ModosTrabajoConexion.SOLO_OFFLINE)
-        && Oferta1.session.hasOne()
-      ) {
-        revisarOfertas(Oferta1.session.cargar(1))
-      } else {
-        setProductosVendidos(salesData)
-        setTotalVentas(grandTotal)
-      }
     })
-
-
-    // Comercio.getServerImpresionConfigs((serverImpresionConfigs) => {
-    //   serverImpresionConfigs.forEach((impresion) => {
-    //     if (
-    //       impresion.grupo === "Ticket"
-    //       && impresion.entrada === "ImprimirComanda"
-    //       && impresion.valor === "SI"
-    //     ) {
-    //       setTrabajaConComanda(true)
-    //     }
-    //   })
-    // }, () => { })
   }
 
   // ACCIONES
@@ -486,6 +403,19 @@ const BoxBoleta = ({
       }
     }
 
+    const itemConDescuentos = []
+    if (productsConOfertas.length > 0) {
+      productsConOfertas.forEach((proConOfer) => {
+        itemConDescuentos.push({
+          codbarra: proConOfer.idProducto,
+          descuento: proConOfer.elDescuento,
+          codigoOferta: proConOfer.ofertaAplicada.codigoOferta
+        })
+      })
+      requestBody.productsConDescuentos = itemConDescuentos
+    } else {
+      requestBody.productsConDescuentos = itemConDescuentos
+    }
 
     if (
       modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR

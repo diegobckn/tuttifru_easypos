@@ -7,6 +7,8 @@ import ModelConfig from './ModelConfig.ts';
 import EndPoint from './EndPoint.ts';
 import Singleton from './Singleton.ts';
 import dayjs from 'dayjs';
+import SoporteTicket from './SoporteTicket.ts';
+import Env from '../definitions/Env.ts';
 
 
 class Balanza extends Singleton {
@@ -157,6 +159,26 @@ class Balanza extends Singleton {
           me.ultimoPesoDetectado = formatResponse.info
           setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
         } else {
+
+          if(!formatResponse.info){
+            formatResponse.info = ""
+          }
+          if(formatResponse.info.indexOf("al puerto")>-1){
+            formatResponse.info = formatResponse.info.replace("al puerto", "al puerto ")
+          }
+
+          SoporteTicket.enviarIncidencia({
+            "project": Env.urlBase,
+            "url_api": "-",
+            "level": 1,
+            "name": "falla balanza",
+            "details": {
+              cliente: Env.urlBase,
+              unidadNegocio: Env.unidadNegocio,
+              licencia: Env.licencia,
+              "infoBalanza": formatResponse.info
+            },
+          })
           Balanza.onNeedReconect()
         }
       };

@@ -45,6 +45,8 @@ import Balanza from "../../Models/Balanza";
 import BalanzaUnidad from "../../Models/BalanzaUnidad";
 import dayjs from "dayjs";
 import OrdenListado from "../../definitions/OrdenesListado";
+import ModosTrabajoConexion from "../../definitions/ModosConexion";
+import Ofertas from "../../Models/Ofertas";
 
 const BoxProducts = ({ }) => {
   const {
@@ -74,12 +76,17 @@ const BoxProducts = ({ }) => {
     hideLoading,
     showLoading,
 
-    searchInputRef
+    searchInputRef,
+    descuentos,
+    setDescuentos
   } = useContext(SelectedOptionsContext);
 
 
 
   const [products, setProducts] = useState([]);
+  const [productsConOfertas, setProductsConOfertas] = useState([]);
+
+  const [ofertasContradictorias, setOfertasContradictorias] = useState(false);
   const [cargado, setCargado] = useState(null);
 
   const [paginaBusqueda, setPaginaBusqueda] = useState(0);
@@ -89,6 +96,34 @@ const BoxProducts = ({ }) => {
     System.darFocoEnBuscar(searchInputRef)
   }
 
+
+  const aplicarOfertas = () => {
+    if (Ofertas.aplicando) return
+    // console.log("aplicando ofertas")
+    // console.log("salesData", salesData)
+
+    Ofertas.aplicarTodas(salesData, (resultadoOfertas, totalConOfertas, productoVendidosConOfertas) => {
+      // AGRUPAMOS
+      Ofertas.calcularDescuentosFinales(resultadoOfertas, (prodConOfer, totalDescuentos) => {
+        setDescuentos(totalDescuentos)
+        setProductsConOfertas(prodConOfer)
+      })
+
+    }, () => {
+
+    })
+  }
+
+  useEffect(() => {
+    // console.log("cambio algo con productos")
+    if (!Ofertas.aplicando) {
+      setProductsConOfertas([])
+      setProductsConOfertas(false)
+      aplicarOfertas()
+    }
+  }, [grandTotal]);
+
+
   useEffect(() => {
     if (textSearchProducts.trim() == "") {
       // console.log("esta vacio")
@@ -97,6 +132,8 @@ const BoxProducts = ({ }) => {
     }
     handleDescripcionSearchButtonClick()
   }, [textSearchProducts]);
+
+
 
 
   const buscarValoresBalanzaVentaUnidad = (codigoBusqueda) => {
@@ -893,10 +930,65 @@ const BoxProducts = ({ }) => {
                     />
                   )
                 })}
+
+
+
+                {
+                  !ofertasContradictorias &&
+                  productsConOfertas &&
+                  productsConOfertas.length > 0 && (
+
+                    productsConOfertas.map((prodOferta, ixx) => {
+                      return (
+                        <TableRow key={ixx}>
+                          <TableCell sx={{
+                            textAlign: "center"
+                          }}>
+                            Descuento
+                            <br />
+                            <Typography sx={{
+                              border: "1px solid #ccc",
+                              borderRadius: "4px",
+                              display: "inline-block",
+                              fontSize: "12px",
+                              padding: "2px 4px",
+                              textAlign: "center"
+                            }}>
+                              tipo
+                              {" "}
+                              {prodOferta.ofertaAplicada.tipo}
+                              {" "}
+                              en
+                              {" "}
+                              {prodOferta.ofertaAplicada.tipoDescuento}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {/* agregar o quitar */}
+                          </TableCell>
+                          <TableCell>
+                            {prodOferta.description}
+                          </TableCell>
+                          <TableCell>
+                            {/* precio unitario */}
+                          </TableCell>
+                          <TableCell>
+                            -${prodOferta.elDescuento}
+                          </TableCell>
+                          <TableCell>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+
+
               </TableBody>
             </Table>
           </TableContainer>
           <br />
+
+
         </Paper>
         {/* <Paper
             sx={{
@@ -911,6 +1003,63 @@ const BoxProducts = ({ }) => {
           >
             <Typography sx={{ fontSize: "25px", }}>Total: ${System.getInstance().en2Decimales(grandTotal)}</Typography>
           </Paper> */}
+      </Grid>
+
+      <Grid item xs={12}>
+        <Paper
+          elevation={1}
+          sx={{
+            background: "#859398",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            margin: "5px",
+            width: "99%",
+            // maxHeight: (System.getInstance().getWindowHeight() / 2),
+            // overflow: "auto",
+          }}
+        >
+          {/* {
+            !ofertasContradictorias &&
+            productsConOfertas &&
+            productsConOfertas.length > 0 && (
+              <div
+                style={{
+                  maxHeight: "100px",
+                  width: "100%",
+                  overflowY: "auto"
+                }}
+              >
+                <Typography>Descuentos</Typography>
+                <Table
+                  sx={{
+                    background: "white",
+                    height: "30%",
+                  }}
+                >
+                  <TableBody style={{
+                    maxHeight: "100px",
+                    width: "100%",
+                    overflowY: "auto"
+                  }}>
+                    {productsConOfertas.map((prodOferta, ixx) => {
+                      return (
+                        <TableRow key={ixx}>
+                          <TableCell colSpan={10}>
+                            {prodOferta.description}
+                          </TableCell>
+                          <TableCell colSpan={10}>
+                            -${prodOferta.elDescuento}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+
+                  </TableBody>
+                </Table>
+              </div>
+            )} */}
+        </Paper>
       </Grid>
     </Paper>
 

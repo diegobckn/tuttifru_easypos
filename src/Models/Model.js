@@ -113,14 +113,6 @@ class Model {
     }, callbackWrong)
   }
 
-
-  static async getOfertas(callbackOk, callbackWrong) {
-    const url = ModelConfig.get("urlBase") + "/api/Ofertas/GetOfertas"
-    EndPoint.sendGet(url, (responseData, response) => {
-      callbackOk(responseData.ofertas, response)
-    }, callbackWrong)
-  }
-
   static async getComprobante(data = {
     nroFolio,
     codigoSucursal: null,

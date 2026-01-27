@@ -101,7 +101,8 @@ export default ({
       <div style={{
         width: "110px",
         height: "110px",
-      }}>
+      }}
+        data-image={image}>
         {image != "" && (
           <img style={{
             maxWidth: "100%",

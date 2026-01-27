@@ -48,7 +48,8 @@ import ModelConfig from "../../Models/ModelConfig";
 import UserEvent from "../../Models/UserEvent";
 import Product from "../../Models/Product";
 import BoxMultiPago from "./BoxMultiPago";
-import Oferta1 from "../../Models/Oferta1";
+import Oferta13 from "../../Models/Oferta134.ts";
+import Ofertas from "../../Models/Ofertas.ts";
 import Model from "../../Models/Model";
 import IngresarTexto from "../ScreenDialog/IngresarTexto";
 import Sales from "../../Models/Sales";
@@ -134,6 +135,8 @@ const BoxFactura = ({
   const [descuentoManual, setDescuentoManual] = useState(0);
   const [verModalDescuentos, setVerModalDescuentos] = useState(false);
 
+  const [productsConOfertas, setProductsConOfertas] = useState([]);
+
   useEffect(() => {
     PrinterPaper.getInstance().loadWidthFromSesion()
 
@@ -149,92 +152,28 @@ const BoxFactura = ({
       setIdTurno(nv)
     }, (err) => {
     }, true);
-
-
-
-
   }, [])
 
   const aplicarOfertas = () => {
-    // console.log("aplicando ofertas")
+    setProductsConOfertas([])
 
-    if (!ModelConfig.get("checkOfertas")) {
-      setProductosVendidos(salesData)
-      setTotalVentas(grandTotal)
-      return
-    }
+    Ofertas.aplicarTodas(salesData, (resultadoOfertas, totalConOfertas, productoVendidosConOfertas) => {
+      // AGRUPAMOS
 
-    Model.getOfertas((ofertas) => {
-      if (ofertas.length > 0) {
-        ofertas.forEach((ofer) => {
-          if (ofer.tipo === 5) {
+      Ofertas.calcularDescuentosFinales(resultadoOfertas, (prodConOfer, totalDescuentos) => {
+        setProductsConOfertas(prodConOfer)
+      })
 
+      setProductosVendidos(productoVendidosConOfertas)
+      setTotalVentas(totalConOfertas)
 
-            var copiaProductos = salesData
-
-            Oferta1.setInfo(ofer)
-            var resultadoOfertas = {
-              productosQueAplican: [],
-              productosQueNoAplican: copiaProductos
-            }
-
-            while (Oferta1.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
-              const resultadoAplicar = Oferta1.aplicar(resultadoOfertas.productosQueNoAplican)
-              // console.log("luego de aplicar queda asi", resultadoAplicar)
-
-              resultadoOfertas.productosQueAplican =
-                resultadoOfertas.productosQueAplican.concat(resultadoAplicar.productosQueAplican)
-              resultadoOfertas.productosQueNoAplican =
-                resultadoAplicar.productosQueNoAplican
-
-            }
-            // console.log("")
-            // console.log("")
-            // console.log("")
-            // console.log("resultado final", resultadoOfertas)
-
-            var totalVentasx = 0
-            var productosVendidosx = []
-
-            resultadoOfertas.productosQueAplican.forEach((prod) => {
-              totalVentasx += prod.total
-              productosVendidosx.push(prod)
-            })
-
-            resultadoOfertas.productosQueNoAplican.forEach((prod) => {
-              totalVentasx += prod.total
-              productosVendidosx.push(prod)
-            })
-
-            // console.log("total de las ventas aplicando ofertas es $", totalVentasx)
-            setTotalVentas(totalVentasx)
-            setProductosVendidos(productosVendidosx)
-          }
-        })
-      } else {
-        setProductosVendidos(salesData)
-        setTotalVentas(grandTotal)
-      }
     }, () => {
       setProductosVendidos(salesData)
       setTotalVentas(grandTotal)
     })
-
-
-    // Comercio.getServerImpresionConfigs((serverImpresionConfigs) => {
-    //   serverImpresionConfigs.forEach((impresion) => {
-    //     if (
-    //       impresion.grupo === "Ticket"
-    //       && impresion.entrada === "ImprimirComanda"
-    //       && impresion.valor === "SI"
-    //     ) {
-    //       setTrabajaConComanda(true)
-    //     }
-    //   })
-    // }, () => { })
-
-    setTrabajaConComanda(ModelConfig.get("trabajarConComanda"))
   }
+
+
 
   // ACCIONES
   // ACCIONES
@@ -428,6 +367,20 @@ const BoxFactura = ({
       } else {
         //solo online pero fallo.. queda como antes de enviar
       }
+    }
+
+    const itemConDescuentos = []
+    if (productsConOfertas.length > 0) {
+      productsConOfertas.forEach((proConOfer) => {
+        itemConDescuentos.push({
+          codbarra: proConOfer.idProducto,
+          descuento: proConOfer.elDescuento,
+          codigoOferta: proConOfer.ofertaAplicada.codigoOferta
+        })
+      })
+      requestBody.productsConDescuentos = itemConDescuentos
+    } else {
+      requestBody.productsConDescuentos = itemConDescuentos
     }
 
 

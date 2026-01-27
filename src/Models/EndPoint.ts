@@ -15,36 +15,36 @@ class EndPoint extends Singleton {
     // console.log("arranca admError", error)
     // console.log("arranca admError..callbackWrong", callbackWrong)
 
-    if (SoporteTicket.reportarError) console.log("admError", error)
-    if (SoporteTicket.reportarError) console.log("admError2", callbackWrong)
+    // if (SoporteTicket.reportarError) console.log("admError", error)
+    // if (SoporteTicket.reportarError) console.log("admError2", callbackWrong)
     if (callbackWrong == undefined) {
-      console.log("salgo porque no tiene callbackwrong")
+      // console.log("salgo porque no tiene callbackwrong")
       SoporteTicket.catchRequestError(error)
       return
     }
 
-    console.log("preparando para ir al callbackWrong")
+    // console.log("preparando para ir al callbackWrong")
 
     if (error.response) {
       if (error.response.data && error.response.data.descripcion) {
-        console.log("llama callbackwrong con.." + error.response.data.descripcion, error.response);
+        // console.log("llama callbackwrong con.." + error.response.data.descripcion, error.response);
         callbackWrong(error.response.data.descripcion, error.response);
       } else if (error.response.status === 500) {
-        console.log("llama callbackwrong con.." + "Error interno del servidor. Por favor, inténtalo de nuevo más tarde.", error.response);
+        // console.log("llama callbackwrong con.." + "Error interno del servidor. Por favor, inténtalo de nuevo más tarde.", error.response);
         callbackWrong("Error interno del servidor. Por favor, inténtalo de nuevo más tarde.", error.response);
       } else {
-        console.log("llama callbackwrong con.." + error.message, error.response);
+        // console.log("llama callbackwrong con.." + error.message, error.response);
         callbackWrong(error.message, error.response);
       }
     } else if (error.data && error.data.descripcion) {
-      console.log("llama callbackwrong con.." + error.data.descripcion, error);
+      // console.log("llama callbackwrong con.." + error.data.descripcion, error);
       callbackWrong(error.data.descripcion, error);
     } else if (error.message != "") {
 
-      console.log("llama callbackwrong con.." + error.message, error)
+      // console.log("llama callbackwrong con.." + error.message, error)
       callbackWrong(error.message, error)
     } else {
-      console.log("llama callbackwrong con.." + "Error de comunicacion con el servidor", error);
+      // console.log("llama callbackwrong con.." + "Error de comunicacion con el servidor", error);
       callbackWrong("Error de comunicacion con el servidor", error);
     }
 
@@ -79,13 +79,13 @@ class EndPoint extends Singleton {
       ) {
         if (callbackOk != undefined) callbackOk(response.data, response)
       } else {
-        console.log("else de statuscode 200")
+        // console.log("else de statuscode 200")
         this.admError(response, callbackWrong)
         // if(callbackWrong != undefined) callbackWrong("Error de servidor")
         // SoporteTicket.catchRequest(response)
       }
     } catch (error) {
-      console.log("catch")
+      // console.log("catch")
       this.admError(error, callbackWrong)
     }
   }

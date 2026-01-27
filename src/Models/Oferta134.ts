@@ -10,25 +10,20 @@ import EndPoint from './EndPoint.ts';
 import Model from './Model.js';
 import System from '../Helpers/System.ts';
 import ProductSold from './ProductSold.ts';
+import ModelSingleton from './ModelSingleton.ts';
+import Ofertas from './Ofertas.ts';
 
 export interface ResultadoAplicarOferta {
   productosQueAplican: any[]
   productosQueNoAplican: any[]
 }
 
-export default class {
+class Oferta13 extends ModelSingleton {
   info: any = null
   codigosAplicables: any[] = []
 
-  static session = new StorageSesion("ofertas")
-
   setInfo(infoOferta: any) {
     this.info = infoOferta
-
-  }
-
-  static guardarOffline(info: any) {
-    this.session.guardar(info)
   }
 
   llegoACantidadRequerida(cantidad: number) {
@@ -37,8 +32,8 @@ export default class {
     var signo = this.info.signo === "=" ? ">=" : this.info.signo
     if (this.info.signo === ">") signo = ">="
 
-    const el = cantidad + signo + this.info.cantidad
-    // console.log("eval", el)
+    // const el = cantidad + signo + this.info.cantidad
+    // console.log("eval", el, "----", this.info)
     return eval(cantidad + signo + this.info.cantidad)
   }
 
@@ -92,89 +87,80 @@ export default class {
     var cantidadAcumulada = 0
     var seAplico = false
 
+    var totalesGrupos: any = {}
+
     productos.forEach((prod: any) => {
       if (!seAplico && this.estaEnAplicables(prod)) {
         if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.cantidad)) {
           const copiaProd = System.clone(prod)
 
-          const copiaAplica = new ProductSold()
+          const copiaAplica: any = new ProductSold()
           copiaAplica.fill(copiaProd)
           copiaAplica.cantidad = parseFloat(this.info.cantidad)//porque tiene igual o mas
+          copiaAplica.precioVentaOriginal = prod.precioVenta + 0
           copiaAplica.precioVenta = precioEnOferta
+          copiaAplica.ofertaAplicada = System.clone(this.info)
+          Ofertas.cantidadAplicada++
+          copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
           copiaAplica.updateSubtotal()
           resul.productosQueAplican.push(copiaAplica)
-
           var cantidadRestante = parseFloat(prod.cantidad) - this.info.cantidad
           if (cantidadRestante > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
             copiaNoAplica.cantidad = cantidadRestante//toma lo que se paso
             copiaNoAplica.updateSubtotal()
+
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
           seAplico = true
         } else if (this.llegoACantidadRequerida(parseFloat(prod.cantidad) + cantidadAcumulada)) {
-          // revisar si sobre paso 
           var cantidadAplica = parseFloat(this.info.cantidad) - cantidadAcumulada
           var cantidadSobra = cantidadAcumulada + parseFloat(prod.cantidad) - this.info.cantidad
-          /*
-          llegar a 7
-          viene con 3
-          este prod tiene 6
-          ..
-          aplica a 4 unidades de este prod... 7 -  (3).. 4
-          sobran 2 unidades de este prod... 3 + 6 - 7 .. 2
-          */
           const copiaProd = System.clone(prod)
-
-          const copiaAplica = new ProductSold()
+          const copiaAplica: any = new ProductSold()
           copiaAplica.fill(copiaProd)
           copiaAplica.cantidad = cantidadAplica
+          copiaAplica.precioVentaOriginal = prod.precioVenta + 0
           copiaAplica.precioVenta = precioEnOferta
+          copiaAplica.ofertaAplicada = System.clone(this.info)
           copiaAplica.updateSubtotal()
+          copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+
           resul.productosQueAplican.push(copiaAplica)
 
           seAplico = true
-
+          Ofertas.cantidadAplicada++
           if (cantidadSobra > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
             copiaNoAplica.cantidad = cantidadSobra
+            copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
             copiaNoAplica.updateSubtotal()
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
         } else {
-          //lo acumulado no llega a lo requerido
-
-          /*
-          llegar a 7
-          viene con 2
-          este prod tiene 1
-          ..
-          aplica a 4 unidades de este prod... 7 -  (3).. 4
-          sobran 2 unidades de este prod... 3 + 6 - 7 .. 2
-          */
-
           const copiaProd = System.clone(prod)
-
-          const copiaAplica = new ProductSold()
+          const copiaAplica: any = new ProductSold()
           copiaAplica.fill(copiaProd)
           copiaAplica.precioVenta = precioEnOferta
+          copiaAplica.precioVentaOriginal = prod.precioVenta + 0
+          copiaAplica.ofertaAplicada = System.clone(this.info)
+          copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+
           copiaAplica.updateSubtotal()
+
           resul.productosQueAplican.push(copiaAplica)
-
           cantidadAcumulada += parseFloat(prod.cantidad)
-
         }
-
       } else {
         resul.productosQueNoAplican.push(System.clone(prod))
       }
-
     })
-
-
+    // console.log("resul", resul)
     return resul
   }
 
 };
+
+export default Oferta13

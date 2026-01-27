@@ -103,9 +103,9 @@ export default ({
     setComprobanteServidor(null)
   }, [openDialog])
 
-  useEffect(() => {
-    console.log("cambio codigoSucursal", codigoSucursal)
-  }, [codigoSucursal])
+  // useEffect(() => {
+    // console.log("cambio codigoSucursal", codigoSucursal)
+  // }, [codigoSucursal])
 
 
   return (

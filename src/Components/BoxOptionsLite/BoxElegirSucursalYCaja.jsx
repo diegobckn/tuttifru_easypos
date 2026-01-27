@@ -51,6 +51,8 @@ export default ({
 
   resetCambioManual = false,
 
+  afterLogin = null,
+  setAfterLogin = (x) => { }
 }) => {
   const {
     userData,
@@ -172,6 +174,12 @@ export default ({
   }
 
   const checkSeleccionCaja = (caja) => {
+
+    cajas.forEach((cajaItem, ix) => {
+      if (cajaItem.id == caja) {
+        setAfterLogin(cajaItem.tipo)
+      }
+    })
     setCaja(caja)
   }
 

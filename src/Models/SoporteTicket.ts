@@ -14,7 +14,7 @@ class SoporteTicket extends Singleton {
   static reportarError = true
 
   static catchRequest(requestData: any) {
-    if (SoporteTicket.reportarError) console.log("capturando request desde SoporteTicket", requestData)
+    // if (SoporteTicket.reportarError) console.log("capturando request desde SoporteTicket", requestData)
 
     var data: any = {
       urlCliente: window.location.href,
@@ -43,17 +43,17 @@ class SoporteTicket extends Singleton {
       data.datosRespuestaEndpoint.data = requestData.response.data
       data.datosRespuestaEndpoint.statusText = requestData.response.statusText
     }
-    if (SoporteTicket.reportarError) console.log("informacion del soporte", data)
+    // if (SoporteTicket.reportarError) console.log("informacion del soporte", data)
 
     this.enviarError(data, () => { }, () => { })
   }
 
   static catchRequestError(error: any) {
-    console.log("catchRequestError..error", error)
-    if (SoporteTicket.reportarError) console.log("capturando error desde SoporteTicket catch", error)
-    console.log("Error", error)
+    // console.log("catchRequestError..error", error)
+    // if (SoporteTicket.reportarError) console.log("capturando error desde SoporteTicket catch", error)
+    // console.log("Error", error)
     if (!error.config) {
-      console.log("salgo porque no tiene config")
+      // console.log("salgo porque no tiene config")
       return
     }
     var data: any = {
@@ -87,7 +87,7 @@ class SoporteTicket extends Singleton {
       data.datosRespuestaEndpoint.data = error.response.data
       data.datosRespuestaEndpoint.statusText = error.response.statusText
     }
-    if (SoporteTicket.reportarError) console.log("informacion del soporte", data)
+    // if (SoporteTicket.reportarError) console.log("informacion del soporte", data)
 
     this.enviarError(data, () => { }, () => { })
   }
@@ -138,7 +138,7 @@ class SoporteTicket extends Singleton {
       if (
         response.data.status
       ) {
-        console.log("incidencia enviada ok")
+        // console.log("incidencia enviada ok")
       }
     } catch (error) {
     }

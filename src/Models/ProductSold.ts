@@ -22,6 +22,7 @@ class ProductSold extends Product implements IProductSold {
     ocultarEnListado: boolean | undefined;
     extras: any | undefined;
     precioVenta: number | undefined
+    precioVentaOriginal: number | undefined
     mostrarPrecioRangos: any | undefined
     precioVentaCliente: number | undefined
 
