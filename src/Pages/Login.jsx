@@ -658,10 +658,7 @@ const Login = () => {
 
 
 
-        <ReconectarBalanza
-          openDialog={verPantallaReconectar}
-          setOpenDialog={setverPantallaReconectar}
-        />
+        
 
 
 
