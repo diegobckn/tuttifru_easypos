@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,8 @@ const AsignarPeso = ({
 
   const [peso, setPeso] = useState(0)
 
+  const refInput = useRef(null)
+
   const [showModalDeteccionPeso, setShowModalDeteccionPeso] = useState(false)
   const [detectarPeso, setVerBoton] = useState(null)
 
@@ -53,6 +55,15 @@ const AsignarPeso = ({
     setPeso(currentWight)
   }, [openDialog])
 
+  useEffect(() => {
+    if (!openDialog) return
+    if (refInput) {
+      setTimeout(() => {
+        System.intentarFoco(refInput)
+      }, 300);
+    }
+  }, [refInput])
+
   const handlerSaveAction = () => {
     if (peso == 0) {
       alert("Debe ingresar un peso");
@@ -65,8 +76,15 @@ const AsignarPeso = ({
   }
 
   const checkChangeWeight = (newWeight) => {
-    if (Validator.isPeso(newWeight))
+    console.log("cambio peso ", newWeight)
+    if (Validator.isPeso(newWeight)) {
+      const nwStr = newWeight + ""
+      if (nwStr.length == 2 && nwStr[0] === "0" && nwStr[1] !== ".") {
+        newWeight = nwStr[1];
+      }
       setPeso(newWeight)
+    }
+
   }
 
 
@@ -90,6 +108,10 @@ const AsignarPeso = ({
             <InputPeso
               inputValue={peso}
               funChanger={checkChangeWeight}
+              onRef={refInput}
+              onEnter={() => {
+                handlerSaveAction()
+              }}
             />
 
             {product ? (

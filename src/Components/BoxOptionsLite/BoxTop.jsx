@@ -11,7 +11,7 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { AddHome, AddHomeOutlined, AddHomeWork, AirplaneTicketOutlined, Autorenew, BuildCircle, Circle, DateRangeOutlined, GMobiledata, Inventory, LocalOffer, LocalPrintshop, Margin, MobileFriendly, Person, Person3, PointOfSale, ProductionQuantityLimits, ProductionQuantityLimitsRounded, Settings, SettingsSystemDaydream, Shop, Shop2, SupervisedUserCircle, SupervisedUserCircleOutlined, SupervisorAccount, SystemSecurityUpdate, Traffic, VerifiedUserOutlined, WifiOff } from "@mui/icons-material";
+import { AddHome, AddHomeOutlined, AddHomeWork, AirplaneTicketOutlined, Autorenew, BuildCircle, Circle, DateRangeOutlined, GMobiledata, Inventory, LocalOffer, LocalPrintshop, Margin, MobileFriendly, Person, Person3, PointOfSale, ProductionQuantityLimits, ProductionQuantityLimitsRounded, Scale, Settings, SettingsSystemDaydream, Shop, Shop2, SupervisedUserCircle, SupervisedUserCircleOutlined, SupervisorAccount, SystemSecurityUpdate, Traffic, VerifiedUserOutlined, WifiOff } from "@mui/icons-material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 import dayjs from "dayjs";
 
@@ -37,6 +37,9 @@ import AdmPedidosProgramadosApp from "../ScreenDialog/AdmPedidosProgramadosApp";
 import TarjetaMenu from "../Elements/TarjetaMenu";
 import TarjetaCliente from "../ScreenDialog/TarjetaCliente";
 import Ofertas from "../../Models/Ofertas";
+import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
+import Conexion from "../../Models/Conexion";
+import ListarTicketsDigi from "../ScreenDialog/ListarTicketsDigi";
 
 const BoxTop = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -61,10 +64,10 @@ const BoxTop = () => {
     showLoading,
     hideLoading,
     tieneInternet,
-    conexionesOkInternet,
-    conexionesMalInternet,
+    // conexionesOkInternet,
+    // conexionesMalInternet,
+    focusSearchInput,
     searchInputRef,
-    ofertas
   } = useContext(SelectedOptionsContext);
 
   const navigate = useNavigate();
@@ -83,16 +86,17 @@ const BoxTop = () => {
   const [showFoliosFacturas, setShowFoliosFacturas] = useState(false);
   const [foliosMostrar, setFoliosMostrar] = useState("");
 
+  const [showFoliosBoletas, setShowFoliosBoletas] = useState(false);
+  const [foliosBoletasMostrar, setFoliosBoletasMostrar] = useState("");
+
   const [verTarjetaCliente, setVerTarjetaCliente] = useState(false);
   const [trabajaConApp, setTrabajaConApp] = useState(false);
 
   const [showCloseSessionDialog, setShowCloseSessionDialog] = useState(false);
   const [urlApi, setUrlApi] = useState("");
+  const [ofertas, setOfertas] = useState([]);
 
-
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
-  }
+  const [showTicketsDigi, setShowTicketsDigi] = useState(false);
 
   const cargarStockCriticoSuperados = () => {
     var superados = 0
@@ -180,7 +184,9 @@ const BoxTop = () => {
     cargarStockCriticoSuperados()
     cargarVentasOfllines()
 
-
+    Ofertas.cargarSoloCorrectas((ofs) => {
+      setOfertas(ofs)
+    })
     // console.log("listSalesOffline", listSalesOffline)
   }, [])
 
@@ -198,11 +204,18 @@ const BoxTop = () => {
       clearSessionData();
       navigate("/login");
     } else {
+      // const userInfo = User.getInstance().getFromSesion()
+      const leidoOffline = OfflineAutoIncrement.getFromSesion()
+      // console.log("leidoOffline", leidoOffline)
       if (ModelConfig.get("verBotonPagarFactura")) {
         setShowFoliosFacturas(true)
-        const userInfo = User.getInstance().getFromSesion()
 
-        setFoliosMostrar("Folios de facturas \n Desde: " + userInfo.nFolioFactura + ".. Hasta:" + userInfo.nFolioFacturaHasta)
+        setFoliosMostrar("Folios de facturas \n Desde: " + leidoOffline.nFolioFactura + ".. Hasta:" + leidoOffline.nFolioFacturaHasta)
+      }
+      if (ModelConfig.get("emitirBoleta")) {
+        setShowFoliosBoletas(true)
+
+        setFoliosBoletasMostrar("Folios de Boletas \n Desde: " + leidoOffline.nFolioBoleta + ".. Hasta:" + leidoOffline.nFolioBoletaHasta)
       }
     }
   }, [userData]);
@@ -213,12 +226,12 @@ const BoxTop = () => {
     Product.getInstance().almacenarParaOffline((prods, resp) => {
       hideLoading()
       showAlert("Actualizado correctamente", "", () => {
-        focusSearchInput()
+        focusSearchInput(searchInputRef)
       })
     }, () => {
       hideLoading()
       showMessage("No se pudo realizar")
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
     })
   }
 
@@ -328,7 +341,7 @@ const BoxTop = () => {
 
                   actionClick={() => {
                     showAlert("Impresora de " + widthPrinter, "", () => {
-                      focusSearchInput()
+                      focusSearchInput(searchInputRef)
                     })
                   }}
                 />
@@ -344,11 +357,25 @@ const BoxTop = () => {
 
                   actionClick={() => {
                     showAlert(foliosMostrar, "", () => {
-                      focusSearchInput()
+                      focusSearchInput(searchInputRef)
                     })
                   }}
                 />
+              )}
+              {showFoliosBoletas && (
+                <TarjetaMenu
+                  title={"Folios"}
+                  text={"Boletas"}
+                  icon={<AirplaneTicketOutlined sx={{
+                    color: "#fff"
+                  }} fontSize="medium" />}
 
+                  actionClick={() => {
+                    showAlert(foliosBoletasMostrar, "", () => {
+                      focusSearchInput(searchInputRef)
+                    })
+                  }}
+                />
               )}
 
               <TarjetaCliente openDialog={verTarjetaCliente} setOpenDialog={setVerTarjetaCliente} />
@@ -359,7 +386,7 @@ const BoxTop = () => {
                   setShowSalesOffline(v)
 
                   if (!v) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                 }}
               />
@@ -370,7 +397,7 @@ const BoxTop = () => {
                 setOpenDialog={(v) => {
                   setShowAdmPedidosProgramados(v)
                   if (!v) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                 }}
               />
@@ -380,7 +407,7 @@ const BoxTop = () => {
                   setShowAdminApp(v)
 
                   if (!v) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                 }}
               />
@@ -390,7 +417,7 @@ const BoxTop = () => {
                 setOpenDialog={(x) => {
                   setShowCritics(x)
                   if (!x) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                 }}
               />
@@ -436,7 +463,7 @@ const BoxTop = () => {
 
                 actionClick={() => {
                   descargarProductos()
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }}
               />
 
@@ -462,14 +489,27 @@ const BoxTop = () => {
                 actionClick={() => {
                   var txt = "";
 
-                  txt += "Las conexiones correctas son " + conexionesOkInternet
-                  txt += " y las incorrectas " + conexionesMalInternet + "."
+                  txt += "Las conexiones correctas son " + Conexion.getCorrects()
+                  txt += " y las incorrectas " + Conexion.getInCorrects() + "."
 
                   showAlert("Estado de conexiones a internet", txt, () => {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   })
                 }}
               />
+              <TarjetaMenu
+                title={"Balanza Digi"}
+                text={"Tickets"}
+                icon={<Scale sx={{
+                  color: "#EAF9FF",
+                }} fontSize="medium" />}
+
+                actionClick={() => {
+                  setShowTicketsDigi(true)
+                }}
+              />
+
+              <ListarTicketsDigi openDialog={showTicketsDigi} setOpenDialog={setShowTicketsDigi} />
 
               {listSalesOffline.length > 0 && (
                 <TarjetaMenu

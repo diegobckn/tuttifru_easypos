@@ -26,7 +26,7 @@ const TarjetaMenu = ({
         borderRadius: "5px",
         alignItems: "center",
         padding: "4px",
-        marginRight: "1px",
+        marginRight: "2%",
         cursor: "pointer"
       }, ...style
     }}

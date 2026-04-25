@@ -12,7 +12,12 @@ class LoopProperties {
     functionEnd: any = null
     adicionalInfo: any = null
 
-    constructor(objectProperties, functionToLoop, functionToEnd, adicionalInfo:any = null) {
+    constructor(
+        objectProperties: any,
+        functionToLoop: (propName: string, propValue: any, looper: LoopProperties) => void,
+        functionToEnd: () => void,
+        adicionalInfo: any = null
+    ) {
         this.functionLoop = functionToLoop
         this.functionEnd = functionToEnd
         this.adicionalInfo = adicionalInfo

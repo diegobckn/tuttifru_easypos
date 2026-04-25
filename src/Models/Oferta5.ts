@@ -29,12 +29,12 @@ class Ofertas5 extends ModelSingleton {
   llegoACantidadRequerida(cantidad: number) {
     // console.log("llegoACantidadRequerida..cantidad", cantidad)
 
-    var signo = this.info.signo === "=" ? ">=" : this.info.signo
-    if (this.info.signo === ">") signo = ">="
+    var signo = this.info.oferta_Regla.signo === "=" ? ">=" : this.info.oferta_Regla.signo
+    if (this.info.oferta_Regla.signo === ">") signo = ">="
 
-    // const el = cantidad + signo + this.info.cantidad
-    // console.log("eval", el, "----", this.info)
-    return eval(cantidad + signo + this.info.cantidad)
+    const el = cantidad + signo + this.info.oferta_Regla.cantidad
+    // console.log("eval", el, "----", this.info.oferta_Regla)
+    return eval(cantidad + signo + this.info.oferta_Regla.cantidad)
   }
 
   debeAplicar(productos: any) {
@@ -42,11 +42,11 @@ class Ofertas5 extends ModelSingleton {
     // console.log("this.info.products", this.info.products)
     // console.log("debeAplicar..this", this)
     if (
-      this.info.signo !== "="
-      && this.info.signo !== ">"
-      && this.info.signo !== "<"
-      && this.info.signo !== ">="
-      && this.info.signo !== "<="
+      this.info.oferta_Regla.signo !== "="
+      && this.info.oferta_Regla.signo !== ">"
+      && this.info.oferta_Regla.signo !== "<"
+      && this.info.oferta_Regla.signo !== ">="
+      && this.info.oferta_Regla.signo !== "<="
     ) {
       // console.log("debeAplicar devuelve false")
       return false
@@ -87,21 +87,21 @@ class Ofertas5 extends ModelSingleton {
 
         const copiaAplica: any = new ProductSold()
         copiaAplica.fill(copiaProd)
-        // copiaAplica.cantidad = parseFloat(this.info.cantidad)//porque tiene igual o mas
+        // copiaAplica.cantidad = parseFloat(this.info.oferta_Regla.cantidad)//porque tiene igual o mas
         copiaAplica.precioVentaOriginal = prod.precioVenta + 0
         copiaAplica.ofertaAplicada = System.clone(this.info)
 
         Ofertas.cantidadAplicada++
         copiaAplica.ordenAplicado = Ofertas.cantidadAplicada
 
-        if (this.info.tipoDescuento == "$") {
-          var precioEnOferta: number = (prod.precioVenta - this.info.monto)
+        if (this.info.oferta_Regla.tipoDescuento == "$") {
+          var precioEnOferta: number = (prod.precioVenta - this.info.oferta_Regla.valor)
           // console.log("precioEnOferta $ ", precioEnOferta)
-          // console.log("descontanto ", this.info.monto)
+          // console.log("descontanto ", this.info.oferta_Regla.valor)
           copiaAplica.precioVenta = precioEnOferta
         } else {
           //es con %
-          const porc = 1 - (this.info.monto / 100)
+          const porc = 1 - (this.info.oferta_Regla.valor / 100)
           var precioEnOferta: number = (prod.precioVenta * porc)
           // console.log("precioEnOferta % ", precioEnOferta)
           copiaAplica.precioVenta = precioEnOferta

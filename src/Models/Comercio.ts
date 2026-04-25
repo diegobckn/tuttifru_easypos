@@ -9,52 +9,78 @@ import Singleton from './Singleton.ts';
 
 
 class Comercio {
+  static sesionServerAllConfig = new StorageSesion("ComercioServerAllConfig")
+  static sesionServerImpresion = new StorageSesion("ComercioServerImpresion")
+  static sesionServerAnchos = new StorageSesion("ComercioServerAnchos")
 
-  static sesionServerAllConfig: StorageSesion = new StorageSesion("ComercioServerAllConfig")
-  static sesionServerImpresion: StorageSesion = new StorageSesion("ComercioServerImpresion")
-  static sesionServerAnchos: StorageSesion = new StorageSesion("ComercioServerAnchos")
+  almacenarOfflineGeneral(
+    callbackOk = () => { },
+    callbackWrong = (x: string) => { }) {
+
+    const urlBase = ModelConfig.get("urlBase") + "/api/Configuracion"
+    var url = urlBase + "/GetAllConfiguracionCliente"
+
+    EndPoint.sendGet(url, (responseData: any) => {
+      Comercio.sesionServerAllConfig.guardar(responseData.configuracion)
+      callbackOk()
+    }, (er: string) => {
+      callbackWrong(er)
+    })
+  }
+
+  almacenarOfflineImpresion(
+    callbackOk = () => { },
+    callbackWrong = (x: string) => { }) {
+
+    const urlBase = ModelConfig.get("urlBase") + "/api/Configuracion"
+    var url = urlBase + "/GetAllConfiguracionImpresion"
+
+    EndPoint.sendGet(url, (responseData: any) => {
+      Comercio.sesionServerImpresion.guardar(responseData.configuracion)
+      callbackOk()
+    }, (er: string) => {
+      callbackWrong(er)
+    })
+  }
+  
+  almacenarOfflineAnchos(
+    callbackOk = () => { },
+    callbackWrong = (x: string) => { }) {
+
+    const urlBase = ModelConfig.get("urlBase") + "/api/Configuracion"
+    var url = urlBase + "/GetAllConfiguracionTamañoImpresion"
+
+    EndPoint.sendGet(url, (responseData: any) => {
+      Comercio.sesionServerAnchos.guardar(responseData.configuracion)
+      callbackOk()
+    }, (er: string) => {
+      callbackWrong(er)
+    })
+  }
 
   static async getServerImpresionConfigs(callbackOk: any, callbackWrong: any) {
-    var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionImpresion"
     EndPoint.sendGet(url, (responseData: any, response: any) => {
-      me.sesionServerImpresion.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er:any) => {
-      if (me.sesionServerImpresion.hasOne()) {
-        callbackOk(me.sesionServerImpresion.cargar(1), {})
-        return
-      }
+    }, (er: any) => {
       callbackWrong(er)
     })
   }
 
   static async getServerAllConfigs(callbackOk: any, callbackWrong: any) {
-    var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionCliente"
     EndPoint.sendGet(url, (responseData: any, response: any) => {
-      me.sesionServerAllConfig.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er:any) => {
-      if (me.sesionServerAllConfig.hasOne()) {
-        callbackOk(me.sesionServerAllConfig.cargar(1), {})
-        return
-      }
+    }, (er: any) => {
       callbackWrong(er)
     })
   }
 
   static async getServerAnchosTickets(callbackOk: any, callbackWrong: any) {
-    var me = this
     const url = ModelConfig.get("urlBase") + "/api/Configuracion/GetAllConfiguracionTamañoImpresion"
     EndPoint.sendGet(url, (responseData: any, response: any) => {
-      me.sesionServerAnchos.guardar(responseData.configuracion)
       callbackOk(responseData.configuracion, response)
-    }, (er:any) => {
-      if (me.sesionServerAnchos.hasOne()) {
-        callbackOk(me.sesionServerAnchos.cargar(1), {})
-        return
-      }
+    }, (er: any) => {
       callbackWrong(er)
     })
   }
@@ -66,10 +92,7 @@ class Comercio {
         found = element
       }
     });
-
     return found;
   }
-
 };
-
 export default Comercio;

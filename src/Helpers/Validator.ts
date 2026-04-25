@@ -1,8 +1,3 @@
-import { Height } from "@mui/icons-material";
-import CONSTANTS from "../definitions/Constants";
-import dayjs from "dayjs";
-
-
 class Validator {
     static instance: Validator | null = null;
 
@@ -14,7 +9,7 @@ class Validator {
         return Validator.instance;
     }
 
-    static getCount(sub, fullstring) {
+    static getCount(sub:string, fullstring:string) {
         var count = 0;
         for (let index = 0; index < fullstring.length; index++) {
             const letra = fullstring[index];
@@ -23,30 +18,30 @@ class Validator {
         return count;
     }
 
-    static isNumericOAlpha(newValuex) {
+    static isNumericOAlpha(newValuex:number | string) {
         var newValue = newValuex + ""
         var rex = /^[A-Za-z0-9]+$/g
         return newValue.match(rex)
     }
 
-    static isNumericOAlphaConEspacio(newValuex) {
+    static isNumericOAlphaConEspacio(newValuex:number | string) {
         var newValue = newValuex + ""
         var rex = /^[A-Za-z 0-9]+$/g
         return newValue.match(rex)
     }
 
-    static isNombre(newValuex) {
+    static isNombre(newValuex:number | string) {
         return this.isNumericOAlphaConEspacio(newValuex)
     }
 
-    static isUrl(newValuex) {
+    static isUrl(newValuex:string) {
         var newValue = newValuex + ""
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
         var rex = /^[A-Za-z0-9\:\/\.\s\-\?\&\=\_\#\+]+$/g
         return newValue.match(rex)
     }
 
-    static isRutChileno = (rut) => {
+    static isRutChileno = (rut:string) => {
         if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rut)) {
             // Si el formato del RUT no es válido, retorna false
             return false;
@@ -58,7 +53,7 @@ class Validator {
         const numeroRut = partesRut[0];
 
         // Función para calcular el dígito verificador
-        const calcularDigitoVerificador = (T) => {
+        const calcularDigitoVerificador = (T:any) => {
             let M = 0;
             let S = 1;
             for (; T; T = Math.floor(T / 10)) {
@@ -71,14 +66,14 @@ class Validator {
         return calcularDigitoVerificador(numeroRut) === digitoVerificador;
     }
 
-    static isTelefono(newValuex) {
+    static isTelefono(newValuex:string) {
         var newValue = newValuex + ""
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
         var rex = /^[0-9]+$/g
         return newValue.match(rex)
     }
 
-    static isPreEmail(email) {
+    static isPreEmail(email:string) {
         var newValue = email + ""
 
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
@@ -89,7 +84,7 @@ class Validator {
         return emailPattern.test(newValue)
     };
 
-    static isEmail(email) {
+    static isEmail(email:string) {
         var newValue = email + ""
 
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
@@ -103,21 +98,21 @@ class Validator {
         return emailPattern.test(newValue.trim())
     };
 
-    static isDireccion(newValuex) {
+    static isDireccion(newValuex:string) {
         var newValue = newValuex + ""
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
         var rex = /^[A-Za-z\s\-]+$/g
         return newValue.match(rex)
     }
 
-    static isNumeric(newValuex, maxDigits = 10) {
+    static isNumeric(newValuex:string, maxDigits = 10) {
         var newValue = newValuex + ""
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
         var rex = /^[0-9]+$/g
         return newValue.match(rex) && newValue.length <= maxDigits
     }
 
-    static isRut(newValuex) {
+    static isRut(newValuex:string) {
         var newValue = newValuex + ""
         if (!newValue) return true//caracter especial, ej: borrar, supr,etc
         var canGuiones = Validator.getCount("-", newValue)
@@ -145,28 +140,28 @@ class Validator {
         return Validator.isNumeric(newValue)
     }
 
-    static isSearch(newValuex) {
+    static isSearch(newValuex:string) {
         var newValue = newValuex + ""
         var rex = /^[A-Za-z0-9\s\-\;\,\'\´\.]+$/g
         return !newValue //caracter especial, ej: borrar, supr,etc
             || newValue.match(rex)
     }
 
-    static isPhone(newValuex) {
+    static isPhone(newValuex:string) {
         var newValue = newValuex + ""
         var rex = /^[0-9\-]+$/g
         return !newValue //caracter especial, ej: borrar, supr,etc
             || newValue.match(rex)
     }
 
-    static isPassword(newValuex) {
+    static isPassword(newValuex:string) {
         var newValue = newValuex + ""
         var rex = /^[A-Za-z0-9\-\s\#\-!\%\&\*\$\^\|]+$/g
         return !newValue //caracter especial, ej: borrar, supr,etc
             || newValue.match(rex)
     }
 
-    static isDecimal(newValuex) {
+    static isDecimal(newValuex:any) {
         var newValue = newValuex + ""
         if (newValue.indexOf("e") >= 0) return false
         if (newValue.indexOf("-") >= 0) return false
@@ -179,26 +174,26 @@ class Validator {
         return Validator.isNumeric(newValue)
     }
 
-    static isPeso(newValuex) {
+    static isPeso(newValuex:any) {
         return this.isDecimal(newValuex)
     }
 
-    static isMonto(newValuex, maxDigits = 10) {
+    static isMonto(newValuex:any, maxDigits = 10) {
         var newValue = newValuex + ""
         if (newValue.indexOf("e") >= 0) return false
         if (newValue.indexOf("-") >= 0) return false
         return Validator.isNumeric(newValue, maxDigits)
     }
 
-    static isCantidad(newValuex) {
+    static isCantidad(newValuex:any) {
         var newValue = newValuex + ""
         if (newValue.indexOf("e") >= 0) return false
         if (newValue.indexOf("-") >= 0) return false
         if (newValue.indexOf(".") >= 0) return false
-        return Validator.isNumeric(newValue) && newValue.length <= 5
+        return Validator.isNumeric(newValue) //&& newValue.length <= 5
     }
 
-    static isTeclaControl(event) {
+    static isTeclaControl(event:any) {
         var key = event.key
 
         switch (key) {
@@ -219,7 +214,7 @@ class Validator {
         }
     }
 
-    static isKeyEmail(event) {
+    static isKeyEmail(event:any) {
         var key = event.key
         var all = event.target.value
 
@@ -236,7 +231,7 @@ class Validator {
         return false
     }
 
-    static isKeyPhone(event) {
+    static isKeyPhone(event:any) {
         var key = event.key
         var all = event.target.value
 
@@ -257,7 +252,7 @@ class Validator {
         return false
     }
 
-    static isKeyPassword(event) {
+    static isKeyPassword(event:any) {
         var key = event.key
         var all = event.target.value
 
@@ -276,7 +271,7 @@ class Validator {
         return false
     }
 
-    static isFile(newValuex, extensions = "*") {
+    static isFile(newValuex:any, extensions = "*") {
         var newValue = newValuex + ""
         // console.log("validando extensiones", extensions)
         if (!newValue) {

@@ -29,12 +29,12 @@ class Oferta13 extends ModelSingleton {
   llegoACantidadRequerida(cantidad: number) {
     // console.log("llegoACantidadRequerida..cantidad", cantidad)
 
-    var signo = this.info.signo === "=" ? ">=" : this.info.signo
-    if (this.info.signo === ">") signo = ">="
+    var signo = this.info.oferta_Regla.signo === "=" ? ">=" : this.info.oferta_Regla.signo
+    if (this.info.oferta_Regla.signo === ">") signo = ">="
 
-    // const el = cantidad + signo + this.info.cantidad
+    const el = cantidad + signo + this.info.oferta_Regla.cantidad
     // console.log("eval", el, "----", this.info)
-    return eval(cantidad + signo + this.info.cantidad)
+    return eval(el)
   }
 
   debeAplicar(productos: any) {
@@ -42,26 +42,24 @@ class Oferta13 extends ModelSingleton {
     // console.log("this.info.products", this.info.products)
     // console.log("debeAplicar..this", this)
     if (
-      this.info.signo !== "="
-      && this.info.signo !== ">"
-      && this.info.signo !== "<"
-      && this.info.signo !== ">="
-      && this.info.signo !== "<="
+      this.info.oferta_Regla.signo !== "="
+      && this.info.oferta_Regla.signo !== ">"
+      && this.info.oferta_Regla.signo !== "<"
+      && this.info.oferta_Regla.signo !== ">="
+      && this.info.oferta_Regla.signo !== "<="
     ) {
       // console.log("debeAplicar devuelve false")
       return false
     }
 
     if (this.codigosAplicables.length < 1) this.codigosAplicables = this.info.products.map((pr: any) => pr.codbarra)
-
     // console.log("this.codigosAplicables", this.codigosAplicables)
     var cuantosHay = 0
     productos.forEach((prod: any) => {
-      if (this.estaEnAplicables(prod)) {
+      if (this.estaEnAplicables(prod) && !ProductSold.tieneRangoStatic(prod)) {
         cuantosHay += parseFloat(prod.cantidad)
       }
     });
-
     // console.log("cuantosHay", cuantosHay)
 
     const rs = this.llegoACantidadRequerida(cuantosHay)
@@ -83,76 +81,82 @@ class Oferta13 extends ModelSingleton {
       productosQueNoAplican: []
     }
 
-    var precioEnOferta = this.info.monto / this.info.cantidad
+    var precioEnOferta = this.info.oferta_Regla.valor / this.info.oferta_Regla.cantidad
     var cantidadAcumulada = 0
     var seAplico = false
 
-    var totalesGrupos: any = {}
-
     productos.forEach((prod: any) => {
-      if (!seAplico && this.estaEnAplicables(prod)) {
-        if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.cantidad)) {
-          const copiaProd = System.clone(prod)
+      if (!seAplico && !ProductSold.tieneRangoStatic(prod) && this.estaEnAplicables(prod)) {
 
+        if (cantidadAcumulada === 0 && this.llegoACantidadRequerida(prod.cantidad)) {
+
+          const copiaProd = System.clone(prod)
           const copiaAplica: any = new ProductSold()
           copiaAplica.fill(copiaProd)
-          copiaAplica.cantidad = parseFloat(this.info.cantidad)//porque tiene igual o mas
           copiaAplica.precioVentaOriginal = prod.precioVenta + 0
           copiaAplica.precioVenta = precioEnOferta
           copiaAplica.ofertaAplicada = System.clone(this.info)
-          Ofertas.cantidadAplicada++
           copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+          copiaAplica.cantidad = parseFloat(this.info.oferta_Regla.cantidad)//porque tiene igual o mas
+
+          Ofertas.cantidadAplicada++
+          // console.log("copiaAplica", System.clone(copiaAplica))
           copiaAplica.updateSubtotal()
+          // console.log("copiaAplica despues de updateSubtotal..", System.clone(copiaAplica))
           resul.productosQueAplican.push(copiaAplica)
-          var cantidadRestante = parseFloat(prod.cantidad) - this.info.cantidad
+          var cantidadRestante = parseFloat(prod.cantidad) - this.info.oferta_Regla.cantidad
           if (cantidadRestante > 0) {
             const copiaNoAplica = new ProductSold()
             copiaNoAplica.fill(copiaProd)
             copiaNoAplica.cantidad = cantidadRestante//toma lo que se paso
             copiaNoAplica.updateSubtotal()
-
             resul.productosQueNoAplican.push(copiaNoAplica)
           }
           seAplico = true
-        } else if (this.llegoACantidadRequerida(parseFloat(prod.cantidad) + cantidadAcumulada)) {
-          var cantidadAplica = parseFloat(this.info.cantidad) - cantidadAcumulada
-          var cantidadSobra = cantidadAcumulada + parseFloat(prod.cantidad) - this.info.cantidad
-          const copiaProd = System.clone(prod)
-          const copiaAplica: any = new ProductSold()
-          copiaAplica.fill(copiaProd)
-          copiaAplica.cantidad = cantidadAplica
-          copiaAplica.precioVentaOriginal = prod.precioVenta + 0
-          copiaAplica.precioVenta = precioEnOferta
-          copiaAplica.ofertaAplicada = System.clone(this.info)
-          copiaAplica.updateSubtotal()
-          copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
-
-          resul.productosQueAplican.push(copiaAplica)
-
-          seAplico = true
-          Ofertas.cantidadAplicada++
-          if (cantidadSobra > 0) {
-            const copiaNoAplica = new ProductSold()
-            copiaNoAplica.fill(copiaProd)
-            copiaNoAplica.cantidad = cantidadSobra
-            copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
-            copiaNoAplica.updateSubtotal()
-            resul.productosQueNoAplican.push(copiaNoAplica)
-          }
         } else {
-          const copiaProd = System.clone(prod)
-          const copiaAplica: any = new ProductSold()
-          copiaAplica.fill(copiaProd)
-          copiaAplica.precioVenta = precioEnOferta
-          copiaAplica.precioVentaOriginal = prod.precioVenta + 0
-          copiaAplica.ofertaAplicada = System.clone(this.info)
-          copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+          const cantidadFutura = parseFloat(prod.cantidad) + cantidadAcumulada
+          if (this.llegoACantidadRequerida(cantidadFutura)) {
+            var cantidadSobra = cantidadFutura - this.info.oferta_Regla.cantidad
 
-          copiaAplica.updateSubtotal()
+            const copiaProd = System.clone(prod)
+            const copiaAplica: any = new ProductSold()
+            copiaAplica.fill(copiaProd)
+            copiaAplica.precioVentaOriginal = prod.precioVenta + 0
+            copiaAplica.precioVenta = precioEnOferta
+            copiaAplica.ofertaAplicada = System.clone(this.info)
+            copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+            copiaAplica.cantidad = parseFloat(this.info.oferta_Regla.cantidad)
+            copiaAplica.cantidad -= cantidadAcumulada
+            copiaAplica.updateSubtotal()
 
-          resul.productosQueAplican.push(copiaAplica)
-          cantidadAcumulada += parseFloat(prod.cantidad)
+            resul.productosQueAplican.push(copiaAplica)
+            seAplico = true
+            Ofertas.cantidadAplicada++
+            if (cantidadSobra > 0) {
+              const copiaNoAplica = new ProductSold()
+              copiaNoAplica.fill(copiaProd)
+              copiaNoAplica.cantidad = cantidadSobra
+              copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+              copiaNoAplica.updateSubtotal()
+              resul.productosQueNoAplican.push(copiaNoAplica)
+            }
+          } else {
+            const copiaProd = System.clone(prod)
+            const copiaAplica: any = new ProductSold()
+            copiaAplica.fill(copiaProd)
+            copiaAplica.precioVenta = precioEnOferta
+            copiaAplica.precioVentaOriginal = prod.precioVenta + 0
+            copiaAplica.ofertaAplicada = System.clone(this.info)
+            copiaAplica.grupoAplicado = Ofertas.cantidadAplicada
+
+            copiaAplica.updateSubtotal()
+
+            resul.productosQueAplican.push(copiaAplica)
+            cantidadAcumulada += parseFloat(prod.cantidad)
+          }
         }
+
+
       } else {
         resul.productosQueNoAplican.push(System.clone(prod))
       }

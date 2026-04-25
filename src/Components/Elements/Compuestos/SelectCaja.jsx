@@ -103,7 +103,7 @@ export default ({
       } else {
         // console.log("no es todo numero..")
         // console.log("carga original",selectedOriginal)
-        setByString(selectedOriginal)
+        // setByString(selectedOriginal)
       }
     } else {
       validate()

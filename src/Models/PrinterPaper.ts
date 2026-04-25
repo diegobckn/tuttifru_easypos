@@ -8,6 +8,7 @@ import LoopProperties from '../Helpers/LoopProperties.ts';
 import ModelSingleton from './ModelSingleton.ts';
 import User from './User.ts';
 import Comercio from './Comercio.ts';
+import PagoBoleta from './PagoBoleta.ts';
 
 
 class PrinterPaper extends ModelSingleton {
@@ -190,13 +191,28 @@ class PrinterPaper extends ModelSingleton {
         var descuento = "0"
         if (datosfinales.descuento) descuento = datosfinales.descuento
 
-
         html = html.replaceAll("{{imprimirItems}}", rowsHtml)
         html = html.replaceAll("{{TotalGeneral}}", datosfinales.totalRedondeado)
         html = html.replaceAll("{{Total}}", datosfinales.totalPagado)
         html = html.replaceAll("{{Redondeo}}", datosfinales.redondeo)
         html = html.replaceAll("{{Vuelto}}", datosfinales.vuelto)
         html = html.replaceAll("{{Descuento}}", descuento)
+
+
+        const esBoleta = PagoBoleta.analizarSiHaceBoleta(datosfinales)
+        // console.log("esBoleta", esBoleta)
+        if (esBoleta) {
+            var iva = datosfinales.totalPagado * 0.19
+            html = html.replaceAll("{{IVA}}", System.formatMonedaLocal(iva))
+            var txtPdf417Legal = "<p style=' font-size: 10px;width: 100%;text-align: center;font-family: monospace;text-transform: uppercase;'>";
+            txtPdf417Legal += "***Emitido bajo Resolución Exenta 207";
+            txtPdf417Legal += "</p>";
+            txtPdf417Legal += "<p style=' font-size: 10px;width: 100%;text-align: center;font-family: monospace;text-transform: uppercase;'>";
+            txtPdf417Legal += "de fecha 30 de diciembre de 2025***";
+            txtPdf417Legal += "</p>";
+            txtPdf417Legal += "<div class=\"footer\">";
+            html = html.replace("<div class=\"footer\">", txtPdf417Legal)
+        }
 
         if (totalEnvases > 0) {
             html = html.replaceAll("{{EnvaseTotal}}", "<strong>Envases:  $" + formatoMonto(totalEnvases) + "</strong><br>")
@@ -257,7 +273,7 @@ class PrinterPaper extends ModelSingleton {
         return html
     }
 
-    getHtmlEnvases(entrada:string, datosfinales:any, createQrString:any) {
+    getHtmlEnvases(entrada: string, datosfinales: any, createQrString: any) {
         entrada = entrada + this.width
         // console.log("getHtmlEnvases.. de " + entrada, "..datos", datosfinales)
         var pre = this.prepare(entrada)
@@ -270,9 +286,9 @@ class PrinterPaper extends ModelSingleton {
         var totalEnvases = 0
         var cantidad = 0
 
-        const formatoMonto = (m:number) => { return System.isInt(m) ? m : m.toFixed(2) }
+        const formatoMonto = (m: number) => { return System.isInt(m) ? m : m.toFixed(2) }
 
-        datosfinales.products.forEach((prod:any) => {
+        datosfinales.products.forEach((prod: any) => {
             if (prod.codbarra == "0" && prod.descripcion == "Envase") {
                 // es un envase
                 cantidad += prod.cantidad
@@ -302,7 +318,7 @@ class PrinterPaper extends ModelSingleton {
 
 
 
-    getHtmlComanda(entrada:string, datosfinales:any) {
+    getHtmlComanda(entrada: string, datosfinales: any) {
         entrada = entrada + this.width
         // console.log("getHtmlDetalles.. de " + entrada, "..datos", datosfinales)
 
@@ -321,8 +337,8 @@ class PrinterPaper extends ModelSingleton {
 
         // var totalEnvases = 0
 
-        const formatoMonto = (m:any) => { return System.isInt(m) ? m : m.toFixed(2) }
-        datosfinales.products.forEach((prod:any) => {
+        const formatoMonto = (m: any) => { return System.isInt(m) ? m : m.toFixed(2) }
+        datosfinales.products.forEach((prod: any) => {
             if (prod.codbarra == "0" && prod.descripcion == "Envase") {
                 // es un envase
                 // totalEnvases += prod.cantidad * prod.precioUnidad
@@ -343,14 +359,14 @@ class PrinterPaper extends ModelSingleton {
                     var agrega = ""
                     var quita = ""
                     if (prod.extras.agregar) {
-                        prod.extras.agregar.forEach((agre:any) => {
+                        prod.extras.agregar.forEach((agre: any) => {
                             if (agrega != "") agrega += ", "
                             agrega += agre.nombre
                         })
                     }
 
                     if (prod.extras.quitar) {
-                        prod.extras.quitar.forEach((sin:any) => {
+                        prod.extras.quitar.forEach((sin: any) => {
                             if (quita != "") quita += ", "
                             quita += sin.nombre
                         })

@@ -13,6 +13,7 @@ const BoxOptionList = ({
   setOptionSelected,
   options = []
 }) => {
+
   return (
     <table>
       <tbody>

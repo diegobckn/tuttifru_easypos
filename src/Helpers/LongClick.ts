@@ -21,7 +21,7 @@ class LongClick {
 
     static ocupado = false
 
-    constructor(limitInSeconds) {
+    constructor(limitInSeconds:number) {
         LongClick.count++
         this.myCount = LongClick.count
         LongClick.list[this.myCount] = (this)
@@ -126,11 +126,11 @@ class LongClick {
         this.canceled = true
     }
 
-    onClick(callbackAction) {
+    onClick(callbackAction:any) {
         this.clickAction = callbackAction
     }
 
-    onLongClick(callbackAction) {
+    onLongClick(callbackAction:any) {
         this.longclickAction = callbackAction
     }
 

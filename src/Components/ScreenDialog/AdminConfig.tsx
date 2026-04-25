@@ -43,6 +43,7 @@ import TabComidaRapida from "../BoxOptionsLite/Config/TabComidaRapida";
 import TabBotones from "../BoxOptionsLite/Config/TabBotones";
 import TabProductos from "../BoxOptionsLite/Config/TabProductos";
 import OrdenListado from "../../definitions/OrdenesListado";
+import TabBalanzaDigi from "../BoxOptionsLite/Config/TabBalanzaDigi";
 
 const AdminConfig = ({
   openDialog,
@@ -291,7 +292,7 @@ const AdminConfig = ({
     ModelConfig.change("emitirBoleta", emitirBoleta)
   }
 
-  const buscarNombreSucursal = (idSucursal:any) => {
+  const buscarNombreSucursal = (idSucursal: any) => {
     var nombre = ""
     sucursalesInfo.forEach((sucItem: any, ix) => {
       if (sucItem.idSucursal == idSucursal) {
@@ -324,10 +325,10 @@ const AdminConfig = ({
 
   const cargarOrdenesListados = () => {
     var seleccionables: any[] = []
-    const keys:string[] = Object.keys(OrdenListado)
+    const keys: string[] = Object.keys(OrdenListado)
 
-    keys.forEach((key:string, ix:number) => {
-      var idx:number = OrdenListado[key]
+    keys.forEach((key: string, ix: number) => {
+      var idx: number = OrdenListado[key]
       if (esSeleccionableTipo(idx)) {
         seleccionables.push({
           id: idx,
@@ -356,9 +357,9 @@ const AdminConfig = ({
     setSeleccionables(seleccionables as [])
   }
 
-  const separarSucursales = (info:any) => {
+  const separarSucursales = (info: any) => {
     var sucursalesx: any[] = []
-    info.forEach((infoItem:any, ix:number) => {
+    info.forEach((infoItem: any, ix: number) => {
       sucursalesx.push({
         id: infoItem.idSucursal + "",
         value: infoItem.descripcionSucursal
@@ -368,7 +369,7 @@ const AdminConfig = ({
     setSucursales(sucursalesx as [])
   }
 
-  const esSeleccionableTipo = (tipo:any) => {
+  const esSeleccionableTipo = (tipo: any) => {
     return (
       tipo >= TiposPasarela.CAJA &&
       tipo <= TiposPasarela.CONSULTA_PRECIO
@@ -376,12 +377,12 @@ const AdminConfig = ({
     )
   }
 
-  const cargarCajas = (idSucursal:any) => {
+  const cargarCajas = (idSucursal: any) => {
     var cajasx: any[] = []
     if (!sucursalesInfo) return
     sucursalesInfo.forEach((sucursalItem: any, ix) => {
       if (sucursalItem.idSucursal == idSucursal) {
-        sucursalItem.puntoVenta.forEach((cajaItem:any, ix2:number) => {
+        sucursalItem.puntoVenta.forEach((cajaItem: any, ix2: number) => {
           if (
             esSeleccionableTipo(cajaItem.idSucursalPvTipo)
 
@@ -398,7 +399,7 @@ const AdminConfig = ({
     setCajas(cajasx as [])
   }
 
-  const checkSeleccionCaja = (caja:any) => {
+  const checkSeleccionCaja = (caja: any) => {
     cajas.forEach((cajaItem: any, ix) => {
       if (cajaItem.id == caja) {
         setAfterLogin(cajaItem.tipo)
@@ -417,7 +418,7 @@ const AdminConfig = ({
 
   const [tabNumber, setTabNumber] = useState(0)
   const [info, setInfo] = useState('')
-  const handleChange = (even:any, newValue:number) => {
+  const handleChange = (even: any, newValue: number) => {
     setTabNumber(newValue);
   };
 
@@ -462,6 +463,12 @@ const AdminConfig = ({
               title: "Balanza unidad",
               content: (
                 <TabBalanzaUnidad onFinish={onFinish} />
+              )
+            } as Tab,
+            {
+              title: "Balanza Digi",
+              content: (
+                <TabBalanzaDigi onFinish={onFinish} />
               )
             } as Tab,
 

@@ -41,6 +41,10 @@ import Model from "../../Models/Model";
 
 import { ProviderModalesContext } from "../Context/ProviderModales";
 import Ofertas from "../../Models/Ofertas";
+import StorageSesion from "../../Helpers/StorageSesion";
+import Conexion from "../../Models/Conexion";
+import BalanzaDigi from "../../Models/BalanzaDigi";
+import FocosPrincipales from "../../definitions/FocosPrincipales";
 
 export const SelectedOptionsContext = React.createContext();
 
@@ -88,9 +92,11 @@ export const SelectedOptionsProvider = ({ children }) => {
 
 
   const [sales, setSales] = useState(new ModelSales())
-  const [ofertas, setOfertas] = useState(Ofertas.getInstance().getFromSesion() ?? [])
+  const [ofertas, setOfertas] = useState([])
   const [ultimoVuelto, setUltimoVuelto] = useState(null)
   const [descuentos, setDescuentos] = useState(0)
+
+
 
   const [showDialogSelectClient, setShowDialogSelectClient] = useState(false)
   const [cliente, setCliente] = useState(null)
@@ -98,11 +104,39 @@ export const SelectedOptionsProvider = ({ children }) => {
   const [askLastSale, setAskLastSale] = useState(true)
 
   const [mayusTecladoProductos, setMayusTecladoProductos] = useState(false);
+  const [verBotonesPanel, setVerBotonesPanel] = useState(true);
+  const [darFocoEnLeerDigi, setDarFocoEnLeerDigi] = useState(false);
 
   const searchInputRef = useRef(null)
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
+  const focusSearchInput = (inputRef) => {
+    console.log("focusSearchInput")
+
+    const fpVal = ModelConfig.get("darFocoPrincipalEn")
+    const fp = System.getPropertyByValue(fpVal, FocosPrincipales)
+    console.log("foco principal en", fp)
+
+    if (ModelConfig.get("trabajarConBalanzaDigi")) {
+      // console.log("darFocoEnLeerDigi", darFocoEnLeerDigi)
+      if (fpVal == FocosPrincipales.LEER_TICKET_DIGI) {
+        if (darFocoEnLeerDigi) {
+          setDarFocoEnLeerDigi(false)
+          // console.log("setDarFocoEnLeerDigi a", false)
+          setTimeout(() => {
+            setDarFocoEnLeerDigi(true)
+            // console.log("setDarFocoEnLeerDigi a", true)
+          }, 300);
+          return
+        }
+        setDarFocoEnLeerDigi(true)
+        // console.log("setDarFocoEnLeerDigi a", true)
+        return
+      }
+    }
+    if (fpVal == FocosPrincipales.INPUT_BUSCAR_PRODUCTOS) {
+      console.log("en input buscar", inputRef)
+      System.darFocoEnBuscar(inputRef)
+    }
   }
 
   //set general dialog variables
@@ -144,8 +178,8 @@ export const SelectedOptionsProvider = ({ children }) => {
   const [ultimoFolioPreventa, setUltimoFolioPreventa] = useState("");
 
   const [tieneInternet, setTieneInternet] = useState(null);
-  const [conexionesOkInternet, setConexionesOkInternet] = useState(0);
-  const [conexionesMalInternet, setConexionesMalInternet] = useState(0);
+  // const [conexionesOkInternet, setConexionesOkInternet] = useState(0);
+  // const [conexionesMalInternet, setConexionesMalInternet] = useState(0);
 
   //mostrar un dialog con la animacion del cargando
   const setShowLoadingDialog = (value) => {
@@ -156,12 +190,16 @@ export const SelectedOptionsProvider = ({ children }) => {
     // console.log("checkInternet")
 
     if (window.location.href.indexOf("espejo") === -1) {
-      Model.getConexion(() => {
+      Conexion.getFromServer(() => {
         setTieneInternet(true)
-        setConexionesOkInternet((prev) => { return prev + 1 })
+
+        // console.log("getCorrects", Conexion.getCorrects())
+        // setConexionesOkInternet(Conexion.getCorrects())
+        // setConexionesOkInternet((prev) => { return prev + 1 })
       }, () => {
         setTieneInternet(false)
-        setConexionesMalInternet((prev) => { return prev + 1 })
+        // setConexionesOkInternet(Conexion.getInCorrects())
+        //     setConexionesMalInternet((prev) => { return prev + 1 })
       })
     }
   }
@@ -244,6 +282,15 @@ export const SelectedOptionsProvider = ({ children }) => {
   };
 
 
+
+  // const cargarOfertasCorrectas = () => {
+  // console.log("cargarOfertasCorrectas")
+  //   Ofertas.cargarSoloCorrectas((ofers) => {
+  //     setOfertas(ofers)
+  //   })
+  // }
+
+
   useEffect(() => {
 
     if (productoSinPeso) {
@@ -269,9 +316,7 @@ export const SelectedOptionsProvider = ({ children }) => {
     setGrandTotal(sales.getTotal() + 0);
     if (tieneInternet === null) {
       checkInternet()
-      setInterval(() => {
-        checkInternet()
-      }, 10 * 1000);
+      setInterval(checkInternet, 10 * 1000);
     }
   }, [salesData]);
 
@@ -295,6 +340,9 @@ export const SelectedOptionsProvider = ({ children }) => {
     if (clientStatic.sesion.hasOne()) {
       setCliente(clientStatic.getFromSesion())
     }
+
+    setDarFocoEnLeerDigi(ModelConfig.get("darFocoEnLeerDigi"))
+    // cargarOfertasCorrectas()
   }, []);
 
   useEffect(() => {
@@ -363,15 +411,15 @@ export const SelectedOptionsProvider = ({ children }) => {
 
 
   const addToSalesData = (product, quantity) => {
-    console.log("")
-    console.log("")
-    console.log("")
-    console.log("")
-    console.log("addToSalesData", product, "..cantidad", quantity)
+    // console.log("")
+    // console.log("")
+    // console.log("")
+    // console.log("")
+    // console.log("addToSalesData", product, "..cantidad", quantity)
     if (!quantity && product.cantidad) quantity = product.cantidad
 
     if (!quantity && ProductSold.esPesable(product)) {
-      console.log("es pesable..a pesar producto", product)
+      // console.log("es pesable..a pesar producto", product)
       setProductoSinPeso(product)
       return
     }
@@ -383,7 +431,7 @@ export const SelectedOptionsProvider = ({ children }) => {
 
 
     if (parseFloat(product.precioVenta) <= 0 && !sePuedeVenderPrecio0) {
-      console.log("sin precio..a poner precio..producto", product)
+      // console.log("sin precio..a poner precio..producto", product)
       setShowAsignarPrecio(true)
       setProductoSinPrecio(product)
       return
@@ -397,11 +445,11 @@ export const SelectedOptionsProvider = ({ children }) => {
     var totalDespuesPrecio = sales.getTotal() + 0
     var totalDespuesCantidad = sales.getTotalCantidad() + 0
 
-    console.log("totalAntesPrecio", totalAntesPrecio)
-    console.log("totalAntesCantidad", totalAntesCantidad)
+    // console.log("totalAntesPrecio", totalAntesPrecio)
+    // console.log("totalAntesCantidad", totalAntesCantidad)
 
-    console.log("totalDespuesPrecio", totalDespuesPrecio)
-    console.log("totalDespuesCantidad", totalDespuesCantidad)
+    // console.log("totalDespuesPrecio", totalDespuesPrecio)
+    // console.log("totalDespuesCantidad", totalDespuesCantidad)
     // if (
     //   totalAntesPrecio != totalDespuesPrecio
     //   || totalAntesCantidad != totalDespuesCantidad
@@ -416,7 +464,7 @@ export const SelectedOptionsProvider = ({ children }) => {
       name: "agrega producto " + product.nombre,
     })
 
-    focusSearchInput()
+    focusSearchInput(searchInputRef)
   };
 
   useEffect(() => {
@@ -486,9 +534,23 @@ export const SelectedOptionsProvider = ({ children }) => {
   };
 
   const clearSalesData = () => {
+    // console.log("clearSalesData...", System.clone(sales))
+    if (sales.products.length > 0) {
+      // console.log("revisando si tiene vale digi")
+      sales.products.forEach((saledItem) => {
+        if (saledItem.nroValeDigi) {
+          var bdigi = new BalanzaDigi()
+          bdigi.quitarUsado(saledItem.nroValeDigi)
+          // console.log(saledItem, "tiene vale digi")
+        } else {
+          // console.log(saledItem, "no tiene vale digi")
+        }
+      })
+    }
     setSalesData([]);
     sales.products = [];
     sales.sesionProducts.truncate()
+    setDescuentos(0)
     setGrandTotal(0);
     setTimeout(() => {
       setSalesDataTimestamp(Date.now());
@@ -499,8 +561,8 @@ export const SelectedOptionsProvider = ({ children }) => {
     var pr = new ProductSold();
     pr.cantidad = quantity;
     pr.precioVenta = price;
-    console.log("calculateTotalPrice..");
-    console.log(pr.getSubTotal());
+    // console.log("calculateTotalPrice..");
+    // console.log(pr.getSubTotal());
     return pr.getSubTotal();
   };
 
@@ -509,9 +571,47 @@ export const SelectedOptionsProvider = ({ children }) => {
     UserEvent.send({
       name: "quita producto " + sales.products[index].description,
     })
-    setSalesData(sales.removeFromIndex(index));
 
-    focusSearchInput()
+    const hayOtro = (nroVale) => {
+      // console.log("hayOtro con ", nroVale, ".. con el index", index)
+      if (sales.products.length > 1) {
+        var alguno = false
+        // console.log("sales.products", System.clone(sales.products))
+        sales.products.forEach((prodSaled, ix) => {
+          if (ix != index) {
+            // console.log("es distinto index..", ix, "..con..", index)
+            if (prodSaled.nroValeDigi) {
+              const valesArr = prodSaled.nroValeDigi.split(",")
+              if (valesArr.indexOf(nroVale) > -1) {
+                // console.log("el vale ", nroVale, " esta en", valesArr)
+                alguno = true
+              } else {
+                // console.log("no esta ", nroVale, "..en", valesArr)
+              }
+            }
+          } else {
+            // console.log("es el mismo index..", ix, "..con..", index)
+          }
+        })
+        return alguno
+      } else {
+        return false
+      }
+    }
+
+    if (sales.products[index].nroValeDigi) {
+      var bdigi = new BalanzaDigi()
+
+
+      const valesArr = (sales.products[index].nroValeDigi + "").split(",")
+      valesArr.forEach((vale) => {
+        if (!hayOtro(vale)) {
+          bdigi.quitarUsado(vale)
+        }
+      })
+    }
+    setSalesData(sales.removeFromIndex(index));
+    focusSearchInput(searchInputRef)
   };
 
 
@@ -672,18 +772,25 @@ export const SelectedOptionsProvider = ({ children }) => {
         setListSalesOffline,
 
         tieneInternet,
-        conexionesOkInternet,
-        conexionesMalInternet,
+        // conexionesOkInternet,
+        // conexionesMalInternet,
 
         createQrString,
         ultimoFolioPreventa,
         setUltimoFolioPreventa,
 
-        ofertas,
-        setOfertas,
-        
+        // ofertas,
+        // setOfertas,
+        // cargarOfertasCorrectas,
+
         descuentos,
         setDescuentos,
+
+        verBotonesPanel,
+        setVerBotonesPanel,
+
+        darFocoEnLeerDigi,
+        setDarFocoEnLeerDigi
       }}
     >
       {children}

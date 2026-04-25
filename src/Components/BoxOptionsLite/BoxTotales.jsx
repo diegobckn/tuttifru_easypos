@@ -52,6 +52,9 @@ import User from "../../Models/User";
 import Suspender from "../../Models/Suspender";
 import Product from "../../Models/Product";
 import ReimprimirComprobante from "../ScreenDialog/ReimprimirComprobante";
+import SmallButton from "../Elements/SmallButton";
+import BalanzaDigi from "../../Models/BalanzaDigi";
+import LeerValeDigi from "../ScreenDialog/LeerValeDigi";
 
 
 const BoxTotales = () => {
@@ -77,7 +80,12 @@ const BoxTotales = () => {
     searchInputRef,
     numeroAtencion,
     setNumeroAtencion,
-    addToSalesData
+    addToSalesData,
+    focusSearchInput,
+    verBotonesPanel,
+    setVerBotonesPanel,
+    darFocoEnLeerDigi,
+    setDarFocoEnLeerDigi
   } = useContext(SelectedOptionsContext);
   const [vendedor, setVendedor] = useState(null);
   const [recargos, setRecargos] = useState(0);
@@ -102,21 +110,29 @@ const BoxTotales = () => {
   const [ingresarNumeroAtencion, setIngresarNumeroAtencion] = useState(false);
   const [showReimpComprobante, setShowReimpComprobante] = useState(false);
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
-  }
+  const [verLecturaVale, setVerLecturaVale] = useState(false);
+  const [trabajarConBalanzaDigi, setTrabajarConBalanzaDigi] = useState(false);
+
+
+  useEffect(() => {
+    if (darFocoEnLeerDigi) {
+      setVerLecturaVale(darFocoEnLeerDigi)
+    }
+
+    // console.log("cambio darFocoEnLeerDigi", darFocoEnLeerDigi)
+  }, [darFocoEnLeerDigi])
 
   const longBoleta = new LongClick(2);
   longBoleta.onClick(() => {
     if (salesData.length < 1) {
       showMessage("No hay ventas")
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
       return
     }
 
     if (!System.configBoletaOk()) {
       showAlert("Se debe configurar emision de boleta")
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
       return
     }
 
@@ -132,11 +148,11 @@ const BoxTotales = () => {
 
     ModelConfig.change("emitirBoleta", modoAvion)
 
-    focusSearchInput()
+    focusSearchInput(searchInputRef)
 
 
     setTimeout(() => {
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
     }, 1000);
   })
 
@@ -146,6 +162,7 @@ const BoxTotales = () => {
     setVerBotonPreventa(ModelConfig.get("verBotonPreventa"))
     setVerBotonEnvases(ModelConfig.get("verBotonEnvases"))
     setVerBotonPagarFactura(ModelConfig.get("verBotonPagarFactura"))
+    setTrabajarConBalanzaDigi(ModelConfig.get("trabajarConBalanzaDigi"))
   }, [])
 
 
@@ -230,7 +247,7 @@ const BoxTotales = () => {
   const cargarListadoDeUsuario = (usuario, descripcion) => {
     showLoading("Cargando productos acumulados...")
     Suspender.getInstance().listarVentas(usuario.codigoUsuario, (ventas) => {
-      console.log("listado", ventas)
+      // console.log("listado", ventas)
 
       ventas.forEach((venta) => {
         if (venta.descripcion.indexOf(descripcion) > -1) {
@@ -240,7 +257,7 @@ const BoxTotales = () => {
 
       hideLoading()
     }, (error) => {
-      console.log("listarVentas:" + error)
+      // console.log("listarVentas:" + error)
       hideLoading()
     })
   }
@@ -343,7 +360,7 @@ const BoxTotales = () => {
                 openDialog={showScreenLastSale}
                 setOpenDialog={(val) => {
                   if (!val) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                   setShowScreenLastSale(val)
                 }}
@@ -374,7 +391,7 @@ const BoxTotales = () => {
                 openDialog={showReimpComprobante}
                 setOpenDialog={(val) => {
                   if (!val) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                   setShowReimpComprobante(val)
                 }}
@@ -480,7 +497,7 @@ const BoxTotales = () => {
               openDialog={showScreenPagoBoleta}
               setOpenDialog={(v) => {
                 if (!v) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
                 setShowScreenPagoBoleta(v)
               }}
@@ -508,7 +525,7 @@ const BoxTotales = () => {
                     onClick={() => {
                       if (salesData.length < 1) {
                         showMessage("No hay ventas")
-                        focusSearchInput()
+                        focusSearchInput(searchInputRef)
                         return
                       }
                       setShowScreenPagoFactura(true)
@@ -529,7 +546,7 @@ const BoxTotales = () => {
                 <LecturaFolioPreventa openDialog={showPreventa}
                   setOpenDialog={(v) => {
                     if (!v) {
-                      focusSearchInput()
+                      focusSearchInput(searchInputRef)
                     }
                     setShowPreventa(v)
                   }}
@@ -558,7 +575,7 @@ const BoxTotales = () => {
                     openDialog={showScreenEnvases}
                     setOpenDialog={(v) => {
                       if (!v) {
-                        focusSearchInput()
+                        focusSearchInput(searchInputRef)
                       }
                       setShowScreenEnvases(v)
                     }}
@@ -566,7 +583,6 @@ const BoxTotales = () => {
                 </Grid>
               </>
             )}
-
 
             {verBotonEnvases && (
               <>
@@ -594,7 +610,7 @@ const BoxTotales = () => {
                     openDialog={showScreenEnvases}
                     setOpenDialog={(v) => {
                       if (!v) {
-                        focusSearchInput()
+                        focusSearchInput(searchInputRef)
                       }
                       setShowScreenEnvases(v)
                     }}
@@ -714,6 +730,53 @@ const BoxTotales = () => {
 
               </>
             )}
+
+
+            {trabajarConBalanzaDigi && (
+              <Grid item xs={12} sm={12} md={12} lg={12}>
+                <LeerValeDigi
+                  openDialog={verLecturaVale}
+                  setOpenDialog={setVerLecturaVale}
+                  autofocoInput={true}
+                />
+                {/* <SmallButton
+                  style={{
+                    width: "97%"
+                  }}
+                  textButton={"leer digi"} actionButton={() => {
+                    setVerLecturaVale(true)
+                  }} /> */}
+                <SmallButton
+                  style={{
+                    width: "97%"
+                  }}
+                  textButton={"vaciar buffer digi"} actionButton={() => {
+                    const bal = new BalanzaDigi()
+                    bal.resetSesion()
+                    showLoading("Vaciando buffer de la balanza...")
+                    bal.vaciarBufferVales((res) => {
+                      if (res.status) {
+                        showAlert("Vaciada correctamente")
+                      }
+                      hideLoading()
+                    }, (er) => {
+                      hideLoading()
+                      showAlert(er)
+                    })
+
+                  }} />
+              </Grid>
+            )}
+
+            <Grid item xs={12} sm={12} md={12} lg={12}>
+              <SmallButton
+                style={{
+                  width: "97%"
+                }}
+                textButton={(verBotonesPanel ? "Ocultar" : "Ver") + " botones panel"} actionButton={() => {
+                  setVerBotonesPanel(!verBotonesPanel)
+                }} />
+            </Grid>
 
           </Grid>
 

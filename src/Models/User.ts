@@ -65,6 +65,19 @@ class User extends ModelSingleton {
             callbackOk(responseData.usuarios, response);
         }, callbackWrong)
     }
+    static async getByCode(codigoUsuario: string, callbackOk: any, callbackWrong: any) {
+        const configs = await ModelConfig.get()
+        var url = configs.urlBase
+            + "/api/Usuarios/GetUsuarioByCodigo"
+
+        url += "?codigoSucursal=" + await ModelConfig.get("sucursal")
+        url += "&puntoVenta=" + await ModelConfig.get("puntoVenta")
+        url += "&CodigoUsuario=" + codigoUsuario
+
+        await EndPoint.sendGet(url, (responseData: any, response: any) => {
+            callbackOk(responseData.usuarios, response);
+        }, callbackWrong)
+    }
 
     async doLoginInServer(callbackOk: any, callbackWrong: any) {
         const configs = ModelConfig.get()
@@ -85,7 +98,7 @@ class User extends ModelSingleton {
                 && response.data.responseUsuario.codigoUsuario != -1
             ) {
                 if (!response.data.responseUsuario.activo) {
-                    Model.informeInisioSesion(response.data.responseUsuario, () => {
+                    Model.informeInicioSesion(response.data.responseUsuario, () => {
                         callbackOk(responseData);
                     }, () => {
                         callbackOk(responseData);

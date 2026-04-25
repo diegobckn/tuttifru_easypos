@@ -279,6 +279,7 @@ const BoxFactura = ({
       setSelectedUser(null);
       setTextSearchProducts("")
       setCliente(null)
+      Client.getInstance().sesion.truncate()
       onClose()
     }
 

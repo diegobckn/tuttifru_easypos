@@ -63,6 +63,7 @@ const BoxTotales = () => {
     showLoading,
     showConfirm,
     hideLoading,
+    focusSearchInput,
     searchInputRef,
     ultimoFolioPreventa,
     setUltimoFolioPreventa,
@@ -77,9 +78,6 @@ const BoxTotales = () => {
 
   const [showPreventa, setShowPreventa] = useState(false)
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
-  }
 
   const navigate = useNavigate();
 
@@ -169,7 +167,7 @@ const BoxTotales = () => {
       setSelectedUser(null);
       setUltimoFolioPreventa("")
 
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
 
       return
     }
@@ -196,13 +194,13 @@ const BoxTotales = () => {
       Printer.preguntaFuncion = showConfirm
       Printer.printAll(response, cantAImprimir)
       setTextSearchProducts("")
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
     }, (error) => {
       console.error("Error al realizar el ticket:", error);
       showMessage("Error al realizar el ticket");
       hideLoading()
 
-      focusSearchInput()
+      focusSearchInput(searchInputRef)
     })
   }
 
@@ -220,7 +218,7 @@ const BoxTotales = () => {
       <LecturaFolioPreventa openDialog={showPreventa} setOpenDialog={(v) => {
         setShowPreventa(v)
         if (!v) {
-          focusSearchInput()
+          focusSearchInput(searchInputRef)
         }
       }} />
 
@@ -278,7 +276,7 @@ const BoxTotales = () => {
                 openDialog={showScreenLastSale}
                 setOpenDialog={(val) => {
                   if (!val) {
-                    focusSearchInput()
+                    focusSearchInput(searchInputRef)
                   }
                   setShowScreenLastSale(val)
                 }}

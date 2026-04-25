@@ -6,6 +6,7 @@ import OrdenListado from "./OrdenesListado";
 import EmitirDetalle from "./EmisionesDetalle";
 import ModosImpresion from "./ModosImpresion";
 import Env from "./Env";
+import FocosPrincipales from "./FocosPrincipales";
 
 const BaseConfig = {
     urlBase: Env.urlBase,
@@ -72,6 +73,13 @@ const BaseConfig = {
     urlServicioImpresion: "ws://localhost:8760",
     urlServicioImpresionComanda: "ws://localhost:8760",
 
+    urlServicioBalanzaDigi: "ws://localhost:8760",
+    ipBalanzaDigi: "192.168.1.135",
+    puertaBalanzaDigi: "2135",
+    modeloBalanzaDigi: "sm-300",
+    usuarioBalanzaDigi: "admin",
+    claveBalanzaDigi: "admin",
+
     puertoImpresiones: "COM6",
     puertoImpresionComanda: "COM6",
     zoomImpresiones: "1.2",
@@ -104,7 +112,14 @@ const BaseConfig = {
     enviarEmailInicioCaja: false,
     enviarEmailCierreCaja: false,
 
-    darFocoEnBuscar: true
+    darFocoEnLeerDigi: false,
+
+    darFocoPrincipalEn : FocosPrincipales.INPUT_BUSCAR_PRODUCTOS,
+
+    trabajarConBalanzaDigi: false,
+    codigoValeBalanzaDigi: "25",
+    refreshValeBalanzaDigi: "10",
+    revisarValeRepeditoBalanzaDigi: true
 
 };
 

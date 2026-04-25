@@ -89,7 +89,7 @@ class System {
     }
 
     //fechaactual con formato: 2024-05-12T02:06:22.000Z
-    getDateForServer(date: null | undefined | string) {
+    getDateForServer(date: null | undefined | string = undefined) {
         return (dayjs(date).format('YYYY-MM-DD HH:mm:ss') + ".000Z").replace(" ", "T")
     }
 
@@ -159,11 +159,7 @@ class System {
     }
 
     static darFocoEnBuscar(textInfoRef: any) {
-        // console.log("darFocoEnBuscar")
-        const debe = ModelConfig.get("darFocoEnBuscar")
-        if (debe) {
-            this.intentarFoco(textInfoRef)
-        }
+        this.intentarFoco(textInfoRef)
     }
     static intentarFoco(textInfoRef: any) {
         // console.log("..intentarFoco", textInfoRef)
@@ -414,6 +410,15 @@ class System {
         return objetoInvertido
     }
 
+    static getPropertyByValue(value: string, object: any) {
+        const inv = this.invertirProps(object)
+        if (inv[value] != undefined) {
+            return inv[value]
+        } else {
+            return null
+        }
+    }
+
     static arrayFromObject(objeto: any, invert = false) {
         if (invert) objeto = this.invertirProps(objeto)
         const keys = Object.keys(objeto)
@@ -628,6 +633,89 @@ class System {
 
     static setProp(object: any, propName: string, propValue: any) {
         object[propName] = propValue
+    }
+
+    static tienenAlgoDiferente(obj1: any, obj2: any) {
+        // console.log("comparando 2 objetos")
+        // console.log("objeto1", obj1)
+        // console.log("objeto2", obj2)
+        var algoDif = false
+
+        const esAr1: any = Array.isArray(obj1)
+
+        if (esAr1) {
+            const esAr2: any = Array.isArray(obj2)
+            if (!esAr2) {
+                algoDif = true
+                return algoDif
+            }
+
+            var alguno = false
+
+            const ar1 = obj1
+            const ar2 = obj2
+            var ar = ar1
+            var otroArr = ar2
+
+            if (ar2.length > ar1.length) {
+                ar = ar2
+                otroArr = ar1
+            }
+
+            ar.forEach((itm: any, ix: number) => {
+                if (this.tienenAlgoDiferente(itm, otroArr[ix])) {
+                    alguno = true
+                    return
+                }
+            })
+
+            if (alguno) algoDif = true
+            return algoDif
+        }
+
+        const esObj1: any = typeof (obj1) == "object"
+        const esObj2: any = typeof (obj2) == "object"
+
+        if (esObj1) {
+            if (!esObj2) {
+                algoDif = true
+                return algoDif
+            }
+
+            var alguno = false
+            const keys1 = Object.keys(obj1)
+            const keys2 = Object.keys(obj2)
+            var keys = keys1
+            var obj = obj1
+            var otro = obj2
+
+            if (keys2.length > keys1.length) {
+                keys = keys2
+                obj = obj2
+                otro = obj1
+            }
+
+            keys.forEach((cl: any) => {
+                const val1 = obj[cl]
+                const val2 = otro[cl]
+                if (this.tienenAlgoDiferente(val1, val2)) {
+                    alguno = true
+                    return
+                }
+            })
+
+            if (alguno) algoDif = true
+            return algoDif
+        }
+
+        if (obj1 !== obj2) {
+            // console.log("los objetos tienen distintos valores en la propiedad", keyObj)
+            algoDif = true
+        }
+
+        // console.log(algoDif ? "son distintos" : "son iguales")
+
+        return algoDif
     }
 
 }

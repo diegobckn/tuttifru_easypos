@@ -50,7 +50,7 @@ const BusquedaRapida = ({
     >
       <DialogContent>
 
-        <BoxBusquedaRapida show={true} />
+        <BoxBusquedaRapida show={true} onClose={() => { setOpenDialog(false) }} />
 
       </DialogContent>
       <DialogActions sx={{

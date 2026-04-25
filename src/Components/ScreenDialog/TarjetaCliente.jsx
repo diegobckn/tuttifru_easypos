@@ -55,7 +55,9 @@ const TarjetaCliente = ({
     hideLoading,
     showConfirm,
     sales,
+    salesData,
     setAskLastSale,
+    clearSalesData,
     addToSalesData,
     setShowDialogSelectClient,
     setSalesData
@@ -87,8 +89,16 @@ const TarjetaCliente = ({
             <SmallGrayButton
               textButton="Seleccionar Cliente"
               actionButton={() => {
-                setAskLastSale(true)
-                setShowDialogSelectClient(true)
+                if (salesData.length > 0) {
+                  showConfirm("Se quitaran todos los productos agregados. Continuar igualmente?", () => {
+                    clearSalesData();
+                    setAskLastSale(true)
+                    setShowDialogSelectClient(true)
+                  })
+                } else {
+                  setAskLastSale(true)
+                  setShowDialogSelectClient(true)
+                }
               }}
             />
           ) : (
@@ -96,8 +106,16 @@ const TarjetaCliente = ({
               style
               textButton="Deseleccionar Cliente"
               actionButton={() => {
-                setCliente(null)
-                Client.getInstance().sesion.truncate()
+                if (salesData.length > 0) {
+                  showConfirm("Se quitaran todos los productos agregados. Continuar igualmente?", () => {
+                    clearSalesData();
+                    setCliente(null)
+                    Client.getInstance().sesion.truncate()
+                  })
+                } else {
+                  setCliente(null)
+                  Client.getInstance().sesion.truncate()
+                }
               }}
             />
           )}

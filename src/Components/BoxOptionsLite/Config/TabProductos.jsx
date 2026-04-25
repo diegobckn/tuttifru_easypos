@@ -43,6 +43,8 @@ import Product from "../../../Models/Product";
 import ProductFastSearch from "../../../Models/ProductFastSearch";
 import ModosTrabajoConexion from "../../../definitions/ModosConexion";
 import OrdenListado from "../../../definitions/OrdenesListado";
+import SmallSecondaryButton from "../../Elements/SmallSecondaryButton";
+import PreciosGenerales from "../PreciosGenerales";
 
 const TabProductos = ({
   onFinish = () => { }
@@ -95,6 +97,7 @@ const TabProductos = ({
 
   const [agruparProductoLinea, setAgruparProductoLinea] = useState(false)
   const [modoTrabajoConexion, setModoTrabajoConexion] = useState(null)
+  const [cambiarPrecios, setCambiarPrecios] = useState(false)
 
 
   const cargarOrdenesListados = () => {
@@ -143,24 +146,24 @@ const TabProductos = ({
     // onFinish()
   }
 
-  const descargarProductos = ()=>{
+  const descargarProductos = () => {
     showLoading("Descargando productos del servidor...")
-    Product.getInstance().almacenarParaOffline((prods,resp)=>{
+    Product.getInstance().almacenarParaOffline((prods, resp) => {
       hideLoading()
       // showAlert("Se descargaron " + prods.length + " productos")
       descargarProductosBusquedaRapida()
-    },()=>{
+    }, () => {
       hideLoading()
       showMessage("No se pudo realizar")
     })
   }
 
-  const descargarProductosBusquedaRapida = ()=>{
+  const descargarProductosBusquedaRapida = () => {
     showLoading("Descargando productos del servidor...")
-    ProductFastSearch.getInstance().almacenarParaOffline((prods,resp)=>{
+    ProductFastSearch.getInstance().almacenarParaOffline((prods, resp) => {
       hideLoading()
       showAlert("Descargado correctamente")
-    },()=>{
+    }, () => {
       hideLoading()
       showMessage("No se pudo realizar")
     })
@@ -193,7 +196,7 @@ const TabProductos = ({
       </Grid>
 
 
-      <Grid item xs={12} md={12} lg={12}>
+      <Grid item xs={12} sm={12} md={12} lg={12}>
         <InputCheckboxAutorizar
           inputState={[pedirPermisoBorrarProducto, setPedirPermisoBorrarProducto]}
           label={"Solicitar permiso para eliminar un producto"}
@@ -207,7 +210,7 @@ const TabProductos = ({
         />
       </Grid>
 
-      <Grid item xs={12} md={12} lg={12}>
+      <Grid item xs={12} sm={12} md={12} lg={12}>
         <InputCheckbox
           inputState={[agruparProductoLinea, setAgruparProductoLinea]}
           label={"Agrupar Producto Linea"}
@@ -216,7 +219,7 @@ const TabProductos = ({
 
 
 
-      <Grid item xs={12} md={12} lg={12}>
+      <Grid item xs={12} sm={12} md={12} lg={12}>
         <label
           style={{
             userSelect: "none",
@@ -232,15 +235,39 @@ const TabProductos = ({
           options={System.arrayIdValueFromObject(ModosTrabajoConexion, true)}
         />
       </Grid>
-        <Grid item xs={12} md={12} lg={12}>
-          <SmallButton
+      <Grid item xs={12} sm={12} md={12} lg={12}>
+        <SmallButton
           isDisabled={modoTrabajoConexion == ModosTrabajoConexion.SOLO_ONLINE}
-            textButton={"Descargar productos"}
-            actionButton={descargarProductos}
-          />
-            <br />
-            <br />
-        </Grid>
+          textButton={"Descargar productos"}
+          actionButton={descargarProductos}
+        />
+
+
+        <SmallSecondaryButton
+          isDisabled={modoTrabajoConexion == ModosTrabajoConexion.SOLO_ONLINE}
+          textButton={"Cambiar precios offline"}
+          actionButton={() => {
+            setCambiarPrecios(true)
+          }}
+          style={{
+            width: "200px"
+          }}
+        />
+
+        <Dialog maxWidth={"lg"}
+          open={cambiarPrecios}
+          onClose={() => {
+            setCambiarPrecios(false)
+          }}>
+
+          <PreciosGenerales
+            onClose={() => {
+              setCambiarPrecios(false)
+            }} />
+        </Dialog>
+        <br />
+        <br />
+      </Grid>
 
 
 

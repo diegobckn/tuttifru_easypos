@@ -70,6 +70,7 @@ export default ({
           margin: "0 5px 10px 5px",
           border: "1px solid #000",
           borderRadius: "5px",
+          overflow: "hidden",
           justifyItems: "center"
         }, ...style
       }}

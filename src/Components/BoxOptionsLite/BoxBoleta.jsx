@@ -150,6 +150,9 @@ const BoxBoleta = ({
       setNFolioBoleta(nv)
       // console.log("nFolioBoleta", nv)
     }, (err) => {
+      if (typeof (err) == "string" && err.indexOf("ErrorFolio:") > -1) {
+        showAlert(err)
+      }
     }, true);
 
     offAI.generar("idTurno", (nv) => {
@@ -174,10 +177,14 @@ const BoxBoleta = ({
 
 
   const aplicarOfertas = () => {
+    console.log("aplicarOfertas")
+    console.log("salesData", salesData)
     setProductsConOfertas([])
 
     Ofertas.aplicarTodas(salesData, (resultadoOfertas, totalConOfertas, productoVendidosConOfertas) => {
       // AGRUPAMOS
+      console.log("quedan", System.clone(productoVendidosConOfertas))
+      console.log("totalConOfertas", totalConOfertas)
 
       setProductosVendidos(System.clone(productoVendidosConOfertas))
       setTotalVentas(totalConOfertas + 0)
@@ -267,6 +274,8 @@ const BoxBoleta = ({
     requestBody.products =
       Sales.prepararProductosParaPagar(productosConEnvases, requestBody)
 
+    const todosExcentos = Sales.todosExcentos
+
     var transferenciaDatos = {}
 
     pagos.forEach((pago, ix) => {
@@ -293,8 +302,13 @@ const BoxBoleta = ({
     requestBody.queOperacionHace = queOperacionHace
     var debeActualizar = ""
     if (queOperacionHace == "Boleta") {
-      requestBody.nFolioBoleta = nFolioBoleta
-      debeActualizar = "nFolioBoleta"
+      if (todosExcentos) {
+        requestBody.nFolioBoleta = nFolioBoletaExenta
+        debeActualizar = "nFolioBoletaExenta"
+      } else {
+        requestBody.nFolioBoleta = nFolioBoleta
+        debeActualizar = "nFolioBoleta"
+      }
     } else {
       requestBody.nFolioTicket = nFolioTicket
       debeActualizar = "nFolioTicket"
@@ -313,6 +327,7 @@ const BoxBoleta = ({
       setSelectedUser(null);
       setTextSearchProducts("")
       setCliente(null)
+      Client.getInstance().sesion.truncate()
       onClose()
     }
 
@@ -358,7 +373,9 @@ const BoxBoleta = ({
         setLoading(false);
       }, 500);
 
-
+      // console.log("cliente", cliente)
+      // console.log("cliente sesion", Client.getInstance().sesion.cargar(1))
+      // setCliente(null)
     }
 
 
@@ -373,7 +390,7 @@ const BoxBoleta = ({
 
       //intenta pero al fallar lo guarda para intentar despues
       if (modoTrabajoConexion == ModosTrabajoConexion.PREGUNTAR) {
-        showConfirm("No se pudo enviar la venta, desea guardar para intentar mas tarde?",
+        showConfirm("Usted en este momento esta sin conexion, desea emitir el documento " + queOperacionHace + "de forma offline?",
           () => {
             console.log("debeActualizar", debeActualizar)
             OfflineAutoIncrement.getInstance().actualizarEnSesion(debeActualizar, () => {
@@ -419,7 +436,7 @@ const BoxBoleta = ({
 
     if (
       modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-      && requestBody.queOperacionHace != "Boleta"
+      // && requestBody.queOperacionHace != "Boleta"
     ) {
       console.log("debeActualizar", debeActualizar)
       OfflineAutoIncrement.getInstance().actualizarEnSesion(debeActualizar, () => {
@@ -471,10 +488,18 @@ const BoxBoleta = ({
         limpiarYCerrar()
         imprimirOffline()
         setUltimoVuelto(vuelto)
+
+        console.log("preparando para enviar luego de 10 seg")
+        setTimeout(() => {
+          SalesOffline.sincronizar(() => { }, () => {
+            setListSalesOffline([])
+          })
+        }, 10 * 1000);
       }, (err) => {
         showAlert("No se pudo guardar la venta: ", err)
       })
     } else {
+      //MODO ONLINE
       setLoading(true);
       showLoading("Realizando el pago")
       setLoading(false);

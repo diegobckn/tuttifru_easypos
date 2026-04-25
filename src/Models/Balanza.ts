@@ -57,6 +57,49 @@ class Balanza extends Singleton {
   //   return (valor.indexOf(this.codigoConfig) > -1)
   // }
 
+  hacerAccion(accion: string, callbackOk: any, objetoAEnviar: any = {}, callbackWrong: any = () => { }) {
+    // console.log("BalanzaDigi model: hacerAccion", accion)
+    var me = Balanza.getInstance()
+
+    objetoAEnviar.accion = accion
+
+    me.socket = new WebSocket(ModelConfig.get("urlServicioDeteccionPeso"));
+    me.socket.onopen = () => {
+      // console.log("Conectado al servidor WebSocket");
+      try {
+        me.socket.send(JSON.stringify(objetoAEnviar));
+      } catch (e: any) {
+        if (e.message.indexOf("CONNECTING") > -1) {
+          setTimeout(() => {
+            this.hacerAccion(accion, callbackOk, objetoAEnviar, callbackWrong)
+          }, 300);
+          return
+        }
+        console.log("error al intentar enviar ", e)
+      }
+    };
+
+    me.socket.onmessage = (event: any) => {
+      const formatResponse = JSON.parse(event.data)
+      // console.log("Mensaje recibido:", formatResponse);
+      callbackOk(formatResponse)
+    };
+
+    me.socket.onerror = (error: any) => {
+      // console.error(" Error en WebSocket:", error);
+      callbackWrong("La balanza no responde. Revisar conexion o software de control.")
+    };
+
+    me.socket.onclose = (event: any) => {
+      // console.log(" Conexión WebSocket cerrada");
+      // console.warn('Codigo de conexión cerrada:', event.code);
+      // console.warn('Motivo de conexión cerrada:', event.reason);
+    };
+  }
+
+  reconectar(callbackOk: any, callbackWrong: any) {
+    this.hacerAccion("reabrir", callbackOk, {}, callbackWrong)
+  }
 
   deteccionPeso(onChange = (e: any) => { }) {
     var me = Balanza.getInstance()
@@ -126,7 +169,9 @@ class Balanza extends Singleton {
     // }
 
     if (me.socket && me.socket.readyState === WebSocket.OPEN) {
-      me.socket.send(' '); // Envía un mensaje para mantener la conexión viva
+      const objetoAEnviar: any = {}
+      objetoAEnviar.accion = "peso"
+      me.socket.send(JSON.stringify(objetoAEnviar));
       setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
     } else {
 
@@ -146,7 +191,11 @@ class Balanza extends Singleton {
       me.socket.onopen = () => {
         console.log("Conectado al servidor WebSocket");
         Balanza.primeraConexion = true
-        if (me.socket && me.socket.readyState === WebSocket.OPEN) me.socket.send(' '); // Envía un mensaje para mantener la conexión viva
+        if (me.socket && me.socket.readyState === WebSocket.OPEN) {
+          const objetoAEnviar: any = {}
+          objetoAEnviar.accion = "peso"
+          me.socket.send(JSON.stringify(objetoAEnviar));
+        }
         setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
       };
 
@@ -160,10 +209,10 @@ class Balanza extends Singleton {
           setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
         } else {
 
-          if(!formatResponse.info){
+          if (!formatResponse.info) {
             formatResponse.info = ""
           }
-          if(formatResponse.info.indexOf("al puerto")>-1){
+          if (formatResponse.info.indexOf("al puerto") > -1) {
             formatResponse.info = formatResponse.info.replace("al puerto", "al puerto ")
           }
 

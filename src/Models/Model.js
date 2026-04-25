@@ -10,8 +10,6 @@ import User from './User.ts';
 class Model {
   // sesion: StorageSesion;
 
-  static gettingConection = false
-
   constructor() {
     this.sesion = new StorageSesion(eval("this.__proto__.constructor.name"));
   }
@@ -86,25 +84,6 @@ class Model {
     }
   }
 
-  static async getConexion(callbackOk, callbackWrong) {
-    if (this.gettingConection) return
-    this.gettingConection = true
-    const url = ModelConfig.get("urlBase") + "/api/Cajas/EstadoApi"
-    const reportarErrorAntes = SoporteTicket.reportarError
-    SoporteTicket.reportarError = false
-    EndPoint.sendGet(url, (responseData, response) => {
-      SoporteTicket.reportarError = reportarErrorAntes
-      callbackOk(responseData.sucursals, response)
-      this.gettingConection = false
-    }, (x) => {
-      SoporteTicket.reportarError = reportarErrorAntes
-      callbackWrong(x)
-      this.gettingConection = false
-    })
-
-
-  }
-
   static async getSupervision(data, callbackOk, callbackWrong) {
     const url = ModelConfig.get("urlBase") + "/api/Ventas/AutorizarAccion?fechaIngreso=" + data.fechaIngreso
       + "&idUsuario=" + data.idUsuario + "&CodeAutorizacion=" + data.CodeAutorizacion + "&Accion=" + data.Accion
@@ -132,7 +111,7 @@ class Model {
   }
 
 
-  static async informeInisioSesion(infoUser, callbackOk, callbackWrong) {
+  static async informeInicioSesion(infoUser, callbackOk, callbackWrong) {
     const configs = ModelConfig.get()
 
     if (!configs.enviarEmailInicioSesion) {

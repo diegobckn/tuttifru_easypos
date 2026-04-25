@@ -51,6 +51,7 @@ import TouchInputName from "../../TouchElements/TouchInputName";
 import ModosTrabajoConexion from "../../../definitions/ModosConexion";
 import TouchInputEmail from "../../TouchElements/TouchInputEmail";
 import BoxElegirSucursalYCaja from "../BoxElegirSucursalYCaja";
+import FocosPrincipales from "../../../definitions/FocosPrincipales";
 
 const TabGeneral = ({
   onFinish = () => { }
@@ -137,12 +138,13 @@ const TabGeneral = ({
   const [aQuienEnviaEmails, setaQuienEnviaEmails] = useState("")
 
   const [yaIngresoUnaAutorizacion, setYaIngresoUnaAutorizacion] = useState(false)
-  const [darFocoEnBuscar, setDarFocoEnBuscar] = useState(false)
 
   const [showAdminMem, setShowAdminMem] = useState(false)
 
   const [recargarSucursales, setRecargarSucursales] = useState(false)
   const [resetSucursal, setResetSucursal] = useState(false)
+
+  const [darFocoPrincipalEn, setDarFocoPrincipalEn] = useState(FocosPrincipales.NINGUNO)
 
   const loadConfigSesion = () => {
     // console.log("loadConfigSesion")
@@ -153,6 +155,7 @@ const TabGeneral = ({
     // setPuntoVenta(ModelConfig.get("puntoVenta"))
 
     setAfterLogin(ModelConfig.get("afterLogin"))
+    setDarFocoPrincipalEn(ModelConfig.get("darFocoPrincipalEn"))
 
     setPedirDatosTransferencia(ModelConfig.get("pedirDatosTransferencia"))
     setPagarConCuentaCorriente(ModelConfig.get("pagarConCuentaCorriente"))
@@ -174,7 +177,6 @@ const TabGeneral = ({
     setEnviarEmailInicioCaja(ModelConfig.get("enviarEmailInicioCaja"))
     setenviarEmailCierreCaja(ModelConfig.get("enviarEmailCierreCaja"))
     setaQuienEnviaEmails(ModelConfig.get("aQuienEnviaEmails"))
-    setDarFocoEnBuscar(ModelConfig.get("darFocoEnBuscar"))
 
   }
 
@@ -199,7 +201,7 @@ const TabGeneral = ({
       "enviarEmailInicioCaja": enviarEmailInicioCaja,
       "enviarEmailCierreCaja": enviarEmailCierreCaja,
       "aQuienEnviaEmails": aQuienEnviaEmails,
-      "darFocoEnBuscar": darFocoEnBuscar,
+      "darFocoPrincipalEn": darFocoPrincipalEn,
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -411,12 +413,6 @@ const TabGeneral = ({
           label={"Descripcion Automatica Suspender"}
         />
       </Grid>
-      <Grid item xs={12} md={12} lg={12}>
-        <InputCheckbox
-          inputState={[darFocoEnBuscar, setDarFocoEnBuscar]}
-          label={"Dar siempre foco en buscar"}
-        />
-      </Grid>
 
       <Grid item xs={12} md={12} lg={12}>
         <label
@@ -432,6 +428,23 @@ const TabGeneral = ({
           optionSelected={modoTrabajoConexion}
           setOptionSelected={cambioTrabajoConexion}
           options={System.arrayIdValueFromObject(ModosTrabajoConexion, true)}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={12} lg={12}>
+        <label
+          style={{
+            userSelect: "none",
+            fontSize: "19px",
+            display: "inline-block",
+            margin: "10px 0"
+          }}>
+          Foco principal
+        </label>
+        <BoxOptionList
+          optionSelected={darFocoPrincipalEn}
+          setOptionSelected={setDarFocoPrincipalEn}
+          options={System.arrayIdValueFromObject(FocosPrincipales, true)}
         />
       </Grid>
 

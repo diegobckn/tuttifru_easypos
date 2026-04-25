@@ -32,6 +32,7 @@ import Balanza from "../../Models/Balanza";
 import { Label } from "@mui/icons-material";
 import SmallDangerButton from "../Elements/SmallDangerButton";
 import SmallSecondaryButton from "../Elements/SmallSecondaryButton";
+import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
 
 
 const AsignarPeso = ({
@@ -41,6 +42,15 @@ const AsignarPeso = ({
   showGrInfo = true,
   precioKg = null
 }) => {
+
+  const {
+    userData,
+    updateUserData,
+    showMessage,
+    showAlert,
+    showLoading,
+    hideLoading
+  } = useContext(SelectedOptionsContext);
 
 
   const [peso, setPeso] = useState(0)
@@ -52,6 +62,18 @@ const AsignarPeso = ({
     balanza.deteccionPeso((nuevoPeso) => {
       setPeso(nuevoPeso)
       console.log("asignando peso al iniciar", nuevoPeso)
+    })
+  }
+
+  const reconectar = () => {
+    console.log("reset")
+    showLoading("Reconectando balanza")
+    balanza.reconectar(() => {
+      showMessage("Reconectada correctamente")
+      hideLoading()
+    }, () => {
+      showMessage("No se pudo reconectar")
+      hideLoading()
     })
   }
 
@@ -179,6 +201,12 @@ const AsignarPeso = ({
       <DialogActions>
         <SmallSecondaryButton textButton="Refrescar" actionButton={() => {
           resetear()
+        }} style={{
+          marginRight: "100px",
+          height: "50px"
+        }} />
+        <SmallDangerButton textButton="Reconectar" actionButton={() => {
+          reconectar()
         }} style={{
           marginRight: "100px",
           height: "50px"

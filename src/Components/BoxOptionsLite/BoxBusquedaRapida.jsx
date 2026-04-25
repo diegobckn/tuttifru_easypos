@@ -21,15 +21,18 @@ import ProductButton from "../Elements/ProductButton";
 import BoxOptionList from "./BoxOptionList";
 import System from "../../Helpers/System";
 import ProductSold from "../../Models/ProductSold";
+import BusquedaRapidaOfertas from "../ScreenDialog/BusquedaRapidaOfertas";
 
 export const filtrosBusquedaRapida = {
   Pesables: 1,
   Unitarios: 2,
   Todos: 3,
+  Ofertas: 4,
 }
 
 export default ({
-  show
+  show,
+  onClose = () => { }
 }) => {
 
   const {
@@ -54,6 +57,8 @@ export default ({
 
   const [isChanging, setIsChanging] = useState(false)
 
+  const [verOfertas, setVerOfertas] = useState(false)
+
   useEffect(() => {
     if (!show) return
 
@@ -73,6 +78,12 @@ export default ({
   }, [filterSelected]);
 
   const aplicarFiltro = () => {
+    if (filterSelected == filtrosBusquedaRapida.Ofertas) {
+      setVerOfertas(true)
+      setFilterSelected(filtrosBusquedaRapida.Todos)
+      return setProdfiltereds(prods)
+    }
+
     if (filterSelected == filtrosBusquedaRapida.Todos) {
       setProdfiltereds(prods)
       return
@@ -237,7 +248,6 @@ export default ({
 
 
   return (
-
     <Grid container spacing={2} style={{
       padding: "0px",
     }}>
@@ -245,6 +255,14 @@ export default ({
       <Grid item xs={12} sm={12} md={12} lg={12} style={{
         display: (!showSearchProduct ? "block" : "none")
       }}>
+
+        <BusquedaRapidaOfertas
+          openDialog={verOfertas}
+          setOpenDialog={setVerOfertas}
+          onAdd={() => {
+            onClose()
+          }}
+        />
 
         <BoxOptionList
           optionSelected={filterSelected}

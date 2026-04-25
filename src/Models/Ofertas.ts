@@ -15,6 +15,10 @@ import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
 import Oferta134 from './Oferta134.ts';
 import Oferta5 from './Oferta5.ts';
 import Oferta2 from './Oferta2.ts';
+import Ofertas from './Ofertas.ts';
+import LoopProperties from '../Helpers/LoopProperties.ts';
+import Product from './Product.ts';
+import Client from './Client.ts';
 
 
 export default class extends ModelSingleton {
@@ -27,6 +31,23 @@ export default class extends ModelSingleton {
     this.sesion = new StorageSesion("ofertas")
   }
 
+  async almacenarParaOffline(
+    callbackOk: any = () => { },
+    callbackWrong: any = () => { }) {
+    var me = this
+
+    Ofertas.getAllOfertas((ofertas: any) => {
+      var ofersOk: any = []
+      ofertas.forEach((ofer: any) => {
+        if (!Ofertas.estaVacia(ofer)) {
+          ofersOk.push(ofer)
+        }
+      })
+      me.sesion.guardar(ofersOk)
+      callbackOk()
+    }, callbackWrong)
+  }
+
   static guardarOffline(info: any) {
     this.getInstance().sesion.guardar(info)
   }
@@ -37,17 +58,28 @@ export default class extends ModelSingleton {
       callbackOk(responseData.ofertas, response)
     }, callbackWrong)
   }
+  static async getAllOfertas(callbackOk: any, callbackWrong: any) {
+    const url = ModelConfig.get("urlBase") + "/api/Ofertas/GetAllOfertas"
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
+      callbackOk(responseData.ofertas, response)
+    }, callbackWrong)
+  }
 
   static revisarOfertas(productosVendidos: any, ofertas: any, callbackAplicoAlgo: any, callbackNoAplicoNada: any) {
-    // console.log("revisarOfertas")
-    if (this.aplicando) return
+    if (this.aplicando) {
+      // console.log("revisarOfertas ya se esta aplicando ofertas")
+      return
+    }
     this.aplicando = true
-    if (ofertas.length < 1) {
+    if (ofertas.length < 1 || productosVendidos.length < 1) {
       callbackNoAplicoNada()
       this.aplicando = false
+      return
     }
 
-    var copiaProductos = productosVendidos
+    // console.log("revisarOfertas las ofertas", System.clone(ofertas))
+    // console.log("revisarOfertas para los productos", System.clone(productosVendidos))
+    var copiaProductos = System.clone(productosVendidos)
     var resultadoOfertas: any = {
       productosQueAplican: [],
       productosQueNoAplican: copiaProductos
@@ -56,22 +88,28 @@ export default class extends ModelSingleton {
     var tieneTipo2 = false
 
     ofertas.forEach((ofer: any, ix: number) => {
-      if ([1, 2, 3, 4, 5].includes(ofer.tipo)) {
+      // if (ofer.codigoTipo == 2) console.log("ciclo ", (ix + 1), "oferta: ", System.clone(ofer))
+      if ([1, 2, 3, 4, 5].includes(ofer.codigoTipo)) {
         var of: any = null;
-        if (ofer.tipo == 5) {
+        // console.log("trabajando con oferta", System.clone(ofer))
+        if (ofer.codigoTipo == 5) {
           of = new Oferta5();
         } else {
-          if (ofer.tipo == 2) {
+          if (ofer.codigoTipo == 2) {
             tieneTipo2 = true
             of = new Oferta2();
           } else {
+            // console.log("es codigoTipo 1 o 3 o 4")
             of = new Oferta134();
           }
         }
+        // if (ofer.codigoTipo == 2) console.log("ofer.codigoTipo", ofer.codigoTipo)
         of.setInfo(ofer)
+        // if (ofer.codigoTipo == 2) console.log("of", of)
 
 
         while (of.debeAplicar(resultadoOfertas.productosQueNoAplican)) {
+          // console.log("debe aplicar")
           const resultadoAplicar: any = of.aplicar(resultadoOfertas.productosQueNoAplican)
           // console.log("luego de aplicar queda asi", resultadoAplicar)
 
@@ -90,20 +128,25 @@ export default class extends ModelSingleton {
       resultadoOfertas.productosQueAplican.forEach((prodConOferta: any) => {
         const miGrup = prodConOferta.grupoAplicado
         if (
-          prodConOferta.ofertaAplicada.tipo == 2
+          prodConOferta.ofertaAplicada.codigoTipo == 2
           && prodConOferta.grupoAplicado
           && prodConOferta.resumenOfertaAplicada[miGrup]
         ) {
+          // console.log("prodConOferta.resumenOfertaAplicada[miGrup]", prodConOferta.resumenOfertaAplicada[miGrup])
           const totSinDesc = prodConOferta.resumenOfertaAplicada[miGrup].totalSinDescuento
           const dif = totSinDesc - prodConOferta.resumenOfertaAplicada[miGrup].montoFinal
 
+          // console.log("dif", dif)
 
           const miSubOri = prodConOferta.precioVentaOriginal * prodConOferta.cantidad
+          // console.log("miSubOri", miSubOri)
           const miPorc = miSubOri * 100 / totSinDesc
+          // console.log("miPorc", miPorc)
 
           prodConOferta.descuentoReal = ((miPorc / 100) * dif) / prodConOferta.cantidad
           prodConOferta.precioVenta = prodConOferta.precioVentaOriginal - prodConOferta.descuentoReal
 
+          // console.log("prodConOferta", prodConOferta)
           // console.log("prodConOferta.resumenOfertaAplicada[miGrup]", prodConOferta.resumenOfertaAplicada[miGrup])
           // console.log("totSinDesc", totSinDesc)
           // console.log("dif", dif)
@@ -118,12 +161,16 @@ export default class extends ModelSingleton {
     var productosVendidosx: any = []
 
     resultadoOfertas.productosQueAplican.forEach((prod: any) => {
-      totalVentasx += prod.total
+      const productoSold = ProductSold.createByValues(prod)
+      totalVentasx += productoSold.total
+      // console.log("productoSold", productoSold)
       productosVendidosx.push(prod)
     })
 
     resultadoOfertas.productosQueNoAplican.forEach((prod: any) => {
-      totalVentasx += prod.total
+      const productoSold = ProductSold.createByValues(prod)
+      totalVentasx += productoSold.total
+      // console.log("productoSold", productoSold)
       productosVendidosx.push(prod)
     })
     callbackAplicoAlgo(resultadoOfertas, totalVentasx, productosVendidosx)
@@ -166,7 +213,7 @@ export default class extends ModelSingleton {
       return
     }
 
-    this.getOfertas((ofertas: any) => {
+    this.getAllOfertas((ofertas: any) => {
       // this.dejarSoloTipo(5, ofertas, (ofertasTipo: any) => {
       this.guardarOffline(ofertas)
       // this.revisarOfertas(productosVendidos, ofertasTipo, callbackAplicoAlgo, callbackNoAplicoNada)
@@ -182,24 +229,30 @@ export default class extends ModelSingleton {
   }
 
   static calcularDescuentosFinales(resultadoOfertas: any, callbackOk: any) {
+    // console.log("calcularDescuentosFinales")
+    const agrupados: any = {}
 
-    const agrupados: any = []
-
-    resultadoOfertas.productosQueAplican.forEach((prod: any) => {
+    resultadoOfertas.productosQueAplican.forEach((prod: any, indexPQA: number) => {
+      // console.log("prod", prod)
       if (agrupados[prod.idProducto]) {
-        var cantidadAnterior = parseFloat(agrupados[prod.idProducto].cantidad)
-        // console.log("cantidadAnterior", cantidadAnterior + 0)
-        var totalAnterior = agrupados[prod.idProducto].precioVenta
-        cantidadAnterior += parseFloat(prod.cantidad)
-        // console.log("cantidadAnterior despues", cantidadAnterior + 0)
-        totalAnterior += parseFloat(prod.cantidad) * parseFloat(prod.precioVenta)
+        agrupados[prod.idProducto + (indexPQA + 1)] = System.clone(prod)
 
-        agrupados[prod.idProducto].cantidad = cantidadAnterior
+        // console.log("existe agrupado para ", prod.idProducto, "..hace uno parecido")
+        // var cantidadAnterior = parseFloat(agrupados[prod.idProducto].cantidad)
+        // // console.log("cantidadAnterior", cantidadAnterior + 0)
+        // var totalAnterior = agrupados[prod.idProducto].precioVenta
+        // cantidadAnterior += parseFloat(prod.cantidad)
+        // // console.log("cantidadAnterior despues", cantidadAnterior + 0)
+        // totalAnterior += parseFloat(prod.cantidad) * parseFloat(prod.precioVenta)
+
+        // agrupados[prod.idProducto].cantidad = cantidadAnterior
       } else {
+        // console.log("no existe agrupado para ", prod.idProducto, ".. se debe crear")
         agrupados[prod.idProducto] = System.clone(prod)
       }
+      // console.log("adentro de foreach agrupados", System.clone(agrupados))
     })
-    // console.log("agrupados", agrupados)
+    // console.log("agrupados", System.clone(agrupados))
 
     var totalDescuentos = 0
 
@@ -250,6 +303,116 @@ export default class extends ModelSingleton {
     })
     // console.log("queda tipo ", ofertasTipo)
     callback(ofertasTipo)
+  }
+
+
+  static estaVacia(oferta: any) {
+    return (
+      oferta.monto <= 0
+      && oferta.products[0].codbarra == "string"
+    )
+  }
+
+  static esCorrecta(oferta: any) {
+    return (
+      oferta.productosValidos
+      && oferta.productosValidos.length > 0
+    )
+  }
+
+  static esProductoPermitido(producto: any) {
+    return (
+      !producto.mostrarPrecioRangos
+      || producto.mostrarPrecioRangos.length < 1
+      || producto.mostrarPrecioRangos[0].cantidadDesde <= 0
+    )
+  }
+
+
+  static cargarProductosDeOferta(
+    oferta: any,
+    callbackOk: (prods: any) => void,
+    arrayAcumuladorProductos: any = [],
+    codigoCliente = 0) {
+
+    var prodOfe: any = []
+    new LoopProperties(oferta.products,
+      (ix2: string, prodOferGuar: any, looperProds: LoopProperties) => {
+
+        // console.log("prodOferGuar", prodOferGuar)
+        Product.getInstance().findByCodigoBarras({
+          codigoCliente,
+          codigoProducto: prodOferGuar.codbarra
+        }, (prodsServ: any) => {
+          // console.log("prodsServ", System.clone(prodsServ))
+          if (prodsServ.length > 0 && Ofertas.esProductoPermitido(prodsServ[0])) {
+            // console.log("prodsServ[0].idProducto", prodsServ[0].idProducto)
+            // console.log("prodsServ[0]", prodsServ[0])
+            prodOfe.push(prodsServ[0])
+            arrayAcumuladorProductos[prodsServ[0].idProducto] = prodsServ[0]
+            // console.log("el producto es valido", prodsServ[0])
+          } else {
+            // console.log("el producto no es valido", prodsServ[0])
+          }
+          // console.log("pasó el if")
+          looperProds.next()
+        }, (er: string) => {
+          // console.log("falla pero sigue con el siguiente", er)
+          looperProds.next()
+        })
+
+      }, () => {
+        // console.log("termino el ciclo prod de ofertas")
+        callbackOk(prodOfe)
+      })
+  }
+
+  static cargarSoloCorrectas(callbackOk: (ofertasCorrectas: any) => void) {
+    const guardadas = Ofertas.getInstance().getFromSesion()
+    // console.log("guardadas", guardadas)
+    if (guardadas) {
+      Ofertas.cargarSoloCorrectasFrom(guardadas, callbackOk)
+    } else {
+      Ofertas.getAllOfertas((ofers: any) => {
+        Ofertas.guardarOffline(ofers)
+        Ofertas.cargarSoloCorrectasFrom(ofers, callbackOk)
+      }, () => { })
+    }
+  }
+
+  static cargarSoloCorrectasFrom(ofertas: any, callbackOk: (ofertasCorrectas: any) => void) {
+    // console.log("ofertas", ofertas)
+    var productosDeOfertas: any = []
+
+    var oferValids: any = []
+
+    const cl = Client.getInstance().getFromSesion()
+    var codigoCliente = 0
+    if (cl) {
+      codigoCliente = cl.codigoCliente
+    }
+
+    new LoopProperties(ofertas, (ix: string, ofertaGuardada: any, looperOferGuar: LoopProperties) => {
+      // console.log("ofertas--item", ofertaGuardada)
+      if (Ofertas.estaVacia(ofertaGuardada)) {
+        looperOferGuar.next()
+      } else {
+        Ofertas.cargarProductosDeOferta(ofertaGuardada, (prods) => {
+          ofertaGuardada.productosValidos = prods
+          if (Ofertas.esCorrecta(ofertaGuardada)) {
+            oferValids.push(ofertaGuardada)
+          } else {
+            // console.log("no es correcta", ofertaGuardada)
+          }
+          looperOferGuar.next()
+        }, productosDeOfertas, codigoCliente)
+      }
+    }, () => {
+      // console.log("termino el ciclo de ofertas guardadas")
+      // console.log("productosDeOfertas", productosDeOfertas)
+      // console.log("oferValids", oferValids)
+      callbackOk(oferValids)
+    })
   }
 
 };

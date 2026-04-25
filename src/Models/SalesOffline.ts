@@ -1,9 +1,11 @@
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import System from '../Helpers/System.ts';
+import AperturaCierreOffline from './AperturaCierreOffline.ts';
 import ModelSingleton from './ModelSingleton.ts';
 import OfflineAutoIncrement from './OfflineAutoIncrement.ts';
 import PagoBoleta from './PagoBoleta.ts';
 import ParaEnviar from './ParaEnviar.ts';
+import Product from './Product.ts';
 
 class SalesOffline extends ModelSingleton {
     sesion: StorageSesion = new StorageSesion("salesoffline")
@@ -79,6 +81,7 @@ class SalesOffline extends ModelSingleton {
     // static reintentoTiempoSincro = 10
 
     static sincronizar(callbackCadaEnvio: any, callbackFinalizar: any) {
+        console.log("sincronizar.. offline")
         SalesOffline.sincronizando = true
         this.sincronizarCiclo(callbackCadaEnvio, callbackFinalizar)
 
@@ -86,9 +89,11 @@ class SalesOffline extends ModelSingleton {
     }
 
     static sincronizarCiclo(callbackCadaEnvio: any, callbackFinalizar: any) {
+        console.log("sincronizarCiclo offline ")
+        console.log("SalesOffline.enviando", SalesOffline.enviando)
+        console.log("SalesOffline.sincronizando", SalesOffline.sincronizando)
         if (SalesOffline.enviando) return
         if (!SalesOffline.sincronizando) return
-        SalesOffline.enviando = true
         var me = SalesOffline.getInstance()
         if (me.listSales.length < 1) {
             SalesOffline.sincronizando = false
@@ -116,6 +121,8 @@ class SalesOffline extends ModelSingleton {
             }
         }
 
+        console.log("llamando reintentarPago..")
+
         this.reintentarPago(sinItem, callbackOkEnvio, () => {
             SalesOffline.enviando = false
             setTimeout(() => {
@@ -134,7 +141,7 @@ class SalesOffline extends ModelSingleton {
 
         var nroFolio = parseInt(nroFolioInicial + "") + 0
         var copiaSales: any = []
-        me.listSales.forEach((sale:any) => {
+        me.listSales.forEach((sale: any) => {
             if (sale.queOperacionHace == tipo) {
                 sale["nFolio" + tipo] = nroFolio + 0
                 nroFolio++
@@ -158,11 +165,44 @@ class SalesOffline extends ModelSingleton {
     static frenarSincro() {
         SalesOffline.sincronizando = false
         ParaEnviar.sincronizando = false
+
+        AperturaCierreOffline.sincronizando = false
+
     }
 
     static reintentarPago(saleInfo: any, callbackOk: any, callbackWrong: any) {
+        console.log("reintentarPago..")
+        console.log("saleInfo", saleInfo)
+        const ixAperturaOCierre = AperturaCierreOffline.primeroSinEnviarIndex()
+        console.log("ixAperturaOCierre", ixAperturaOCierre)
+        if (ixAperturaOCierre !== null) {
+            const ac = new AperturaCierreOffline()
+            var antes = ac.loadFromSesion()
+            const itAperturaCierre = antes.movimientos[ixAperturaOCierre]
+            console.log("itAperturaCierre", itAperturaCierre)
+            if (itAperturaCierre.fechaIngreso <= saleInfo.fechaIngreso) {
+                console.log("Esperando un envio de " + itAperturaCierre.tipo)
+                if (!AperturaCierreOffline.sincronizando) {
+                    AperturaCierreOffline.sincronizar(() => {
+                    }, () => {
+                        SalesOffline.reintentarPago(saleInfo, callbackOk, callbackWrong)
+                    })
+                }
+                return
+            }
+            console.log("todo ok.. sigo con el intento de pago")
+        }
+        
+        const pr =Product.getInstance()
+        if(pr.hayPreciosOffline()){
+            pr.enviarPreciosOffline()
+            callbackWrong("productos con cambio de precio pendiente")
+            return
+        }
+
         var MPago = new PagoBoleta();
         MPago.fill(saleInfo);
+        SalesOffline.enviando = true
         MPago.hacerPago(saleInfo, callbackOk, callbackWrong, true)
     }
 

@@ -67,10 +67,15 @@ const CierreCaja = ({ openDialog, setOpenDialog }) => {
       console.log("info de cierre cargada correctamente");
       console.log(info);
     }, () => {
-      showMessage(
-        "Hubo un problema de conexión." +
-        " Solicitar al administrador para hacer el cierre administrativo.");
-      setOpenDialog(false)
+      setInfoCierre({
+        arqueoCajaById: {
+          totalSistema: 0
+        }
+      })
+      // showMessage(
+      //   "Hubo un problema de conexión." +
+      //   " Solicitar al administrador para hacer el cierre administrativo.");
+      // setOpenDialog(false)
     })
   }
 
@@ -145,6 +150,8 @@ const CierreCaja = ({ openDialog, setOpenDialog }) => {
 
     const cerrarCaja = new CerrarCaja()
 
+    console.log("preparando para hacer cierre")
+    console.log("enviando", data)
     showLoading("Carrando la caja")
     cerrarCaja.enviar(data, (res) => {
       showMessage("Caja cerrada correctamente.");

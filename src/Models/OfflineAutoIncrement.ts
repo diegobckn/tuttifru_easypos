@@ -3,6 +3,8 @@ import ModelSingleton from './ModelSingleton.ts';
 import User from './User.ts';
 import System from '../Helpers/System.ts';
 import StorageSesion from '../Helpers/StorageSesion.ts';
+import ModelConfig from './ModelConfig.ts';
+import EndPoint from './EndPoint.ts';
 
 class OfflineAutoIncrement extends ModelSingleton {
 
@@ -113,10 +115,21 @@ class OfflineAutoIncrement extends ModelSingleton {
           const hst = parseFloat(System.getProp(me, "nFolioBoletaHasta"))
           const df = hst - dsd
           if (df <= OfflineAutoIncrement.DIFERENCIA_SOLICITAR_FOLIOS) {
-            //pedir mas folios
-
+            callbackWrong("ErrorFolio: Se agotaron los folios de boletas.")
           }
         }, () => { })
+      } else if (prop == "nFolioBoletaExenta") {
+        const dsd = me[prop] ?? 0
+        me.loadFromSesion("nFolioBoletaExentaHasta", () => {
+          // console.log("antes de cambiar esta asi", System.clone(me))
+          const hst = parseFloat(System.getProp(me, "nFolioBoletaExentaHasta"))
+          const df = hst - dsd
+          if (df <= OfflineAutoIncrement.DIFERENCIA_SOLICITAR_FOLIOS) {
+            callbackWrong("ErrorFolio: Se agotaron los folios de boletas excentas.")
+          }
+        }, () => { })
+
+
       }
       // console.log("despues de cambiar queda asi", System.clone(me))
       callbackOk(System.getProp(me, prop))
@@ -153,6 +166,89 @@ class OfflineAutoIncrement extends ModelSingleton {
 
     return hashRs
   }
+
+
+  static getByDte(arr: any, dte: number) {
+    var found: any = null
+    arr.forEach((item: any) => {
+      if (item.codigoDte == dte && found === null) {
+        found = item
+      }
+    })
+
+    return found
+  }
+
+  static async loadFromServer(idTurno: number | null, callbackOk: any, callbackWrong: any) {
+    const configs = ModelConfig.get()
+    var url = configs.urlBase
+      + "/api/Cajas/ObtenerFolios"
+
+    url += "?CodigoSucursal=" + ModelConfig.get("sucursal")
+    url += "&PuntoVenta=" + ModelConfig.get("puntoVenta")
+
+
+    EndPoint.sendGet(url, (responseData: any, response: any) => {
+      console.log("ok.. data", responseData)
+
+      var infoGuardar: any = {}
+      if (idTurno !== null) infoGuardar.idTurno = idTurno
+
+      const infoBoletas = this.getByDte(responseData, 39)
+      if (infoBoletas) {
+        infoGuardar.folioActual = infoBoletas.folioActual
+        infoGuardar.folioHasta = infoBoletas.folioHasta
+      } else {
+        infoGuardar.folioActual = 0
+        infoGuardar.folioHasta = 1000
+      }
+
+      const infoBoletasExentas = this.getByDte(responseData, 41)
+      if (infoBoletasExentas) {
+        infoGuardar.folioActual = infoBoletasExentas.folioActual
+        infoGuardar.folioHasta = infoBoletasExentas.folioHasta
+      } else {
+        infoGuardar.folioActual = 0
+        infoGuardar.folioHasta = 1000
+      }
+
+      const infoFacturas = this.getByDte(responseData, 33)
+      if (infoFacturas) {
+        infoGuardar.folioActual = infoFacturas.folioActual
+        infoGuardar.folioHasta = infoFacturas.folioHasta
+      } else {
+        infoGuardar.folioActual = 0
+        infoGuardar.folioHasta = 1000
+      }
+
+      const infoTickets = this.getByDte(responseData, 0)
+      if (infoTickets) {
+        infoGuardar.folioActual = infoTickets.folioActual
+        infoGuardar.folioHasta = infoTickets.folioHasta
+      } else {
+        infoGuardar.folioActual = 0
+        infoGuardar.folioHasta = 1000
+      }
+
+      const infoGuiaDespachos = this.getByDte(responseData, 52)
+      if (infoGuiaDespachos) {
+        infoGuardar.folioActual = infoGuiaDespachos.folioActual
+        infoGuardar.folioHasta = infoGuiaDespachos.folioHasta
+      } else {
+        infoGuardar.folioActual = 0
+        infoGuardar.folioHasta = 1000
+      }
+
+      console.log("infoGuardar", infoGuardar)
+      OfflineAutoIncrement.saveInSesion(infoGuardar)
+      callbackOk(infoGuardar)
+      // callbackOk(response.data.categorias, response);
+    }, (er: any) => {
+      console.log("err", er)
+      callbackWrong(er)
+    })
+  }
+
 
 };
 

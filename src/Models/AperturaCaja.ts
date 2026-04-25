@@ -6,6 +6,8 @@ import Model from './Model';
 import ModelConfig from './ModelConfig.ts';
 import EndPoint from './EndPoint.ts';
 import User from './User.ts';
+import AperturaCierreOffline from './AperturaCierreOffline.ts';
+import System from '../Helpers/System.ts';
 
 
 class AperturaCaja extends Model implements MovimientoCaja {
@@ -44,7 +46,7 @@ class AperturaCaja extends Model implements MovimientoCaja {
         // return JSON.parse(dt);
     }
 
-    async sendToServer(callbackOk: any, callbackWrong: any) {
+    async sendToServer(callbackOk: any, callbackWrong: any, forzarEnvio = false) {
         var data: any = this.getFillables();
         const configs = ModelConfig.get()
         var url = configs.urlBase
@@ -53,13 +55,59 @@ class AperturaCaja extends Model implements MovimientoCaja {
         if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
         if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
+        if (!forzarEnvio
+            && AperturaCierreOffline.last()
+            && !AperturaCierreOffline.lastWasSent()) {
+            const last = AperturaCierreOffline.last()
+            var debeRecargarIdTurno = false
+            if (!last.sended) {
+                if (last.tipo == "cierre") {
+                    data.idTurno = last.idTurno + 1
+                    console.log("va a guardar en apertura", System.clone(data))
+
+                    const us = new User()
+                    const usSes = us.getFromSesion()
+                    usSes.idTurno = data.idTurno
+                    console.log("va a guardar en usuario", System.clone(usSes))
+                    us.sesion.guardar(usSes)
+
+                    debeRecargarIdTurno = true
+                }
+                AperturaCierreOffline.addApertura(data)
+                callbackOk({
+                    statusCode: 200,
+                    debeRecargarIdTurno
+                }, {
+                    data: {
+                        statusCode: 200,
+                        debeRecargarIdTurno
+                    }
+                })
+                return
+            }
+        }
         EndPoint.sendPost(url, data, (responseData: any, response: any) => {
+            AperturaCierreOffline.addApertura(data, false)
             this.informeEmail(() => {
                 callbackOk(responseData, response);
             }, () => {
                 callbackOk(responseData, response);
             })
-        }, callbackWrong)
+            // }, callbackWrong)
+        }, (err: any) => {
+            if (!forzarEnvio) {
+                AperturaCierreOffline.addApertura(data)
+                callbackOk({
+                    statusCode: 200
+                }, {
+                    data: {
+                        statusCode: 200
+                    }
+                })
+            } else {
+                callbackWrong(err)
+            }
+        })
 
     }
 

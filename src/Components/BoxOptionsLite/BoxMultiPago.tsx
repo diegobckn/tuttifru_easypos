@@ -107,7 +107,7 @@ const BoxMultiPago = ({
 
     setMetodoPago("")
     if (!paraFactura) {
-      setCliente(null)
+      // setCliente(null)
     }
     setPagarCon(0)
 
@@ -258,7 +258,7 @@ const BoxMultiPago = ({
     setYaApretoPrimerTecla(false)
 
     if (!paraFactura) {
-      setCliente(null)
+      // setCliente(null)
     }
     setUsuario(null)
   }, []);

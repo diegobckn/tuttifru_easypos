@@ -31,7 +31,7 @@ const BoxBotonesVendedoresVolantes = () => {
     showLoading,
     hideLoading,
     searchInputRef,
-
+    focusSearchInput,
     suspenderYRecuperar,
     numeroAtencion,
     setNumeroAtencion,
@@ -105,10 +105,6 @@ const BoxBotonesVendedoresVolantes = () => {
     }
   }, [salesData])
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
-  }
-
   return (
     <Grid container spacing={2}>
 
@@ -116,7 +112,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFamiliasDialog(val)
           if (!val) {
-            focusSearchInput()
+            focusSearchInput(searchInputRef)
           }
         }}
       />
@@ -126,7 +122,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFastSearchDialog(val)
           if (!val) {
-            focusSearchInput()
+            focusSearchInput(searchInputRef)
           }
         }}
       />
@@ -135,7 +131,7 @@ const BoxBotonesVendedoresVolantes = () => {
         setOpenDialog={(val) => {
           setShowFastSearchDialog(val)
           if (!val) {
-            focusSearchInput()
+            focusSearchInput(searchInputRef)
           }
         }}
       />
@@ -151,15 +147,15 @@ const BoxBotonesVendedoresVolantes = () => {
           <MainButton textButton="Borrar Todo" actionButton={() => {
             if (salesData.length < 1) {
               showMessage("El listado esta vacio")
-              focusSearchInput()
+              focusSearchInput(searchInputRef)
               return
             }
 
             showConfirm("Borrar todos los productos de la lista?", () => {
               clearSalesData()
-              focusSearchInput()
+              focusSearchInput(searchInputRef)
             }, () => {
-              focusSearchInput()
+              focusSearchInput(searchInputRef)
             })
           }} xs={6} sm={3} md={2} lg={2} style={{
             height: "80px",

@@ -31,6 +31,8 @@ import Comercio from "../Models/Comercio";
 import PrinterPaper from "../Models/PrinterPaper";
 import Printer from "../Models/Printer";
 import Sales from "../Models/Sales";
+import BalanzaDigi from "../Models/BalanzaDigi";
+import AperturaCierreOffline from "../Models/AperturaCierreOffline";
 
 const PuntoVenta = () => {
   const {
@@ -38,7 +40,9 @@ const PuntoVenta = () => {
     focusSearchInput,
     showAlert,
     getUserData,
-    salesData
+    salesData,
+
+    verBotonesPanel
   } = useContext(SelectedOptionsContext);
 
 
@@ -91,16 +95,39 @@ const PuntoVenta = () => {
     document.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
+
+    var baldigi = new BalanzaDigi()
+    if (ModelConfig.get("trabajarConBalanzaDigi")) {
+      baldigi.checkAfterLogin()
+    } else if (baldigi.sesion.hasOne()) {
+      baldigi.resetSesion()
+    }
+
+    if (
+      AperturaCierreOffline.primeroSinEnviarIndex() !== null
+      && !AperturaCierreOffline.sincronizando) {
+      AperturaCierreOffline.sincronizar(() => { }, () => { })
+    }
+
   }, [])
 
 
 
 
   useEffect(() => {
-    if (userData && !userData.inicioCaja) {
-      console.log("no tiene iniciada la caja");
-      console.log(userData)
-      setShowAbrirCaja(true);
+    if (userData) {
+      const ACOff = new AperturaCierreOffline()
+      if (ACOff.sesion.hasOne()) {
+        if (!AperturaCierreOffline.hasApertura()) {
+          console.log("no tiene iniciada la caja");
+          console.log(userData)
+          console.log("revisando si tiene offline")
+          console.log("NO si tiene offline")
+          setShowAbrirCaja(true);
+        }
+      } else if (!userData.inicioCaja) {
+        setShowAbrirCaja(true);
+      }
     }
 
     if (!userData && !User.getInstance().sesion.hasOne()) {
@@ -163,15 +190,17 @@ const PuntoVenta = () => {
           padding: 0
         }}>
 
-          <Grid container style={{
-            padding: 0
-          }}>
-            <Grid item xs={12} sm={12} md={12} lg={12} style={{
+          {verBotonesPanel && (
+            <Grid container style={{
               padding: 0
             }}>
-              <BoxTop />
+              <Grid item xs={12} sm={12} md={12} lg={12} style={{
+                padding: 0
+              }}>
+                <BoxTop />
+              </Grid>
             </Grid>
-          </Grid>
+          )}
 
           <Grid container spacing={2} style={{
             margin: "0",
@@ -225,7 +254,9 @@ const PuntoVenta = () => {
             }}></div>
           )} */}
 
-          <BoxBotones />
+          {verBotonesPanel && (
+            <BoxBotones />
+          )}
 
         </Grid>
       </Container>

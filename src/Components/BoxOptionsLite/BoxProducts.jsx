@@ -47,6 +47,7 @@ import dayjs from "dayjs";
 import OrdenListado from "../../definitions/OrdenesListado";
 import ModosTrabajoConexion from "../../definitions/ModosConexion";
 import Ofertas from "../../Models/Ofertas";
+import BalanzaDigi from "../../Models/BalanzaDigi";
 
 const BoxProducts = ({ }) => {
   const {
@@ -75,10 +76,11 @@ const BoxProducts = ({ }) => {
     addNewProductFromCode,
     hideLoading,
     showLoading,
-
+    focusSearchInput,
     searchInputRef,
     descuentos,
-    setDescuentos
+    setDescuentos,
+    showAlert
   } = useContext(SelectedOptionsContext);
 
 
@@ -92,9 +94,34 @@ const BoxProducts = ({ }) => {
   const [paginaBusqueda, setPaginaBusqueda] = useState(0);
   const [cantidadPaginasBusqueda, setCantidadPaginasBusqueda] = useState(0);
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
+  const balanzaDigi = BalanzaDigi.getInstance()
+
+  const cargarValesBalanzaDigi = () => {
+    if (!ModelConfig.get("trabajarConBalanzaDigi")) return
+    // console.log("cargarValesBalanzaDigi")
+    balanzaDigi.estadoVales((res) => {
+      // console.log("resultado estadoVales balanza digi", res)
+      if (res.status && res.info) {
+        // setInfoBalanza(res.info.info51)
+        // console.log("setInfoBalanza1 con ", res.info.info51)
+        balanzaDigi.guardarEnSesionTodos(res.info)
+      } else {
+        // showAlert("No se pudo leer los tickets de la balanza.")
+      }
+      setTimeout(() => {
+        cargarValesBalanzaDigi()
+      }, ModelConfig.get("refreshValeBalanzaDigi") * 1000);
+      // hideLoading()
+    }, () => {
+      setTimeout(() => {
+        cargarValesBalanzaDigi()
+      }, ModelConfig.get("refreshValeBalanzaDigi") * 1000);
+    })
   }
+
+  useEffect(() => {
+    cargarValesBalanzaDigi()
+  }, [])
 
 
   const aplicarOfertas = () => {
@@ -104,9 +131,11 @@ const BoxProducts = ({ }) => {
 
     Ofertas.aplicarTodas(salesData, (resultadoOfertas, totalConOfertas, productoVendidosConOfertas) => {
       // AGRUPAMOS
+      // console.log("resultadoOfertas", System.clone(resultadoOfertas))
       Ofertas.calcularDescuentosFinales(resultadoOfertas, (prodConOfer, totalDescuentos) => {
         setDescuentos(totalDescuentos)
         setProductsConOfertas(prodConOfer)
+        // console.log("productsConOfertas", System.clone(prodConOfer))
       })
 
     }, () => {
@@ -118,7 +147,6 @@ const BoxProducts = ({ }) => {
     // console.log("cambio algo con productos")
     if (!Ofertas.aplicando) {
       setProductsConOfertas([])
-      setProductsConOfertas(false)
       aplicarOfertas()
     }
   }, [grandTotal]);
@@ -163,9 +191,9 @@ const BoxProducts = ({ }) => {
 
             const x1 = CODBALANZA.length
             const x2 = CODBALANZA.length + LARGOIDPRODBALANZA
-            const idProducto = parte.substring(
+            const idProducto = parseInt(parte.substring(
               CODBALANZA.length, CODBALANZA.length + LARGOIDPRODBALANZA
-            )
+            ))
 
             // const peso = parte.substring(8, 8 + 4)
             const peso = parte.substring(
@@ -180,7 +208,7 @@ const BoxProducts = ({ }) => {
             const pesoFloat = parseFloat(peso)
 
             showLoading("buscando producto " + parseInt(idProducto))
-            console.log("busca 1.. cliente", cliente)
+            // console.log("busca 1.. cliente", cliente)
             Product.getInstance().findByCodigoBarras({ codigoProducto: idProducto }, (products, response) => {
               if (products.length > 0) {
                 const productoEncontrado = products[0];
@@ -200,8 +228,9 @@ const BoxProducts = ({ }) => {
               })
           } else {
             //codigo no coincide con codigo de balanza configurado
-            showMessage("Producto No encontrado");
-            procesarNoEncontrado(parte)
+            // showMessage("Producto No encontrado");
+            // procesarNoEncontrado(parte)
+            buscarDigi(parte)
           }
 
 
@@ -230,8 +259,151 @@ const BoxProducts = ({ }) => {
     }
   }
 
+
+  const buscarDigi = (codigoEscaneado) => {
+    if (!ModelConfig.get("trabajarConBalanzaDigi")) {
+      showMessage("Producto No encontrado");
+      procesarNoEncontrado(codigoEscaneado)
+      return
+    }
+
+    var valesBalanzaDigi = []
+    if (balanzaDigi.sesion.hasOne()) {
+      balanzaDigi.obtenerDeSesionTodos((inf) => {
+        // console.log("de sesion digi viene", inf)
+        if (inf && inf.info51) {
+          // console.log("asignando los vales:", inf.info51)
+          valesBalanzaDigi = inf.info51
+        }
+      })
+    }
+    // console.log("buscarDigi..valesBalanzaDigi", valesBalanzaDigi)
+
+    const CODBALANZADIGI = parseInt(ModelConfig.get("codigoValeBalanzaDigi"))
+    const codigoBuscado = codigoEscaneado + ""
+    if (codigoBuscado.indexOf(CODBALANZADIGI) !== 0) {
+      // console.log("no es codigo de balanza digi")
+      return
+    }
+
+    if (valesBalanzaDigi.length < 1) {
+      showAlert("No se pudo leer los tickets de la balanza")
+      return
+    }
+
+    var valeDigiBuscado = parseInt(codigoBuscado.substring(2, 6))
+
+    var coinciden = []
+    var noEncontrados = []
+
+    const hay = valesBalanzaDigi.length
+    var va = 0
+
+    const revisarSiTermino = () => {
+      if (va == hay) {
+        // setProductos(coinciden)
+        // console.log("coinciden", coinciden)
+        // console.log("noEncontrados", noEncontrados)
+
+        const fnAlgoIncorrecto = () => {
+          // showMessage("Producto No encontrado");
+          // procesarNoEncontrado(codigoEscaneado)
+        }
+
+        if (noEncontrados.length > 0) {
+          if (noEncontrados.length == 1) {
+            showAlert("El producto con codigo "
+              + noEncontrados[0].pluItem
+              + " no existe en el pos. Crearlo y volver a leer el vale.")
+            fnAlgoIncorrecto()
+            return
+          } else {
+            showAlert("Los productos con los codigos "
+              + noEncontrados.join(", ")
+              + " no existen en el pos. Crearlos y volver a leer el vale.")
+            fnAlgoIncorrecto()
+            return
+          }
+        }
+
+        if (coinciden.length < 1) {
+          showAlert("No se encontro el ticket " + valeDigiBuscado)
+          fnAlgoIncorrecto()
+          return
+        }
+
+        coinciden.forEach((prod) => {
+          prod.nroValeDigi = valeDigiBuscado
+          addToSalesData(prod)
+        })
+
+        balanzaDigi.agregarUsado(valeDigiBuscado)
+      }
+    }
+
+    if (ModelConfig.get("revisarValeRepeditoBalanzaDigi") && balanzaDigi.yaEstaUsado(valeDigiBuscado)) {
+      showAlert("El vale ya fue usado")
+      return
+    }
+
+    // console.log("hay", hay)
+    // console.log("nroValeTicket", nroValeTicket)
+    valesBalanzaDigi.forEach((item) => {
+      // console.log("item.nroVale", item.nroVale)
+      if (parseInt(item.nroVale) == valeDigiBuscado && item.status == "6C40") {
+        // console.log("coincide")
+        // coinciden.push(item)
+
+        Product.getInstance().findByCodigoBarras({
+          codigoProducto: parseInt(item.pluItem)
+        }, (prods) => {
+          // console.log("prods", prods)
+          // console.log("prods.length", prods.length)
+
+          if (prods.length > 0) {
+            // console.log("tiene resultados para", item)
+
+            const prodPos = new ProductSold()
+            prodPos.fill(prods[0])
+            // console.log("tiene resultados2")
+            if (ProductSold.esPesable(prodPos)) {
+              prodPos.cantidad = parseFloat(item.pesoItem) / 1000
+            } else {
+              // console.log("tiene resultados3")
+              prodPos.cantidad = parseFloat(item.cantidadItem)
+            }
+            // console.log("tiene resultados4")
+            prodPos.updateSubtotal()
+            // console.log("tiene resultados5")
+            prodPos.total = parseFloat(item.precioTotalItem)
+            // console.log("tiene resultados6")
+
+            // console.log("haciendo push en coincide", prodPos)
+            coinciden.push(prodPos)
+            // console.log("tiene resultados7")
+          } else {
+            // console.log("no esta en el pos", item)
+            noEncontrados.push(parseInt(item.pluItem))
+          }
+          va++
+          revisarSiTermino()
+        }, (er) => {
+          // console.log("error: no esta en el pos", item)
+          noEncontrados.push(parseInt(item.pluItem))
+          va++
+          revisarSiTermino()
+        })
+      } else {
+        // console.log("no coincide")
+        va++
+        revisarSiTermino()
+      }
+    })
+
+  }
+
   const buscarValoresBalanza = (codigoBusqueda) => {
-    console.log("buscarValoresBalanza")
+    // console.log("buscarValoresBalanza")
 
     const CODBALANZA = Balanza.getCodigo()
     const LARGOIDPRODBALANZA = parseInt(ModelConfig.get("largoIdProdBalanza"))
@@ -260,9 +432,9 @@ const BoxProducts = ({ }) => {
 
             // const idProducto = parte.substring(3, 3+5)
 
-            const idProducto = parte.substring(
+            const idProducto = parseInt(parte.substring(
               CODBALANZA.length, CODBALANZA.length + LARGOIDPRODBALANZA
-            )
+            ))
 
             // const peso = parte.substring(8, 8 + 4)
             const peso = parte.substring(
@@ -272,14 +444,14 @@ const BoxProducts = ({ }) => {
 
             if (parte.trim() == "") return;
 
-            console.log("codigo: " + parseInt(idProducto))
-            console.log("peso: " + peso)
+            // console.log("codigo: " + parseInt(idProducto))
+            // console.log("peso: " + peso)
             const pesoEntero = peso.substring(0, PESOENTERO)
             const pesoDecimal = peso.substring(PESOENTERO)
             const pesoFloat = parseFloat(pesoEntero + "." + pesoDecimal)
 
             showLoading("buscando producto " + parseInt(idProducto))
-            console.log("busca 2.. cliente", cliente)
+            // console.log("busca 2.. cliente", cliente)
 
             Product.getInstance().findByCodigoBarras({ codigoProducto: parseInt(idProducto) }, (products, response) => {
               if (products.length > 0) {
@@ -327,6 +499,7 @@ const BoxProducts = ({ }) => {
 
 
     Product.getInstance().findByCodigoBarras({ codigoProducto: codigoBusqueda }, (products, response) => {
+      // console.log("Respuesta de findByCodigoBarras", products, "...y...", response);
       // console.log("Respuesta de la IdBYCODIGO:", response.data);
       // console.log("Cantidad registros:", response.data.cantidadRegistros);
 
@@ -343,7 +516,7 @@ const BoxProducts = ({ }) => {
         // setProductByCodigo(productoEncontrado);
         // setTextSearchProducts("");
         setShowTecladoBuscar(false)
-        focusSearchInput()
+        focusSearchInput(searchInputRef)
       } else {
 
         buscarValoresBalanza(codigoBusqueda)
@@ -677,7 +850,7 @@ const BoxProducts = ({ }) => {
     setTextSearchProducts("")
     setShowTecladoBuscar(false)
 
-    focusSearchInput()
+    focusSearchInput(searchInputRef)
   };
 
 
@@ -932,6 +1105,18 @@ const BoxProducts = ({ }) => {
                 })}
 
 
+                {
+                  !ofertasContradictorias &&
+                  productsConOfertas &&
+                  productsConOfertas.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={15} sx={{
+                        textAlign: "left"
+                      }}>
+                        <Typography>Descuentos</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
 
                 {
                   !ofertasContradictorias &&
@@ -944,7 +1129,8 @@ const BoxProducts = ({ }) => {
                           <TableCell sx={{
                             textAlign: "center"
                           }}>
-                            Descuento
+                            {prodOferta.ofertaAplicada.descripcion}
+
                             <br />
                             <Typography sx={{
                               border: "1px solid #ccc",
@@ -954,13 +1140,11 @@ const BoxProducts = ({ }) => {
                               padding: "2px 4px",
                               textAlign: "center"
                             }}>
-                              tipo
+                              Tipo
                               {" "}
-                              {prodOferta.ofertaAplicada.tipo}
-                              {" "}
-                              en
-                              {" "}
-                              {prodOferta.ofertaAplicada.tipoDescuento}
+                              {prodOferta.ofertaAplicada.codigoTipo}
+                              {"/"}
+                              {prodOferta.ofertaAplicada.codigoOferta}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -981,84 +1165,9 @@ const BoxProducts = ({ }) => {
                       )
                     })
                   )}
-
-
               </TableBody>
             </Table>
           </TableContainer>
-          <br />
-
-
-        </Paper>
-        {/* <Paper
-            sx={{
-              width: "99%",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              padding: "21px",
-              margin: "5px",
-            }}
-            elevation={18}
-          >
-            <Typography sx={{ fontSize: "25px", }}>Total: ${System.getInstance().en2Decimales(grandTotal)}</Typography>
-          </Paper> */}
-      </Grid>
-
-      <Grid item xs={12}>
-        <Paper
-          elevation={1}
-          sx={{
-            background: "#859398",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            margin: "5px",
-            width: "99%",
-            // maxHeight: (System.getInstance().getWindowHeight() / 2),
-            // overflow: "auto",
-          }}
-        >
-          {/* {
-            !ofertasContradictorias &&
-            productsConOfertas &&
-            productsConOfertas.length > 0 && (
-              <div
-                style={{
-                  maxHeight: "100px",
-                  width: "100%",
-                  overflowY: "auto"
-                }}
-              >
-                <Typography>Descuentos</Typography>
-                <Table
-                  sx={{
-                    background: "white",
-                    height: "30%",
-                  }}
-                >
-                  <TableBody style={{
-                    maxHeight: "100px",
-                    width: "100%",
-                    overflowY: "auto"
-                  }}>
-                    {productsConOfertas.map((prodOferta, ixx) => {
-                      return (
-                        <TableRow key={ixx}>
-                          <TableCell colSpan={10}>
-                            {prodOferta.description}
-                          </TableCell>
-                          <TableCell colSpan={10}>
-                            -${prodOferta.elDescuento}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-
-                  </TableBody>
-                </Table>
-              </div>
-            )} */}
         </Paper>
       </Grid>
     </Paper>

@@ -20,6 +20,7 @@ import ScreenProductoAbierto from "../ScreenDialog/ProductoAbierto";
 import CierreCaja from "../ScreenDialog/CierreCaja";
 import UserEvent from "../../Models/UserEvent";
 import System from "../../Helpers/System";
+import BusquedaRapidaOfertas from "../ScreenDialog/BusquedaRapidaOfertas";
 
 
 const BoxBotones = () => {
@@ -36,7 +37,7 @@ const BoxBotones = () => {
     showMessage,
     showAlert,
     searchInputRef,
-
+    focusSearchInput,
     suspenderYRecuperar,
   } = useContext(SelectedOptionsContext);
   const [openScreenCreateClient, setOpenScreenCreateClient] = useState(false);
@@ -51,10 +52,8 @@ const BoxBotones = () => {
   const [showScreenDevolucion, setShowScreenDevolucion] = useState(false);
   const [showProductoAbierto, setShowProductoAbierto] = useState(false);
   const [showScreenCierreCaja, setShowScreenCierreCaja] = useState(false)
+  const [verOfertas, setVerOfertas] = useState(false)
 
-  const focusSearchInput = () => {
-    System.darFocoEnBuscar(searchInputRef)
-  }
 
   return (
     <Paper
@@ -77,8 +76,9 @@ const BoxBotones = () => {
             <MainButton textButton="Borrar" actionButton={() => {
 
               if (salesData.length < 1) {
-                showAlert("No hay ventas")
-                focusSearchInput()
+                showAlert("Borrar ventas", "No hay ventas", () => {
+                  focusSearchInput(searchInputRef)
+                })
                 return
               }
 
@@ -88,9 +88,9 @@ const BoxBotones = () => {
                 setShowLoadingDialogWithTitle("Borrando...", true);
                 clearSalesData();
                 hideLoadingDialog()
-                focusSearchInput()
+                focusSearchInput(searchInputRef)
               }, () => {
-                focusSearchInput()
+                focusSearchInput(searchInputRef)
               })
             }} />
 
@@ -99,7 +99,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowFamiliasDialog(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -111,7 +111,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenSuspend(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -121,7 +121,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenRecuperar(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -129,7 +129,7 @@ const BoxBotones = () => {
             <MainButton textButton="Suspender Venta" actionButton={() => {
               if (salesData.length < 1) {
                 showMessage("No hay ventas")
-                focusSearchInput()
+                focusSearchInput(searchInputRef)
                 return
               }
               setShowScreenSuspend(true)
@@ -149,7 +149,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenDevolucion(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -166,7 +166,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenCierreCaja(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Cerrar caja'",
@@ -192,7 +192,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenIngreso(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Ingresos'",
@@ -208,7 +208,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenRetiro(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Retiros'",
@@ -224,19 +224,23 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowFastSearchDialog(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
+
+            <BusquedaRapidaOfertas openDialog={verOfertas} setOpenDialog={setVerOfertas} />
+
             <MainButton textButton="Busqueda Rapida" actionButton={() => {
               setShowFastSearchDialog(true)
+              // setVerOfertas(true)
             }} />
 
             <ScreenProductoAbierto openDialog={showProductoAbierto}
               setOpenDialog={(val) => {
                 setShowProductoAbierto(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -248,7 +252,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setOpenScreenCreateClient(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 }
               }}
             />
@@ -258,7 +262,7 @@ const BoxBotones = () => {
               setOpenDialog={(val) => {
                 setShowScreenConfig(val)
                 if (!val) {
-                  focusSearchInput()
+                  focusSearchInput(searchInputRef)
                 } else {
                   UserEvent.send({
                     name: "apreto boton 'Config'",

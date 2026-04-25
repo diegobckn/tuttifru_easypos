@@ -6,9 +6,10 @@ import ModelConfig from './ModelConfig.ts';
 import SoporteTicket from './SoporteTicket.ts';
 import EndPoint from './EndPoint.ts';
 import User from './User.ts';
+import AperturaCierreOffline from './AperturaCierreOffline.ts';
 
 class CerrarCaja extends Model {
-  async enviar(data: any, callbackOk: any, callbackWrong: any) {
+  async enviar(data: any, callbackOk: any, callbackWrong: any, forzarEnvio = false) {
     const configs = ModelConfig.get()
     var url = configs.urlBase
       + "/api/Cajas/AddCajaArqueo";
@@ -16,13 +17,42 @@ class CerrarCaja extends Model {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
+    if (!forzarEnvio
+      && AperturaCierreOffline.last()
+      && !AperturaCierreOffline.lastWasSent()) {
+      AperturaCierreOffline.addCierre(data)
+      callbackOk({
+        statusCode: 200
+      }, {
+        data: {
+          statusCode: 200
+        }
+      })
+      return
+    }
+
     EndPoint.sendPost(url, data, (responseData: any, response: any) => {
+      AperturaCierreOffline.addCierre(data, false)
       this.informeEmail(responseData, () => {
         callbackOk(responseData, response);
       }, () => {
         callbackOk(responseData, response);
       })
-    }, callbackWrong)
+      // }, callbackWrong)
+    }, (err: any) => {
+      if (!forzarEnvio) {
+        AperturaCierreOffline.addCierre(data)
+        callbackOk({
+          statusCode: 200
+        }, {
+          data: {
+            statusCode: 200
+          }
+        })
+      } else {
+        callbackWrong(err)
+      }
+    })
   }
 
   async informeEmail(responseData: any, callbackOk: any, callbackWrong: any) {

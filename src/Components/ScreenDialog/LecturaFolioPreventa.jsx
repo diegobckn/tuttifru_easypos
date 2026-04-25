@@ -246,8 +246,10 @@ const LecturaFolioPreventa = ({
                   <tbody>
                     {listadoEmitidas.map((pre, ix) => (
                       <tr key={ix} onClick={() => {
-                        setFolio(0)
-                        setIdCabecera(pre.idCabecera)
+                        setFolio(pre.idCabecera)
+                        setIdCabecera(0)
+                        // setFolio(0)
+                        // setIdCabecera(pre.idCabecera)
                         setPreventaHash(pre.preVentaID)
 
                         setTimeout(() => {

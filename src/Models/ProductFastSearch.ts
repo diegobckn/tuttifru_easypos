@@ -13,7 +13,10 @@ import ModosTrabajoConexion from '../definitions/ModosConexion.ts';
 class ProductFastSearch extends ModelSingleton {
     productosOffline: Product[] = []
 
-    async getProductsFastSearch(callbackOk: any, callbackWrong: any, forzarDescarga = false) {
+    async getProductsFastSearch(
+        callbackOk: any = () => { },
+        callbackWrong: any = () => { },
+        forzarDescarga = false) {
         console.log("getProductsFastSearch")
 
         const me = this
@@ -144,7 +147,9 @@ class ProductFastSearch extends ModelSingleton {
         }, callbackWrong)
     }
 
-    async almacenarParaOffline(callbackOk: any, callbackWrong: any) {
+    async almacenarParaOffline(
+        callbackOk: any = () => { },
+        callbackWrong: any = () => { }) {
         var me = this
         this.getProductsFastSearch((prods: any, resp: any) => {
             me.sesion.guardar({
@@ -154,6 +159,24 @@ class ProductFastSearch extends ModelSingleton {
             me.productosOffline = prods
             callbackOk(prods, resp)
         }, callbackWrong, true)
+    }
+
+    cambioPrecio(prod: any) {
+        const me = this
+        if (me.sesion.hasOne()) {
+            const cargado = me.sesion.cargar(1)
+            var queda: any = []
+            cargado.productos.forEach((proSes: any) => {
+                if (proSes.codigoProducto == prod.idProducto) {
+                    proSes.precioVenta = parseFloat(prod.precioVenta)
+                }
+                queda.push(proSes)
+            })
+            me.sesion.guardar({
+                id: 1,
+                productos: queda
+            })
+        }
     }
 
 };

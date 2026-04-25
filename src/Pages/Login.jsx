@@ -47,6 +47,10 @@ import EstadosPedidosApp from "../definitions/EstadosPedidosApp";
 import ModosTrabajoConexion from "../definitions/ModosConexion";
 import ReconectarBalanza from "../Components/ScreenDialog/ReconectarBalanza";
 import Balanza from "../Models/Balanza";
+import Conexion from "../Models/Conexion";
+import Product from "../Models/Product";
+import ProductFastSearch from "../Models/ProductFastSearch";
+import Ofertas from "../Models/Ofertas";
 
 const Login = () => {
   const {
@@ -96,6 +100,7 @@ const Login = () => {
   const [reintentarPorSesionActiva, setReintentarPorSesionActiva] = useState(false);
 
   const [verPantallaReconectar, setverPantallaReconectar] = useState(false)
+  const [withConection, setWithConection] = useState(null)
 
 
   const setFocus = (inputToFocus) => {
@@ -108,6 +113,63 @@ const Login = () => {
       setShowTecladoPassword(true)
       setShowTecladoUsuario(false)
     }
+  }
+
+  const cargarTodoOffline = () => {
+    console.log("cargarTodoOffline")
+
+    const product = Product.getInstance()
+    if (!product.sesion.hasOne()) {
+      console.log("no hay productos almacenados..")
+
+      product.almacenarParaOffline()
+    } else {
+      console.log("hay productos almacenados..")
+    }
+
+    const productRapidos = new ProductFastSearch()
+    if (!productRapidos.sesion.hasOne()) {
+      console.log("no hay productos de venta rapida almacenados..")
+      productRapidos.almacenarParaOffline()
+    } else {
+      console.log("hay productos de venta rapida almacenados..")
+    }
+
+    const ofers = new Ofertas()
+    if (!ofers.sesion.hasOne()) {
+      console.log("no hay ofertas almacenadas..")
+      ofers.almacenarParaOffline()
+    } else {
+      console.log("hay ofertas almacenadas..")
+    }
+
+    const comercio = new Comercio()
+    if (!Comercio.sesionServerAllConfig.hasOne()) {
+      console.log("no hay info de comercio general almacenada..")
+      comercio.almacenarOfflineGeneral()
+    } else {
+      console.log("hay info de comercio general almacenada..")
+    }
+
+    if (!Comercio.sesionServerAnchos.hasOne()) {
+      console.log("no hay info de comercio anchos almacenada..")
+      comercio.almacenarOfflineAnchos()
+    } else {
+      console.log("hay info de comercio anchos almacenada..")
+    }
+
+    if (!Comercio.sesionServerImpresion.hasOne()) {
+      console.log("no hay info de comercio de impresiones almacenada..")
+      comercio.almacenarOfflineImpresion()
+    } else {
+      console.log("hay info de comercio de impresiones almacenada..")
+    }
+
+
+    loadComercioApp()
+
+
+    console.log("fin cargarTodoOffline")
   }
 
   useEffect(() => {
@@ -124,8 +186,12 @@ const Login = () => {
     if (ModelConfig.get("detectarPeso")) {
       revisarBalanza()
     }
-
   }, [])
+
+  useEffect(() => {
+    if (!withConection) return
+    cargarTodoOffline()
+  }, [withConection])
 
   const revisarBalanza = () => {
     console.log("revisarBalanza")
@@ -153,7 +219,6 @@ const Login = () => {
       " - PV " + ModelConfig.get("puntoVentaNombre")
     )
 
-    loadComercioApp()
   }
   useEffect(() => {
     cargaInicial()
@@ -196,7 +261,9 @@ const Login = () => {
 
 
   const loadComercioApp = () => {
+    console.log("loadComercioApp")
     if (!ModelConfig.get("trabajarConApp")) {
+      console.log("no trabajar con app")
       return
     }
 
@@ -300,8 +367,9 @@ const Login = () => {
           // const ultimoLogueado = user.sesion2.cargar(1)
           // console.log("ultimoLogueado", ultimoLogueado)
           UsersOffline.doLoginInLocal(user, (userLocal) => {
+            console.log("iniciando sesion con usuario", System.clone(userLocal))
             updateUserData(userLocal);
-            OfflineAutoIncrement.saveIfNotHasInSesion(userLocal)
+            // OfflineAutoIncrement.saveIfNotHasInSesion(userLocal)
             if (ModelConfig.get("afterLogin") == TiposPasarela.PREVENTA) {
               navigate("/pre-venta");
             } else {
@@ -325,15 +393,15 @@ const Login = () => {
         return
       }
 
-
       // Actualizar userData después del inicio de sesión exitoso
       updateUserData(info.responseUsuario);
 
-
-
-      OfflineAutoIncrement.saveIfNotHasInSesion(info.responseUsuario)
+      OfflineAutoIncrement.loadFromServer(info.responseUsuario.idTurno,()=>{},()=>{})
+      console.log("OfflineAutoIncrement.loadFromServer..")
+      // OfflineAutoIncrement.saveIfNotHasInSesion(info.responseUsuario)
       UsersOffline.add({ ...info.responseUsuario, clave: password })
 
+      Conexion.resetEstadoConexiones()
       // Redirigir a la página de inicio
       if (ModelConfig.get("afterLogin") == TiposPasarela.PREVENTA) {
         navigate("/pre-venta");
@@ -506,13 +574,9 @@ const Login = () => {
         <GeneralElements />
         <GeneralElements2 />
 
-
-
-
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{
           margin: "0 auto",
           textAlign: "center"
-
         }}>
           <img src={Logo} style={{
             width: "200px",
@@ -542,21 +606,17 @@ const Login = () => {
           )}
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{
-          margin: "0 auto",
-          // backgroundColor:"red",
           textAlign: "center"
         }}>
-          <div style={{
-            textAlign: "center",
+          <CardSemaforo style={{
             display: "inline-block",
             marginTop: "-25px",
-            width: "300px",
-          }}>
-            <CardSemaforo />
-          </div>
+            width: "400px"
+          }}
+            onGetConection={() => { setWithConection(true) }}
+            onLostConection={() => { setWithConection(false) }}
+          />
         </Grid>
-
-
 
         <Grid item xs={12} sm={12} md={2} lg={2}>
           <Typography>{" "}</Typography>
@@ -658,7 +718,10 @@ const Login = () => {
 
 
 
-        
+        <ReconectarBalanza
+          openDialog={verPantallaReconectar}
+          setOpenDialog={setverPantallaReconectar}
+        />
 
 
 

@@ -26,22 +26,24 @@ import dayjs from "dayjs";
 import System from "../../Helpers/System";
 import Printer from "../../Models/Printer";
 import UserEvent from "../../Models/UserEvent";
+import User from "../../Models/User";
+import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
 
 
-const AbrirCaja = ({openDialog, setOpenDialog}) => {
-  const { 
-    userData, 
+const AbrirCaja = ({ openDialog, setOpenDialog }) => {
+  const {
+    userData,
     updateUserData,
     showMessage
   } = useContext(SelectedOptionsContext);
 
   const [openAmount, setOpenAmount] = useState(0)
-  const handlerSaveAction = ()=>{
-    if(openAmount == 0){
+  const handlerSaveAction = () => {
+    if (openAmount == 0) {
       showMessage("Debe ingresar un monto inicial");
       return;
     }
-    
+
     var ac = new AperturaCaja();
     ac.codigoUsuario = userData.codigoUsuario
     ac.fechaIngreso = System.getInstance().getDateForServer()
@@ -53,8 +55,15 @@ const AbrirCaja = ({openDialog, setOpenDialog}) => {
 
     console.log("para enviar:");
     console.log(ac.getFillables());
-    ac.sendToServer((res)=>{
+    ac.sendToServer((res) => {
+      console.log("res", res)
       var user2 = userData
+      console.log("user2", System.clone(user2))
+      if (res.debeRecargarIdTurno) {
+        const us = new User()
+        user2 = us.getFromSesion()
+        console.log("user2 leido", System.clone(user2))
+      }
       user2.inicioCaja = true;
       updateUserData(user2)
       setOpenDialog(false)
@@ -65,30 +74,30 @@ const AbrirCaja = ({openDialog, setOpenDialog}) => {
         info: ""
       })
 
-    },(error)=>{
+    }, (error) => {
       showMessage(error);
     })
 
   }
-  
+
   return (
-    <Dialog open={openDialog} onClose={()=>{}} maxWidth="md">
-        <DialogTitle>
-          Apertura de caja
-        </DialogTitle>
-        <DialogContent>
-          <BoxAbrirCaja 
-          openAmount={openAmount} 
+    <Dialog open={openDialog} onClose={() => { }} maxWidth="md">
+      <DialogTitle>
+        Apertura de caja
+      </DialogTitle>
+      <DialogContent>
+        <BoxAbrirCaja
+          openAmount={openAmount}
           setAmount={setOpenAmount}
-          onEnter={()=>{
+          onEnter={() => {
             handlerSaveAction()
           }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <SmallButton textButton="Guardar" actionButton={handlerSaveAction}/>
-        </DialogActions>
-      </Dialog>
+        />
+      </DialogContent>
+      <DialogActions>
+        <SmallButton textButton="Guardar" actionButton={handlerSaveAction} />
+      </DialogActions>
+    </Dialog>
   );
 };
 

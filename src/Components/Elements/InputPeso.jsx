@@ -11,18 +11,20 @@ import ModelConfig from "../../Models/ModelConfig";
 
 
 const InputPeso = ({
-    inputValue,
-    funChanger,
-    textInput = "Ingrese el peso", 
-    onClick = ()=>{},
-    showGrInfo = true,
-    style = {},
-  }) => {
-    
+  inputValue,
+  funChanger,
+  textInput = "Ingrese el peso",
+  onClick = () => { },
+  showGrInfo = true,
+  style = {},
+  onRef = (c) => { },
+  onEnter = () => { }
+}) => {
+
   const [enGr, setEngr] = useState("")
 
 
-  const checkGr = (valor)=>{
+  const checkGr = (valor) => {
     // if(parseFloat(valor)>0 && parseFloat(valor)<1){
     //   setEngr(Math.round(parseFloat(valor) * 100) / 100  * 1000 + "")
     // }else{
@@ -30,35 +32,35 @@ const InputPeso = ({
     // }
     var kilos = Math.trunc(valor);
     var gramos = valor - kilos
-    gramos = Math.round(parseFloat(gramos) * 100) / 100  * 1000 + ""
+    gramos = Math.round(parseFloat(gramos) * 100) / 100 * 1000 + ""
 
     var tx = ""
-    if(kilos>0){
-      if(kilos>1)
-      tx = kilos + " KILOS"
+    if (kilos > 0) {
+      if (kilos > 1)
+        tx = kilos + " KILOS"
       else
-      tx = kilos + " KILO"
+        tx = kilos + " KILO"
     }
 
-    if(gramos>0){
-      if(tx.length>0){
+    if (gramos > 0) {
+      if (tx.length > 0) {
         tx += " y " + gramos + " GRAMOS"
-      }else{
+      } else {
         tx += gramos + " GRAMOS"
       }
     }
 
-    setEngr( tx )
+    setEngr(tx)
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     checkGr(inputValue)
-  },[inputValue])
-  
-    
+  }, [inputValue])
+
+
 
   return (
-      <>
+    <>
 
       <TextField
         margin="normal"
@@ -67,23 +69,32 @@ const InputPeso = ({
         type="text"
         value={inputValue}
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key == "Enter") {
+            onEnter()
+          }
+          if (e.key == ",") {
+            funChanger(inputValue + ".")
+          }
 
+        }}
+        ref={onRef}
         onChange={(e) => funChanger(e.target.value)}
       />
 
       <div style={{
-        display:"flex",
-        flexDirection:"row"
+        display: "flex",
+        flexDirection: "row"
       }}>
         {
-          showGrInfo && enGr!="" &&(
+          showGrInfo && enGr != "" && (
             <div style={{
-              width:"100%",
-              margin:"0 auto",
-              marginLeft:"5px",
+              width: "100%",
+              margin: "0 auto",
+              marginLeft: "5px",
               height: "30px",
-              textAlign:"center",
-              fontSize:20,
+              textAlign: "center",
+              fontSize: 20,
               // backgroundColor:"#6df0ff"
             }}>{enGr}</div>
           )
@@ -92,7 +103,7 @@ const InputPeso = ({
       </div>
 
 
-      </>
+    </>
   );
 };
 
