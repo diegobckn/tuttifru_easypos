@@ -45,8 +45,6 @@ import Atudepa from "../Models/Atudepa";
 import LoopProperties from "../Helpers/LoopProperties";
 import EstadosPedidosApp from "../definitions/EstadosPedidosApp";
 import ModosTrabajoConexion from "../definitions/ModosConexion";
-import ReconectarBalanza from "../Components/ScreenDialog/ReconectarBalanza";
-import Balanza from "../Models/Balanza";
 import Conexion from "../Models/Conexion";
 import Product from "../Models/Product";
 import ProductFastSearch from "../Models/ProductFastSearch";
@@ -99,7 +97,6 @@ const Login = () => {
 
   const [reintentarPorSesionActiva, setReintentarPorSesionActiva] = useState(false);
 
-  const [verPantallaReconectar, setverPantallaReconectar] = useState(false)
   const [withConection, setWithConection] = useState(null)
 
 
@@ -183,9 +180,7 @@ const Login = () => {
 
     Licencia.check(showAlert, () => { navigate("/sin-licencia"); })
 
-    if (ModelConfig.get("detectarPeso")) {
-      revisarBalanza()
-    }
+   
   }, [])
 
   useEffect(() => {
@@ -193,18 +188,6 @@ const Login = () => {
     cargarTodoOffline()
   }, [withConection])
 
-  const revisarBalanza = () => {
-    console.log("revisarBalanza")
-    Balanza.detectandoConexion = true
-    Balanza.onNeedReconect = () => {
-      console.log("se necesita reconectar...")
-      setverPantallaReconectar(true)
-    }
-
-    Balanza.getInstance().deteccionPeso(() => {
-      console.log("balanza ok")
-    })
-  }
 
   const [footerTextSupport, setFooterTextSupport] = useState("Version 1.0.0");
   const navigate = useNavigate();
@@ -718,11 +701,7 @@ const Login = () => {
 
 
 
-        <ReconectarBalanza
-          openDialog={verPantallaReconectar}
-          setOpenDialog={setverPantallaReconectar}
-        />
-
+      
 
 
         <ScreenDialogConfig openDialog={showScreenConfig} setOpenDialog={(v) => {
