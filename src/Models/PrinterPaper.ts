@@ -275,7 +275,10 @@ class PrinterPaper extends ModelSingleton {
     }
 
     revisarReemplazosDescuentos(datosfinales: any, html: string) {
-        if (datosfinales.productsConDescuentos) {
+        if (
+            html.indexOf("Descuentos:") == -1
+            && datosfinales.productsConDescuentos
+        ) {
             var totalDescuentos = 0
             datosfinales.productsConDescuentos.forEach((prodDesc: any) => {
                 totalDescuentos += prodDesc.descuento
