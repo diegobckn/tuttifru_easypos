@@ -157,7 +157,7 @@ const UltimaVenta = ({
           width: "230px",
         }} textButton={"Reimprimir ticket"} actionButton={() => {
 
-          Printer.printContent(lastSaleInfo.response,showConfirm,showAlert)
+          Printer.printContent(lastSaleInfo.response, showConfirm, showAlert, lastSaleInfo)
           setOpenDialog(false)
           setTimeout(() => {
             setOpenDialog(true)

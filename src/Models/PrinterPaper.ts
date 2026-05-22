@@ -269,7 +269,31 @@ class PrinterPaper extends ModelSingleton {
             html = html.replace("<div class=\"footer\">", addApp)
         }
 
+        html = this.revisarReemplazosDescuentos(datosfinales, html)
 
+        return html
+    }
+
+    revisarReemplazosDescuentos(datosfinales: any, html: string) {
+        if (datosfinales.productsConDescuentos) {
+            var totalDescuentos = 0
+            datosfinales.productsConDescuentos.forEach((prodDesc: any) => {
+                totalDescuentos += prodDesc.descuento
+            })
+            // console.log("totalDescuentos antes de redondear", totalDescuentos + 0)
+            totalDescuentos = Math.trunc(totalDescuentos)
+            // console.log("totalDescuentos despues de redondear", totalDescuentos + 0)
+
+            var agregadosDescuentos = ""
+            agregadosDescuentos += "<div class=\"total\">\n"
+
+            agregadosDescuentos += "<strong>Descuentos: $" + totalDescuentos + "</strong>\n"
+            agregadosDescuentos += "</div>\n"
+
+            // LO DE DESCUENTOS
+            html = html.replace("<div class=\"footer\">", agregadosDescuentos + "<div class=\"footer\">")
+            // console.log("agregando descuentos quedas asi", html)
+        }
         return html
     }
 

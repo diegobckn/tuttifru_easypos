@@ -336,7 +336,10 @@ const BoxBoleta = ({
       Printer.adminContent({
         createQrString,
         content: requestBody,
-        functionConfirm: showConfirm
+        functionConfirm: showConfirm,
+        adicionalInfo: {
+          data: requestBody
+        }
       })
     }
 
@@ -358,7 +361,9 @@ const BoxBoleta = ({
       LastSale.prepare(requestBody)
       LastSale.confirm(response)
 
-      Printer.printContent(response, showConfirm, showAlert)
+      Printer.printContent(response, showConfirm, showAlert, {
+        data: requestBody
+      })
 
       setUltimoVuelto(vuelto)
       setTimeout(() => {
