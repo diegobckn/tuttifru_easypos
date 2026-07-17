@@ -142,6 +142,13 @@ const BoxBoleta = ({
   useEffect(() => {
 
     if (!openDialog) return
+
+    UserEvent.send({
+      name: "abre ventana hacer pago " + product.nombre, 
+      info:"algo a enviar"
+    })
+
+
     PrinterPaper.getInstance().loadWidthFromSesion()
 
     const offAI = OfflineAutoIncrement.getInstance()
