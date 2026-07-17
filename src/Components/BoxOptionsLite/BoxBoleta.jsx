@@ -144,7 +144,7 @@ const BoxBoleta = ({
     if (!openDialog) return
 
     UserEvent.send({
-      name: "abre ventana hacer pago " + product.nombre, 
+      name: "abre ventana hacer pago ", 
       info:"algo a enviar"
     })
 
