@@ -143,10 +143,19 @@ const BoxBoleta = ({
 
     if (!openDialog) return
 
-    UserEvent.send({
-      name: "abre ventana hacer pago ", 
-      info:"algo a enviar"
-    })
+
+    try {
+
+      const salesObj = new Sales()
+
+      UserEvent.send({
+        name: "abre ventana hacer pago ",
+        info: JSON.stringify(salesObj.sesionProducts.cargarGuardados()[0])
+      })
+
+    } catch (er) {
+      console.log("falla el envio de evento abrir ventana de pago")
+    }
 
 
     PrinterPaper.getInstance().loadWidthFromSesion()
