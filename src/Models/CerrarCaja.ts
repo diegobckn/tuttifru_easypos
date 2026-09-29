@@ -17,42 +17,12 @@ class CerrarCaja extends Model {
     if (!data.codigoSucursal) data.codigoSucursal = ModelConfig.get("sucursal")
     if (!data.puntoVenta) data.puntoVenta = ModelConfig.get("puntoVenta")
 
-    if (!forzarEnvio
-      && AperturaCierreOffline.last()
-      && !AperturaCierreOffline.lastWasSent()) {
-      AperturaCierreOffline.addCierre(data)
-      callbackOk({
-        statusCode: 200
-      }, {
-        data: {
-          statusCode: 200
-        }
-      })
-      return
-    }
-
     EndPoint.sendPost(url, data, (responseData: any, response: any) => {
-      AperturaCierreOffline.addCierre(data, false)
+      callbackOk(responseData, response);
       this.informeEmail(responseData, () => {
-        callbackOk(responseData, response);
       }, () => {
-        callbackOk(responseData, response);
       })
-      // }, callbackWrong)
-    }, (err: any) => {
-      if (!forzarEnvio) {
-        AperturaCierreOffline.addCierre(data)
-        callbackOk({
-          statusCode: 200
-        }, {
-          data: {
-            statusCode: 200
-          }
-        })
-      } else {
-        callbackWrong(err)
-      }
-    })
+    }, callbackWrong)
   }
 
   async informeEmail(responseData: any, callbackOk: any, callbackWrong: any) {

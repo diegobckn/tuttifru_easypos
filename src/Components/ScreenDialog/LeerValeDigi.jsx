@@ -270,8 +270,8 @@ const LeerValeDigi = ({
         addToSalesData(item.inPos)
       }
     })
-
-    balanza.agregarUsado(parseInt(valorTicket))
+    console.log("confirmar leer vale")
+    balanza.agregarUsado(parseInt(valorTicket), productos)
     setProductos([])
     setOpenDialog(false)
   }

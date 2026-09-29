@@ -1100,6 +1100,42 @@ class Product extends ModelSingleton {
     }
     // FIN LOGICA PARA PRECIOS DEL BACKOFFICE
 
+    agregarDesdeBalanza(prodBalanza: any, callbackOk: any, callbackWrong: any) {
+        const data = {
+            "codSacanner": prodBalanza.plu,
+            "codigoSucursal": ModelConfig.get("sucursal"),
+            "puntoVenta": ModelConfig.get("puntoVenta"),
+            "fechaIngreso": System.getInstance().getDateForServer(),
+            "nombre": prodBalanza.nombre,
+            "precioVenta": parseFloat(prodBalanza.precio),
+            "tipoVenta": prodBalanza.pesable ? 2 : 1,
+            "idEmpresa": 0
+        }
+        console.log("agregarDesdeBalanza")
+        console.log("data", data)
+
+        var me = this
+        const hacerAccion = () => {
+            me.newProductFromCode(data, callbackOk, callbackWrong)
+        }
+
+        this.findByCodigoBarras({
+            codigoProducto: data.codSacanner
+        }, (prods: any) => {
+            console.log("buscando por codbarra..prods", prods)
+            if (prods.length < 1) {
+                hacerAccion()
+            } else {
+                callbackWrong("ya existe el producto")
+            }
+        }, (err: any) => {
+            console.log("buscando por codbarra..err", err)
+            hacerAccion()
+        })
+
+    }
+
+
 };
 
 

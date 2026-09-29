@@ -6,7 +6,7 @@ import PrinterPaper from './PrinterPaper.ts';
 import PagoBoleta from './PagoBoleta.ts';
 import PrinterServer from './PrinterServer.ts';
 
-import Logo from './../assets/logo-print.png'
+// import Logo from './../assets/logo-print.png'
 import EmitirDetalle from "../definitions/EmisionesDetalle.ts";
 import ModosImpresion from "../definitions/ModosImpresion.ts";
 
@@ -103,7 +103,7 @@ class PrinterIframe {
 
         // if (imprimirTxt.indexOf("COMANDA") > -1) return
         // console.log("va a imprimir esto:")
-        imprimirTxt = imprimirTxt.replace("./EasyPosLogo3.png", Logo)
+        // imprimirTxt = imprimirTxt.replace("./EasyPosLogo3.png", Logo)
 
         imprimirTxt = imprimirTxt.replace("80mm auto", "80mm")
         imprimirTxt = imprimirTxt.replace("size: 80mm", "size: 80mm auto")

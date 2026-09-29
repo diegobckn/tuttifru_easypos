@@ -22,6 +22,7 @@ import BoxOptionList from "./BoxOptionList";
 import System from "../../Helpers/System";
 import ProductSold from "../../Models/ProductSold";
 import BusquedaRapidaOfertas from "../ScreenDialog/BusquedaRapidaOfertas";
+import LoopProperties from "../../Helpers/LoopProperties";
 
 export const filtrosBusquedaRapida = {
   Pesables: 1,
@@ -59,8 +60,26 @@ export default ({
 
   const [verOfertas, setVerOfertas] = useState(false)
 
+  const [botonesExtrasBusquedaRapida, setBotonesExtrasBusquedaRapida] = useState([])
+
+
+
+  function getFiltrosBusquedaRapida() {
+    var basic = filtrosBusquedaRapida
+    if (botonesExtrasBusquedaRapida.length > 0) {
+      botonesExtrasBusquedaRapida.forEach((item, index) => {
+        const name = item.subfamilia.descripcion
+        const value = 10 + index
+        basic[name] = value
+      })
+    }
+    return basic
+  }
+
   useEffect(() => {
     if (!show) return
+    setBotonesExtrasBusquedaRapida(ModelConfig.get("botonesExtrasBusquedaRapida"))
+
 
     if (prods.length < 1) {
       console.log("no tiene prod cargados")
@@ -78,29 +97,92 @@ export default ({
   }, [filterSelected]);
 
   const aplicarFiltro = () => {
-    if (filterSelected == filtrosBusquedaRapida.Ofertas) {
+
+    const losFiltrosBusquedaRapida = getFiltrosBusquedaRapida()
+
+    if (filterSelected == losFiltrosBusquedaRapida.Ofertas) {
       setVerOfertas(true)
-      setFilterSelected(filtrosBusquedaRapida.Todos)
+      setFilterSelected(losFiltrosBusquedaRapida.Todos)
       return setProdfiltereds(prods)
     }
 
-    if (filterSelected == filtrosBusquedaRapida.Todos) {
+    if (filterSelected == losFiltrosBusquedaRapida.Todos) {
       setProdfiltereds(prods)
       return
     }
 
-    var filtered = []
+    if (
+      filterSelected == losFiltrosBusquedaRapida.Pesables
+      || filterSelected == losFiltrosBusquedaRapida.Unitarios
+    ) {
+      var filtered = []
 
-    prods.forEach((botonProd) => {
-      if (
-        filterSelected == filtrosBusquedaRapida.Pesables && ProductSold.esPesable(botonProd)
-        || filterSelected == filtrosBusquedaRapida.Unitarios && !ProductSold.esPesable(botonProd)
-      ) {
-        filtered.push(botonProd)
-      }
-    })
+      prods.forEach((botonProd) => {
+        if (
+          filterSelected == losFiltrosBusquedaRapida.Pesables && ProductSold.esPesable(botonProd)
+          || filterSelected == losFiltrosBusquedaRapida.Unitarios && !ProductSold.esPesable(botonProd)
+        ) {
+          filtered.push(botonProd)
+        }
+      })
 
-    setProdfiltereds(filtered)
+      setProdfiltereds(filtered)
+    }
+
+    if (filterSelected >= 10) {
+      const botExt = botonesExtrasBusquedaRapida[filterSelected - 10]
+
+      var filtered = []
+
+      Product.getInstance().getProductsNML({
+        catId: botExt.subfamilia.idCategoria,
+        subcatId: botExt.subfamilia.idSubcategoria,
+        famId: botExt.subfamilia.idFamilia,
+        subFamId: botExt.subfamilia.idSubFamilia
+      },
+        (productos) => {
+
+          new LoopProperties(productos, (prop, value, looper) => {
+            const prod = productos[prop]
+            Product.getInstance().findByCodigoBarras({
+              codigoProducto: prod.idProducto,
+              codigoCliente: (cliente ? cliente.codigoCliente : 0)
+            }, (prodEncontrado) => {
+              if (prodEncontrado.length > 0) {
+                const toAdd = {
+                  "id": parseInt(prop + 1),
+                  "boton": parseInt(prop + 1),
+                  "codigoUsuario": userData.codigoUsuario,
+                  // "codigoSucursal": 1,
+                  // "puntoVenta": "1",
+                  "codigoProducto": prodEncontrado[0].idProducto,
+                  "nombre": prodEncontrado[0].nombre,
+                  "precioVenta": prodEncontrado[0].precioVenta,
+                  "tipoVenta": prodEncontrado[0].tipoVenta,
+                  "codBarra": prodEncontrado[0].idProducto,
+                  "idEmpresa": prodEncontrado[0].idEmpresa
+                }
+
+                filtered.push(toAdd)
+                looper.next()
+              }
+            }, (err) => {
+              console.log("prodEncontrado no encontrado", prod)
+              console.log("err", err)
+            })
+          }, () => {
+            console.log("filtered", filtered)
+            setProdfiltereds(filtered)
+          })
+
+        })
+
+
+
+
+    }
+
+
   }
 
   const getProducts = () => {
@@ -111,7 +193,7 @@ export default ({
     ProductFastSearch.getInstance().getProductsFastSearch((productosServidor) => {
       setProds(productosServidor)
       setProdfiltereds(productosServidor)
-      setFilterSelected(filtrosBusquedaRapida.Todos)
+      setFilterSelected(getFiltrosBusquedaRapida().Todos)
       // console.log("respuesta del servidor")
       // console.log(productosServidor)
       completarBotonesFaltantes(productosServidor)
@@ -267,7 +349,7 @@ export default ({
         <BoxOptionList
           optionSelected={filterSelected}
           setOptionSelected={setFilterSelected}
-          options={System.arrayIdValueFromObject(filtrosBusquedaRapida, true)}
+          options={System.arrayIdValueFromObject(getFiltrosBusquedaRapida(), true)}
         />
 
         {prodFiltereds.length > 0 && prodFiltereds.map((product, index) => {

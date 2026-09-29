@@ -42,6 +42,14 @@ import OCRModal from "../../ScreenDialog/OCRModal";
 import TouchInputName from "../../TouchElements/TouchInputName";
 import BoxOptionList from "../BoxOptionList";
 import System from "../../../Helpers/System";
+import BalanzaDigi from "../../../Models/BalanzaDigi";
+import SmallSecondaryButton from "../../Elements/SmallSecondaryButton";
+import SmallPrimaryButton from "../../Elements/SmallPrimaryButton";
+import SmallGrayButton from "../../Elements/SmallGrayButton";
+import SmallWarningButton from "../../Elements/SmallWarningButton";
+import SmallSuccessButton from "../../Elements/SmallSuccessButton";
+import SmallDangerButton from "../../Elements/SmallDangerButton";
+import { ModosLecturaDigi } from "../../../definitions/BaseConfig";
 
 const TabBalanzaDigi = ({
   onFinish = () => { }
@@ -86,6 +94,9 @@ const TabBalanzaDigi = ({
     setShowPrintButton,
     suspenderYRecuperar,
     setSuspenderYRecuperar,
+    showAlert,
+    showLoading,
+    hideLoading
   } = useContext(SelectedOptionsContext);
 
   const [ipBalanzaDigi, setIpBalanzaDigi] = useState("")
@@ -100,41 +111,134 @@ const TabBalanzaDigi = ({
 
   const MODELOSDIGI = {
     SM300: "sm-300",
-    SM110: "sm-110",
+    SM110_TWS: "sm-110-tws",
     SM120: "sm-120",
   }
 
   const [verDigi, setVerDigi] = useState(false);
   const [modeloBalanzaDigi, setModeloBalanzaDigi] = useState(MODELOSDIGI.SM300);
 
+  const [modoLecturaBalanzaDigi, setModoLecturaBalanzaDigi] = useState(null);
 
   const [trabajarConBalanzaDigi, setTrabajarConBalanzaDigi] = useState(false);
+  const [balanzasDigi, setBalanzasDigi] = useState([]);
+  const [balanzaDigiSelected, setBalanzaDigiSelected] = useState(-1);
+
+  const balanza = new BalanzaDigi()
+
+  const eliminarUltimaBalanza = () => {
+    var balanzasSesion = System.clone(balanzasDigi)
+    if (balanzaDigiSelected != balanzasDigi.length - 1) return
 
 
+    if (balanzasDigi[balanzaDigiSelected].ipBalanzaDigi != "") {
+      showConfirm("Eliminar balanza " + (balanzaDigiSelected + 1) + "?", () => {
+        balanzasSesion.splice(balanzaDigiSelected, 1)
+        ModelConfig.change("balanzasDigi", balanzasSesion)
+        setBalanzaDigiSelected(balanzaDigiSelected - 1)
+        setBalanzasDigi(balanzasSesion)
+
+      })
+      return
+    }
+
+    balanzasSesion.splice(balanzaDigiSelected, 1)
+    ModelConfig.change("balanzasDigi", balanzasSesion)
+    setBalanzaDigiSelected(balanzaDigiSelected - 1)
+    setBalanzasDigi(balanzasSesion)
+
+  }
+
+  const crearNuevaBalanza = () => {
+    var balanzasSesion = System.clone(balanzasDigi)
+
+    balanzasSesion.push({
+      ipBalanzaDigi: "",
+      modeloBalanzaDigi: "",
+      usuarioBalanzaDigi: "",
+      claveBalanzaDigi: "",
+      puertaBalanzaDigi: "",
+      codigoValeBalanzaDigi: "",
+    })
+
+    ModelConfig.change("balanzasDigi", balanzasSesion)
+    setBalanzasDigi(balanzasSesion)
+    setBalanzaDigiSelected(balanzasSesion.length - 1)
+  }
+
+
+  const cargarInfoBalanzaSeleccionada = () => {
+    var balanzasSesion = System.clone(balanzasDigi)
+
+    console.log("cargarInfoBalanzaSeleccionada")
+    console.log("balanzasSesion", balanzasSesion)
+
+    if (balanzasSesion.length < 1) return
+    if (balanzaDigiSelected >= balanzasSesion.length) return
+
+    setIpBalanzaDigi(balanzasSesion[balanzaDigiSelected]["ipBalanzaDigi"])
+    setModeloBalanzaDigi(balanzasSesion[balanzaDigiSelected]["modeloBalanzaDigi"])
+    setUsuarioBalanzaDigi(balanzasSesion[balanzaDigiSelected]["usuarioBalanzaDigi"])
+    setClaveBalanzaDigi(balanzasSesion[balanzaDigiSelected]["claveBalanzaDigi"])
+    setPuertaBalanzaDigi(balanzasSesion[balanzaDigiSelected]["puertaBalanzaDigi"])
+    setCodigoValeBalanzaDigi(balanzasSesion[balanzaDigiSelected]["codigoValeBalanzaDigi"])
+  }
 
   const loadConfigSesion = () => {
-    setIpBalanzaDigi(ModelConfig.get("ipBalanzaDigi"))
-    setModeloBalanzaDigi(ModelConfig.get("modeloBalanzaDigi"))
-    setUsuarioBalanzaDigi(ModelConfig.get("usuarioBalanzaDigi"))
-    setClaveBalanzaDigi(ModelConfig.get("claveBalanzaDigi"))
-    setPuertaBalanzaDigi(ModelConfig.get("puertaBalanzaDigi"))
-    setTrabajarConBalanzaDigi(ModelConfig.get("trabajarConBalanzaDigi"))
 
+    var balanzasSesion = ModelConfig.get("balanzasDigi")
+
+    if (balanzasSesion.length < 1) {
+      ModelConfig.change("balanzasDigi", [
+        {
+          ipBalanzaDigi: ModelConfig.get("ipBalanzaDigi"),
+          modeloBalanzaDigi: ModelConfig.get("modeloBalanzaDigi"),
+          usuarioBalanzaDigi: ModelConfig.get("usuarioBalanzaDigi"),
+          claveBalanzaDigi: ModelConfig.get("claveBalanzaDigi"),
+          puertaBalanzaDigi: ModelConfig.get("puertaBalanzaDigi"),
+          codigoValeBalanzaDigi: ModelConfig.get("codigoValeBalanzaDigi"),
+        }
+      ])
+      balanzasSesion = ModelConfig.get("balanzasDigi")
+    }
+    setBalanzaDigiSelected(0)
+    setBalanzasDigi(balanzasSesion)
+
+    setModoLecturaBalanzaDigi(ModelConfig.get("modoLecturaBalanzaDigi"))
+    setTrabajarConBalanzaDigi(ModelConfig.get("trabajarConBalanzaDigi"))
     setUrlServicioBalanzaDigi(ModelConfig.get("urlServicioBalanzaDigi"))
-    setCodigoValeBalanzaDigi(ModelConfig.get("codigoValeBalanzaDigi"))
     setRefreshValeBalanzaDigi(ModelConfig.get("refreshValeBalanzaDigi"))
     setRevisarValeRepeditoBalanzaDigi(ModelConfig.get("revisarValeRepeditoBalanzaDigi"))
   }
 
   const handlerSaveAction = () => {
-    ModelConfig.change("ipBalanzaDigi", ipBalanzaDigi)
+
     ModelConfig.change("urlServicioBalanzaDigi", urlServicioBalanzaDigi)
-    ModelConfig.change("puertaBalanzaDigi", puertaBalanzaDigi)
-    ModelConfig.change("modeloBalanzaDigi", modeloBalanzaDigi)
     ModelConfig.change("trabajarConBalanzaDigi", trabajarConBalanzaDigi)
-    ModelConfig.change("codigoValeBalanzaDigi", codigoValeBalanzaDigi)
     ModelConfig.change("refreshValeBalanzaDigi", refreshValeBalanzaDigi)
     ModelConfig.change("revisarValeRepeditoBalanzaDigi", revisarValeRepeditoBalanzaDigi)
+    ModelConfig.change("modoLecturaBalanzaDigi", modoLecturaBalanzaDigi)
+
+    // ModelConfig.change("codigoValeBalanzaDigi", codigoValeBalanzaDigi)
+
+    var balanzasSesion = ModelConfig.get("balanzasDigi")
+
+    if (balanzaDigiSelected > -1 && balanzaDigiSelected < balanzasDigi.length) {
+      const infoItem = {
+        ipBalanzaDigi,
+        modeloBalanzaDigi,
+        usuarioBalanzaDigi,
+        claveBalanzaDigi,
+        puertaBalanzaDigi,
+        codigoValeBalanzaDigi,
+      }
+      balanzasSesion[balanzaDigiSelected] = infoItem
+      ModelConfig.change("balanzasDigi", balanzasSesion)
+      console.log("guardando info de balanzas", balanzasSesion)
+      setBalanzasDigi(balanzasSesion)
+
+    }
+
 
     showMessage("Guardado correctamente")
     // onFinish()
@@ -143,6 +247,12 @@ const TabBalanzaDigi = ({
   useEffect(() => {
     loadConfigSesion()
   }, [])
+
+  useEffect(() => {
+    if (balanzaDigiSelected > -1) {
+      cargarInfoBalanzaSeleccionada()
+    }
+  }, [balanzaDigiSelected])
 
 
   return (
@@ -167,21 +277,38 @@ const TabBalanzaDigi = ({
 
         <Grid container spacing={2}>
 
-          <Grid item xs={12} md={12} lg={12}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
             <InputCheckbox
               inputState={[trabajarConBalanzaDigi, setTrabajarConBalanzaDigi]}
               label={"Trabajar con Digi"}
             />
           </Grid>
 
-          <Grid item xs={12} md={12} lg={12}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <label
+              style={{
+                userSelect: "none",
+                fontSize: "19px",
+                display: "inline-block",
+                margin: "10px 0"
+              }}>
+              Modo lectura ticket
+            </label>
+            <BoxOptionList
+              optionSelected={modoLecturaBalanzaDigi}
+              setOptionSelected={setModoLecturaBalanzaDigi}
+              options={System.arrayIdValueFromObject(ModosLecturaDigi, true)}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={12} lg={12}>
             <InputCheckbox
               inputState={[revisarValeRepeditoBalanzaDigi, setRevisarValeRepeditoBalanzaDigi]}
               label={"Revisar vales repetidos"}
             />
           </Grid>
 
-          <Grid item xs={12} sm={12} md={12} lg={12}>
+          <Grid item xs={12} sm={12} md={8} lg={8}>
             <TouchInputPage
               inputState={[urlServicioBalanzaDigi, setUrlServicioBalanzaDigi]}
               label="Url Servicio"
@@ -190,13 +317,7 @@ const TabBalanzaDigi = ({
               }}
             />
           </Grid>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
-            <TouchInputNumber
-              inputState={[codigoValeBalanzaDigi, setCodigoValeBalanzaDigi]}
-              label="Codigo Vale"
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
+          <Grid item xs={12} sm={12} md={4} lg={4}>
             <TouchInputNumber
               inputState={[refreshValeBalanzaDigi, setRefreshValeBalanzaDigi]}
               label="Tiempo refresco Vales(seg)"
@@ -205,64 +326,202 @@ const TabBalanzaDigi = ({
 
 
 
-          <Grid item xs={12} md={6} lg={6}>
-            <TouchInputName
-              inputState={[ipBalanzaDigi, setIpBalanzaDigi]}
-              label="Ip de la balanza"
-            />
-          </Grid>
-          <Grid item xs={12} md={6} lg={6}>
-            <TouchInputNumber
-              inputState={[puertaBalanzaDigi, setPuertaBalanzaDigi]}
-              label="Puerta"
-            />
-          </Grid>
+          <Grid item xs={11} sm={11} md={11} lg={11}>
+            <Grid container spacing={2} sx={{
+              borderWidth: 2,
+              borderRadius: 1,
+              borderStyle: "solid",
+              borderColor: "#5f5f5f",
+              backgroundColor: "#e1ffe7",
+              margin: "10px 0 20px 0",
+              padding: "10px 10px 20px 0"
+            }}>
 
-          {modeloBalanzaDigi == MODELOSDIGI.SM120 && (
-            <Grid item xs={12} md={6} lg={6}>
-              <TouchInputName
-                inputState={[usuarioBalanzaDigi, setUsuarioBalanzaDigi]}
-                label="usuario de conexion ftp"
-              />
+              <Grid item xs={12} sm={12} md={12} lg={12}>
+                {balanzasDigi.map((info, index) => (
+                  <SmallButton
+                    key={index}
+                    style={{
+                      backgroundColor: (balanzaDigiSelected == index ? "deepskyblue" : "white"),
+                      color: (balanzaDigiSelected == index ? "white" : "darkslategray"),
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderStyle: "solid"
+                    }}
+                    textButton={"Balanza" + (index + 1)}
+                    actionButton={() => {
+                      setBalanzaDigiSelected(index)
+                    }}
+                  />
+                ))}
+              </Grid>
+
+              <Grid item xs={12} sm={12} md={3} lg={3}>
+                <TouchInputNumber
+                  inputState={[codigoValeBalanzaDigi, setCodigoValeBalanzaDigi]}
+                  label="Codigo Vale"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={12} md={6} lg={6}>
+                <TouchInputName
+                  inputState={[ipBalanzaDigi, setIpBalanzaDigi]}
+                  label="Ip de la balanza"
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} md={3} lg={3}>
+                <TouchInputNumber
+                  inputState={[puertaBalanzaDigi, setPuertaBalanzaDigi]}
+                  label="Puerta"
+                />
+              </Grid>
+
+              {modeloBalanzaDigi == MODELOSDIGI.SM120 && (
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                  <TouchInputName
+                    inputState={[usuarioBalanzaDigi, setUsuarioBalanzaDigi]}
+                    label="usuario de conexion ftp"
+                  />
+                </Grid>
+              )}
+              {modeloBalanzaDigi == MODELOSDIGI.SM120 && (
+
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                  <TouchInputName
+                    inputState={[claveBalanzaDigi, setClaveBalanzaDigi]}
+                    label="contraseña de conexion ftp"
+                  />
+                </Grid>
+              )}
+
+
+              <Grid item xs={12} sm={12} md={12} lg={12}>
+                <label
+                  style={{
+                    userSelect: "none",
+                    fontSize: "19px",
+                    display: "inline-block",
+                    margin: "10px 0"
+                  }}>
+                  Modelo
+                </label>
+                <BoxOptionList
+                  optionSelected={modeloBalanzaDigi}
+                  setOptionSelected={setModeloBalanzaDigi}
+                  options={System.arrayIdValueFromObject(MODELOSDIGI, true)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} md={12} lg={12}>
+
+
+                <SmallSecondaryButton
+                  style={{
+                    width: "inherit",
+                    float: "right"
+                  }}
+                  textButton={"Agregar Balanza +"}
+                  actionButton={() => {
+                    crearNuevaBalanza()
+                  }}
+                />
+
+                {balanzaDigiSelected > 0 && (balanzaDigiSelected == balanzasDigi.length - 1) && (
+                  <SmallDangerButton
+                    style={{
+                      width: "inherit",
+                      float: "right",
+                    }}
+                    textButton={"Eliminar balanza " + (balanzaDigiSelected + 1)}
+                    actionButton={eliminarUltimaBalanza}
+                  />
+                )}
+
+              </Grid>
             </Grid>
-          )}
-          {modeloBalanzaDigi == MODELOSDIGI.SM120 && (
 
-            <Grid item xs={12} md={6} lg={6}>
-              <TouchInputName
-                inputState={[claveBalanzaDigi, setClaveBalanzaDigi]}
-                label="contraseña de conexion ftp"
-              />
-            </Grid>
-          )}
+          </Grid>
 
 
-          <Grid item xs={12} md={12} lg={12}>
+
+
+
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+
+            <SmallButton
+              textButton="CONTROL Productos, Vendedores Y Teclas"
+              actionButton={() => {
+                setVerDigi(true)
+              }} style={{
+                backgroundColor: "green",
+                width: "inherit"
+              }} />
+
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={12} lg={12}>
             <label
               style={{
                 userSelect: "none",
                 fontSize: "19px",
                 display: "inline-block",
-                margin: "10px 0"
+                margin: "30px 0 0 0"
               }}>
-              Modelo
+              Cambiar Specs
             </label>
-            <BoxOptionList
-              optionSelected={modeloBalanzaDigi}
-              setOptionSelected={setModeloBalanzaDigi}
-              options={System.arrayIdValueFromObject(MODELOSDIGI, true)}
-            />
           </Grid>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
 
-          <Grid item xs={12} md={12} lg={12}>
+            <SmallButton
+              textButton="Modo Vales"
+              actionButton={() => {
 
-            {trabajarConBalanzaDigi && (
-              <SmallButton textButton="CONTROL PARA BALANZAS DIGI" actionButton={() => {
-                setVerDigi(true)
-              }} style={{
-                backgroundColor: "green",
+                showConfirm("Cambiar los spec a modo vales?", () => {
+                  showLoading("cambiando spec a vales...")
+                  balanza.cambiarSpecVales((res) => {
+                    if (res.status) {
+                      showAlert("realizado correctamente")
+                    } else {
+                      showAlert("No se pudo crear")
+                    }
+                    hideLoading()
+                  }, (er) => {
+                    hideLoading()
+                    showAlert(er)
+                  })
+                }, () => {
+                  showMessage("cancelado")
+                })
+              }}
+              style={{
+                width: "inherit",
+                height: "50px"
               }} />
-            )}
+
+            <SmallButton
+              textButton="Modo Productos"
+              actionButton={() => {
+                showConfirm("Cambiar los spec a modo productos?", () => {
+                  showLoading("cambiando spec a productos...")
+                  balanza.cambiarSpecProductos((res) => {
+                    if (res.status) {
+                      showAlert("realizado correctamente")
+                    } else {
+                      showAlert("No se pudo crear")
+                    }
+                    hideLoading()
+                  }, (er) => {
+                    hideLoading()
+                    showAlert(er)
+                  })
+                }, () => {
+                  showMessage("cancelado")
+                })
+              }}
+
+              style={{
+                width: "inherit",
+                height: "50px"
+              }} />
 
           </Grid>
         </Grid>

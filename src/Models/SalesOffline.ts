@@ -133,13 +133,17 @@ class SalesOffline extends ModelSingleton {
 
 
     static corregirFolios(tipo: any, nroFolioInicial: string | number, callbackOk: any) {
+        var nroFolio = parseInt(nroFolioInicial + "") + 0
+
         var me = SalesOffline.getInstance()
         if (me.listSales.length < 1) {
             SalesOffline.sincronizando = false
+            const sesAI = OfflineAutoIncrement.getFromSesion()
+            sesAI["nFolio" + tipo] = nroFolio + 0
+            OfflineAutoIncrement.saveInSesion(sesAI)
             return
         }
 
-        var nroFolio = parseInt(nroFolioInicial + "") + 0
         var copiaSales: any = []
         me.listSales.forEach((sale: any) => {
             if (sale.queOperacionHace == tipo) {
@@ -184,7 +188,9 @@ class SalesOffline extends ModelSingleton {
                 console.log("Esperando un envio de " + itAperturaCierre.tipo)
                 if (!AperturaCierreOffline.sincronizando) {
                     AperturaCierreOffline.sincronizar(() => {
+                        console.log("proximo intento apertura o cierre")
                     }, () => {
+                        console.log("termino todo apertura o cierre")
                         SalesOffline.reintentarPago(saleInfo, callbackOk, callbackWrong)
                     })
                 }
@@ -192,9 +198,9 @@ class SalesOffline extends ModelSingleton {
             }
             console.log("todo ok.. sigo con el intento de pago")
         }
-        
-        const pr =Product.getInstance()
-        if(pr.hayPreciosOffline()){
+
+        const pr = Product.getInstance()
+        if (pr.hayPreciosOffline()) {
             pr.enviarPreciosOffline()
             callbackWrong("productos con cambio de precio pendiente")
             return

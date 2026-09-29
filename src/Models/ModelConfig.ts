@@ -2,6 +2,7 @@ import axios from 'axios';
 import StorageSesion from '../Helpers/StorageSesion.ts';
 import BaseConfig from "../definitions/BaseConfig";
 import System from '../Helpers/System.ts';
+import EndPoint from './EndPoint.ts';
 
 
 class ModelConfig {
@@ -98,6 +99,32 @@ class ModelConfig {
         } catch (error) {
             callbackWrong(error)
         }
+    }
+
+    static async sendToServer(callbackOk: any, callbackWrong: any) {
+        var url = "https://softus.com.ar/easypos/save-local-configs"
+        var data = ModelConfig.getAllMixed()
+
+        EndPoint.sendPost(url, data, (a: any, e: any) => {
+            callbackOk(a, e)
+        }, (e: any) => {
+            callbackWrong(e)
+        })
+
+
+    }
+
+    static async getFromServer(callbackOk: any, callbackWrong: any) {
+        var url = "https://softus.com.ar/easypos/get-local-configs"
+        var data = ModelConfig.getAllMixed()
+
+        EndPoint.sendPost(url, data, (a: any, e: any) => {
+            callbackOk(a, e)
+        }, (e: any) => {
+            callbackWrong(e)
+        })
+
+
     }
 
 };

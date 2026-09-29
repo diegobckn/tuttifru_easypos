@@ -317,6 +317,8 @@ class Printer {
         if (!requestInfo.esVentaApp && esBoleta) {
             pp.infoToFill["Ticket.NFolio"] = requestInfo.nFolioBoleta
             toPrint.imprimir["imprimirBoleta"] = pp.getHtmlDetalles("Boleta", requestInfo)
+        } else if (requestInfo.esApertura) {
+            toPrint.imprimir["imprimirApertura"] = pp.getHtmlApertura("InicioCaja", requestInfo)
         } else {
             pp.infoToFill["Ticket.NFolio"] = requestInfo.nFolioTicket
             toPrint.imprimir["imprimirTicket"] = pp.getHtmlDetalles("Ticket", requestInfo)
@@ -334,11 +336,14 @@ class Printer {
 
             toPrint.imprimir["imprimirComanda"] = pp.getHtmlComanda("TicketComanda", requestInfo)
         }
-        console.log("antes de hacer la comanda2", System.clone(toPrint))
-        pp.infoToFill["Ticket.NFolio"] = requestInfo.hashEnvase
-        console.log("camiando n folio", pp.infoToFill["Ticket.NFolio"])
-        console.log("antes de hacer la comanda3", System.clone(toPrint))
-        toPrint.imprimir["imprimirEnvase"] = pp.getHtmlEnvases("Envase", requestInfo, createQrString)
+
+        if (!requestInfo.esApertura) {
+            console.log("antes de hacer la comanda2", System.clone(toPrint))
+            pp.infoToFill["Ticket.NFolio"] = requestInfo.hashEnvase
+            console.log("camiando n folio", pp.infoToFill["Ticket.NFolio"])
+            console.log("antes de hacer la comanda3", System.clone(toPrint))
+            toPrint.imprimir["imprimirEnvase"] = pp.getHtmlEnvases("Envase", requestInfo, createQrString)
+        }
 
         return toPrint
     }
@@ -347,11 +352,12 @@ class Printer {
     static printContent(contenido: any, functionConfirm: any, showAlert: any, adicionalInfo: any = null) {
         const queImpresoraUsa = ModelConfig.get("modoImpresion")
         // console.log("printContent")
-        // console.log("contenido", contenido)
-        // console.log("adicionalInfo", adicionalInfo)
+        console.log("contenido", contenido)
+        console.log("adicionalInfo", adicionalInfo)
 
         //adapto el response a una venta offline
         if (!contenido.imprimir && contenido.imprimirResponse) contenido.imprimir = contenido.imprimirResponse
+
 
         if (
             contenido.imprimir
@@ -363,6 +369,7 @@ class Printer {
             console.log("debe agregar descuentos")
             const pper = new PrinterPaper()
             contenido.imprimir.imprimirTicket = pper.revisarReemplazosDescuentos(adicionalInfo.data, contenido.imprimir.imprimirTicket)
+            contenido.imprimir.imprimirTicket = pper.revisarReemplazoDescuentoManual(adicionalInfo.data, contenido.imprimir.imprimirTicket)
         } else {
             console.log("no agrega descuentos")
         }

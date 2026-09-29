@@ -63,7 +63,7 @@ export default ({
   const cargarPedidos = () => {
     showLoading("Cargando pedidos...")
     Atudepa.obtenerPedidos((resp) => {
-      console.log("pedidos", resp.purchases)
+      // console.log("pedidos", resp.purchases)
 
       setPedidos(resp.purchases)
       setTxtNuevos("")
@@ -93,7 +93,7 @@ export default ({
 
   const cambiarEstado = (nuevoEstado, idEspecial = 0) => {
 
-    console.log("cambiar de estado a", nuevoEstado)
+    // console.log("cambiar de estado a", nuevoEstado)
     var ids = []
     if (!idEspecial) {
       isCheck.forEach((index) => {
@@ -103,7 +103,7 @@ export default ({
       ids.push(idEspecial)
     }
 
-    console.log("a los ids", ids)
+    // console.log("a los ids", ids)
 
     showLoading("cambiando estados...")
     Atudepa.cambiarEstadosPedidos(ids, nuevoEstado, () => {
@@ -115,7 +115,7 @@ export default ({
   }
 
   const imprimir = (pedido, callbackEnd = null) => {
-    console.log("imprimiendo", pedido)
+    // console.log("imprimiendo", pedido)
     Atudepa.imprimir(pedido, createQrString, userData, showAlert, showConfirm, callbackEnd)
   }
 
@@ -123,7 +123,7 @@ export default ({
 
     setIsCheck([])//reseteamos los checks
     Atudepa.nuevoPedidoFuncion = (peds) => {
-      console.log("nuevos pedidos2", peds)
+      // console.log("nuevos pedidos2", peds)
 
 
       Atudepa.checkNuevosPedidos = false
@@ -143,7 +143,6 @@ export default ({
 
         }
       }, () => {
-        // console.log("termino el ciclo")
         Atudepa.checkNuevosPedidos = true
         cargarPedidos()
       })
@@ -175,7 +174,7 @@ export default ({
   }, [primeraCarga])
 
   useEffect(() => {
-    console.log("cambio iniciado", iniciado)
+    // console.log("cambio iniciado", iniciado)
   }, [iniciado])
 
 
@@ -269,7 +268,6 @@ export default ({
                       if (el) {
                         el = el.firstElementChild//inp
                         if (el) {
-                          // console.log("click en input", el)
                           el.click();
                         }
                       }
@@ -308,7 +306,7 @@ export default ({
                           <>
                             <SmallPrimaryButton textButton={"Ver Codigo de entrega"} actionButton={() => {
                               const sd = JSON.parse(pedido.shipping_data)
-                              console.log("sd", sd)
+                              // console.log("sd", sd)
                               showAlert("El codigo de entrega es: " + sd.codigoEntrega)
                             }} />
                             <SmallSuccessButton textButton={"Entregado"} actionButton={() => {

@@ -33,6 +33,7 @@ import Printer from "../Models/Printer";
 import Sales from "../Models/Sales";
 import BalanzaDigi from "../Models/BalanzaDigi";
 import AperturaCierreOffline from "../Models/AperturaCierreOffline";
+import OfflineAutoIncrement from "../Models/OfflineAutoIncrement";
 
 const PuntoVenta = () => {
   const {
@@ -42,10 +43,10 @@ const PuntoVenta = () => {
     getUserData,
     salesData,
 
-    verBotonesPanel
+    verBotonesPanel,
+    folioBoletaOk,
+    setFolioBoletaOk
   } = useContext(SelectedOptionsContext);
-
-
 
   const {
     GeneralElements2
@@ -58,6 +59,8 @@ const PuntoVenta = () => {
 
 
   useEffect(() => {
+
+    console.log("primera carga de pantalla puntoVenta")
     focusSearchInput()
 
     UserEvent.send({
@@ -67,12 +70,6 @@ const PuntoVenta = () => {
 
     if (!window.catchCloseOrUpload) {
       window.catchCloseOrUpload = 1
-      window.addEventListener("beforeunload", function (e, e2) {
-        console.log("antes de salir", e)
-        ejecutar();
-        (e || window.event).returnValue = null;
-        return null
-      });
 
       function ejecutar() {
         // UserEvent.send({
@@ -86,9 +83,14 @@ const PuntoVenta = () => {
         })
       }
 
+      window.addEventListener("beforeunload", function (e, e2) {
+        console.log("antes de salir", e)
+        ejecutar();
+        (e || window.event).returnValue = null;
+        return null
+      });
 
     }
-
 
     Licencia.check(showAlert, () => { navigate("/sin-licencia"); })
 
@@ -109,6 +111,34 @@ const PuntoVenta = () => {
       AperturaCierreOffline.sincronizar(() => { }, () => { })
     }
 
+
+    if (!window.sincronizandoFolioBoleta && ModelConfig.get("emitirBoleta") && !folioBoletaOk) {
+      console.log("debe buscar folio boleta")
+      window.sincronizandoFolioBoleta = true
+      var intrFolBol = null
+
+      var buscarFoliosBoleta = function () {
+        console.log("buscando folio boleta")
+        OfflineAutoIncrement.loadFromServer(null, (data, nfolioBoletaOk) => {
+          console.log("callback ok folios boleta..data", data, "nfolioBoletaOk", nfolioBoletaOk)
+          if (nfolioBoletaOk) {
+            setFolioBoletaOk(true)
+            if (intrFolBol) {
+              clearInterval(intrFolBol)
+            }
+          } else {
+            intrFolBol = setInterval(() => {
+              buscarFoliosBoleta()
+            }, 15 * 1000);
+          }
+        }, () => {
+        })
+      }
+      buscarFoliosBoleta()
+
+    }
+
+
   }, [])
 
 
@@ -116,16 +146,7 @@ const PuntoVenta = () => {
 
   useEffect(() => {
     if (userData) {
-      const ACOff = new AperturaCierreOffline()
-      if (ACOff.sesion.hasOne()) {
-        if (!AperturaCierreOffline.hasApertura()) {
-          console.log("no tiene iniciada la caja");
-          console.log(userData)
-          console.log("revisando si tiene offline")
-          console.log("NO si tiene offline")
-          setShowAbrirCaja(true);
-        }
-      } else if (!userData.inicioCaja) {
+      if (!userData.inicioCaja) {
         setShowAbrirCaja(true);
       }
     }
@@ -192,7 +213,10 @@ const PuntoVenta = () => {
 
           {verBotonesPanel && (
             <Grid container style={{
-              padding: 0
+              padding: 0,
+              height: "10vh",
+              background: "black",
+              overflowY: "auto",
             }}>
               <Grid item xs={12} sm={12} md={12} lg={12} style={{
                 padding: 0
@@ -205,7 +229,9 @@ const PuntoVenta = () => {
           <Grid container spacing={2} style={{
             margin: "0",
             padding: 0,
-
+            padding: "0px",
+            height: "70vh",
+            overflowY: "auto",
           }}>
             <Grid item xs={12} sm={12} md={8} lg={8}
               style={{
@@ -215,7 +241,8 @@ const PuntoVenta = () => {
             >
               <Box sx={{
                 // backgroundColor: "red",
-                height: (altoPanelProductos) + "vh",
+                // height: (altoPanelProductos) + "vh",
+                minHeight: "50vh",
                 overflow: "auto"
               }}>
 
@@ -255,7 +282,14 @@ const PuntoVenta = () => {
           )} */}
 
           {verBotonesPanel && (
-            <BoxBotones />
+            <div style={{
+              padding: "0",
+              width: "100%",
+              height: "20vh",
+              overflowY: "auto",
+            }}>
+              <BoxBotones />
+            </div>
           )}
 
         </Grid>

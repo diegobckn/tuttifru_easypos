@@ -44,6 +44,20 @@ class Oferta2 extends ModelSingleton {
     var me = this
     // console.log("this.info.products", this.info.products)
     // console.log("debeAplicar??..this", this)
+    if (!this.info.activo) return false
+    if (this.info.diasSemana) {
+      var dt = new Date()
+      var hoy = dt.getDay()
+      if (hoy === 0) hoy = 7
+      hoy -= 1
+
+      console.log("hoy en oferta", hoy)
+      console.log("oferta", this.info)
+
+      if (this.info.diasSemana.length === 7) {
+        if (this.info.diasSemana[hoy] !== "1") return false
+      }
+    }
     if (
       me.info.oferta_Regla.signo !== "="
       && me.info.oferta_Regla.signo !== ">"

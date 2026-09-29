@@ -8,8 +8,14 @@ import ModosImpresion from "./ModosImpresion";
 import Env from "./Env";
 import FocosPrincipales from "./FocosPrincipales";
 
+export const ModosLecturaDigi = {
+    TICKET_PRODUCTOS: 1,
+    TICKET_VALE: 2
+}
+
 const BaseConfig = {
     urlBase: Env.urlBase,
+    urlBase2: "",
     licencia: Env.licencia,
     sesionStart: dayjs().format('DD/MM/YYYY-HH:mm:ss'),
     sesionExprire: 2 * 60 * 1000, //en milisegundos
@@ -61,6 +67,7 @@ const BaseConfig = {
 
     emitirBoleta: true,
     tienePasarelaPago: true,
+    pasarelaEnProduccion: false,
     excluirMediosEnBoleta: [
         // MetodosPago.EFECTIVO,
         // MetodosPago.TRANSFERENCIA,
@@ -73,12 +80,6 @@ const BaseConfig = {
     urlServicioImpresion: "ws://localhost:8760",
     urlServicioImpresionComanda: "ws://localhost:8760",
 
-    urlServicioBalanzaDigi: "ws://localhost:8760",
-    ipBalanzaDigi: "192.168.1.135",
-    puertaBalanzaDigi: "2135",
-    modeloBalanzaDigi: "sm-300",
-    usuarioBalanzaDigi: "admin",
-    claveBalanzaDigi: "admin",
 
     puertoImpresiones: "COM6",
     puertoImpresionComanda: "COM6",
@@ -114,13 +115,53 @@ const BaseConfig = {
 
     darFocoEnLeerDigi: false,
 
-    darFocoPrincipalEn : FocosPrincipales.INPUT_BUSCAR_PRODUCTOS,
+    darFocoPrincipalEn: FocosPrincipales.INPUT_BUSCAR_PRODUCTOS,
 
     trabajarConBalanzaDigi: false,
-    codigoValeBalanzaDigi: "25",
+    urlServicioBalanzaDigi: "ws://localhost:8760",
     refreshValeBalanzaDigi: "10",
-    revisarValeRepeditoBalanzaDigi: true
+    revisarValeRepeditoBalanzaDigi: true,
 
+    ipBalanzaDigi: "192.168.1.135",
+    puertaBalanzaDigi: "2135",
+    modeloBalanzaDigi: "sm-300",
+    usuarioBalanzaDigi: "admin",
+    claveBalanzaDigi: "admin",
+    codigoValeBalanzaDigi: "25",
+    modoLecturaBalanzaDigi: ModosLecturaDigi.TICKET_PRODUCTOS,
+
+    balanzasDigi: [],
+
+    pasarelaClientId: "",
+    pasarelaSecret: "",
+    pasarelaSerialNumber: "",
+    pasarelaSucursalId: 0,
+    pasarelaTerminalId: "",
+    pasarelaPrint: false,
+
+
+    puedeSalirModoAvion: false,
+    botonesExtrasBusquedaRapida: [],
+    recargosMediosPagos: {
+        "efectivo": {
+            tipo: "porcentaje",
+            valor: 0
+        },
+        "transferencia": {
+            tipo: "porcentaje",
+            valor: 0
+        },
+        "tarjeta_credito": {
+            tipo: "porcentaje",
+            valor: 0
+        },
+        "tarjeta_debito": {
+            tipo: "porcentaje",
+            valor: 0
+        }
+    },
+
+    puedeCambiarPrecio: false,
 };
 
 export default BaseConfig;

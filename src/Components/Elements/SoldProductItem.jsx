@@ -20,6 +20,7 @@ import Validator from "../../Helpers/Validator";
 import ProductSold from "../../Models/ProductSold";
 import AsignarPeso from "../ScreenDialog/AsignarPeso";
 import BotonAgregarQuitar from "./BotonAgregarQuitar";
+import AsignarPrecio from "../ScreenDialog/AsignarPrecio";
 
 const SoldProductItem = ({
   itemIndex,
@@ -54,6 +55,8 @@ const SoldProductItem = ({
   const {
     pedirSupervision
   } = useContext(ProviderModalesContext);
+
+  const [cambiandoPrecio, setCambiandoPrecio] = useState(false);
 
   const changeQuantity = (newQuantity) => {
     // console.log("changeQuantity..newQuantity", newQuantity)
@@ -413,7 +416,43 @@ const SoldProductItem = ({
 
         </TableCell>
         <TableCell sx={{ fontSize: "20px" }}>
-          ${System.formatMonedaLocal(product.precioVenta, false)}
+
+          <AsignarPrecio
+            openDialog={cambiandoPrecio}
+            setOpenDialog={setCambiandoPrecio}
+            title={"Cambiar precio"}
+            product={product}
+            onAsignPrice={(newPrice) => {
+              console.log("product", product)
+              product.precioVenta = newPrice
+              product.updateSubtotal()
+              const newSalesData = [...sales.products]
+              newSalesData[itemIndex] = product
+              sales.products = newSalesData
+
+              setSalesData([...sales.products])
+              setGrandTotal(sales.getTotal())
+
+              sales.sesionProducts.guardar(sales.products)
+            }}
+
+            cancelButtonLabel="No modificar"
+          />
+
+          <div style={{
+            "display": "inline-block"
+          }} onClick={() => {
+            const puedeCambiarPrecio = ModelConfig.get("puedeCambiarPrecio")
+            console.log("click en precio")
+            if (puedeCambiarPrecio) {
+              console.log("puede cambiar precio")
+              setCambiandoPrecio(true)
+            } else {
+              console.log("no puede cambiar precio")
+            }
+          }}>
+            ${System.formatMonedaLocal(product.precioVenta, false)}
+          </div>
           <br />
           <p style={{
             fontSize: "15px"

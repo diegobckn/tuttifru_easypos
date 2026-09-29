@@ -51,9 +51,9 @@ class EndPoint extends Singleton {
     SoporteTicket.catchRequestError(error)
   }
 
-  static async sendGet(url: string, callbackOk: any, callbackWrong: any) {
+  static async sendGet(url: string, callbackOk: any, callbackWrong: any, headers: any = undefined) {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(url, headers);
       // console.log("response", response)
       if (
         (!response.data.statusCode && response.status == 200)
@@ -68,12 +68,17 @@ class EndPoint extends Singleton {
         SoporteTicket.catchRequest(response)
       }
     } catch (error) {
-      this.admError(error, callbackWrong)
+      if (ModelConfig.get("urlBase2") != "" && url.indexOf(ModelConfig.get("urlBase2")) == -1) {
+        EndPoint.sendGet(url.replace(ModelConfig.get("urlBase"), ModelConfig.get("urlBase2")), callbackOk, callbackWrong, headers)
+      } else {
+        this.admError(error, callbackWrong)
+      }
     }
   }
 
 
   static async sendPost(url: string, data: any, callbackOk: any, callbackWrong: any, headers: any = undefined) {
+    console.log("headers", headers)
     try {
       const response = await axios.post(url, data, headers);
 
@@ -89,8 +94,12 @@ class EndPoint extends Singleton {
         // SoporteTicket.catchRequest(response)
       }
     } catch (error) {
-      // console.log("catch")
-      this.admError(error, callbackWrong)
+      if (ModelConfig.get("urlBase2") != "" && url.indexOf(ModelConfig.get("urlBase2")) == -1) {
+        EndPoint.sendPost(url.replace(ModelConfig.get("urlBase"), ModelConfig.get("urlBase2")), data, callbackOk, callbackWrong, headers)
+      } else {
+        console.log("catch", error)
+        this.admError(error, callbackWrong)
+      }
     }
   }
 
@@ -104,7 +113,11 @@ class EndPoint extends Singleton {
         SoporteTicket.catchRequest(response)
       }
     } catch (error) {
-      this.admError(error, callbackWrong)
+      if (ModelConfig.get("urlBase2") != "" && url.indexOf(ModelConfig.get("urlBase2")) == -1) {
+        EndPoint.sendPut(url.replace(ModelConfig.get("urlBase"), ModelConfig.get("urlBase2")), data, callbackOk, callbackWrong)
+      } else {
+        this.admError(error, callbackWrong)
+      }
     }
   }
 
@@ -118,7 +131,11 @@ class EndPoint extends Singleton {
         SoporteTicket.catchRequest(response)
       }
     } catch (error) {
-      this.admError(error, callbackWrong)
+      if (ModelConfig.get("urlBase2") != "" && url.indexOf(ModelConfig.get("urlBase2")) == -1) {
+        EndPoint.sendDelete(url.replace(ModelConfig.get("urlBase"), ModelConfig.get("urlBase2")), data, callbackOk, callbackWrong)
+      } else {
+        this.admError(error, callbackWrong)
+      }
     }
   }
 };

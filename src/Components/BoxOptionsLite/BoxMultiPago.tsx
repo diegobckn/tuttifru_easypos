@@ -35,8 +35,9 @@ const BoxMultiPago = ({
   setFaltaPagar,
   setTotalFinal,
   excluirMetodos = [],
-  paraFactura = false
-}) => {
+  paraFactura = false,
+  recargoGeneral = 0
+}: any) => {
   const {
     cliente,
     setCliente,
@@ -69,7 +70,7 @@ const BoxMultiPago = ({
     setPagos([...pagos, pagoNuevo])
   }
 
-  const confirmPagoTransferencia = (dataTransferencia) => {
+  const confirmPagoTransferencia = (dataTransferencia: any) => {
     agregarPago({
       "montoMetodoPago": parseFloat(pagarCon),
       "metodoPago": "TRANSFERENCIA",
@@ -83,7 +84,7 @@ const BoxMultiPago = ({
     setYaApretoPrimerTecla(false)
   }
 
-  const confirmSelectUser = (dataUser) => {
+  const confirmSelectUser = (dataUser: any) => {
     agregarPago({
       "montoMetodoPago": parseFloat(pagarCon),
       "metodoPago": "CUENTACORRIENTE",
@@ -96,7 +97,7 @@ const BoxMultiPago = ({
     setUsuario(null)
   }
 
-  const confirmSelectClient = (dataClient) => {
+  const confirmSelectClient = (dataClient: any) => {
     // console.log("confirmSelectClient")
     // console.log("dataClient", dataClient)
     agregarPago({
@@ -116,13 +117,13 @@ const BoxMultiPago = ({
 
   }
 
-  const confirmarPagoEfectivo = (nuevoMonto) => {
+  const confirmarPagoEfectivo = (nuevoMonto: any) => {
     var yaTenia1 = false
 
     var totalPagosx = 0
     var totalEfectivo = 0
     const copiaPagos = System.clone(pagos)
-    pagos.forEach((pago, ix) => {
+    pagos.forEach((pago: any, ix: number) => {
       if (pago.metodoPago === "EFECTIVO") {
         totalEfectivo = copiaPagos[ix].montoMetodoPago + nuevoMonto
         copiaPagos[ix].montoMetodoPago = totalEfectivo + Product.logicaRedondeoUltimoDigito(totalEfectivo)
@@ -152,14 +153,14 @@ const BoxMultiPago = ({
   }
 
 
-  const confirmarPagoTarjeta = (tipo) => {
+  const confirmarPagoTarjeta = (tipo: any) => {
     agregarPago({
       "montoMetodoPago": parseFloat(pagarCon),
       "metodoPago": "TARJETA",
       "tipoTarjeta": tipo
     } as TPago)
 
-    setTotalYDescuentoYRedondeo(totalVentas - descuentos)
+    setTotalYDescuentoYRedondeo(totalVentas - descuentos + recargoGeneral)
     setMetodoPago("")
     setPagarCon(0)
 
@@ -169,7 +170,7 @@ const BoxMultiPago = ({
 
 
 
-  const checkPayMethod = (metodoPago) => {
+  const checkPayMethod = (metodoPago: any) => {
     // console.log("checkPayMethod")
     // console.log("metodoPago",metodoPago)
     setMetodoPago(metodoPago)
@@ -178,9 +179,9 @@ const BoxMultiPago = ({
     } else {
       // setVuelto(0);
       setRedondeo(0)
-      setTotalYDescuentoYRedondeo(totalVentas - descuentos)
+      setTotalYDescuentoYRedondeo(totalVentas - descuentos + recargoGeneral)
 
-      const maximo = totalVentas - descuentos
+      const maximo = totalVentas - descuentos + recargoGeneral
       var correccionMontoAPagar = parseInt(pagarCon) + 0
 
       if (parseInt(pagarCon) + totalPagos > maximo) {
@@ -226,12 +227,12 @@ const BoxMultiPago = ({
     }
   }
 
-  const onChangePayMethod = (method) => {
+  const onChangePayMethod = (method: any) => {
     checkPayMethod(method);
   }
 
-  const logicaRedondeo = (total) => {
-    if (!total) total = totalVentas - descuentos
+  const logicaRedondeo = (total: any) => {
+    if (!total) total = totalVentas - descuentos + recargoGeneral
     setRedondeo(Product.logicaRedondeoUltimoDigito(total))
     return 0
   }
@@ -268,10 +269,10 @@ const BoxMultiPago = ({
     // console.log("carga inicial")
     if (totalVentas > 0) {
       // setTotalYDescuentoYRedondeo(totalVentas - descuentos + redondeo)
-      setTotalYDescuentoYRedondeo(totalVentas - descuentos)
+      setTotalYDescuentoYRedondeo(totalVentas - descuentos + recargoGeneral)
     }
     // console.log("sale carga inicial")
-  }, [totalVentas]);
+  }, [totalVentas,recargoGeneral]);
 
   useEffect(() => {
     // console.log("cambio pagarCon", pagarCon)
@@ -299,7 +300,7 @@ const BoxMultiPago = ({
 
     var aplicaRedondeox = false
     if (totalPagos >= (totalYDescuentoYRedondeo - 10)) {
-      pagos.forEach((pago) => {
+      pagos.forEach((pago: any) => {
         if (pago.metodoPago == "EFECTIVO") {
           aplicaRedondeox = true
           logicaRedondeo(pago.montoMetodoPago)
@@ -314,7 +315,7 @@ const BoxMultiPago = ({
 
   const pagaConEfectivo = () => {
     var conEfectivo = false
-    pagos.forEach((pago) => {
+    pagos.forEach((pago: any) => {
       if (pago.metodoPago == "EFECTIVO") {
         conEfectivo = true
       }
@@ -349,7 +350,7 @@ const BoxMultiPago = ({
       }
     }
 
-  }, [totalPagos, redondeo, vuelto, totalYDescuentoYRedondeo]);
+  }, [totalPagos, redondeo, vuelto, totalYDescuentoYRedondeo, recargoGeneral]);
 
   useEffect(() => {
 
@@ -374,8 +375,8 @@ const BoxMultiPago = ({
 
   useEffect(() => {
     // setTotalYDescuentoYRedondeo(totalVentas - descuentos + redondeo)
-    setTotalYDescuentoYRedondeo(totalVentas - descuentos)
-  }, [descuentos]);
+    setTotalYDescuentoYRedondeo(totalVentas - descuentos + recargoGeneral)
+  }, [descuentos,recargoGeneral]);
 
 
   useEffect(() => {
@@ -412,7 +413,7 @@ const BoxMultiPago = ({
       <BotonClienteOUsuario
         setOpenDialog={setShowSelectClientUser}
         openDialog={showSelectClientUser}
-        onSelect={(opcion) => {
+        onSelect={(opcion: any) => {
           if (opcion == "cliente") {
             abrirDialogCliente()
           } else {
@@ -424,7 +425,7 @@ const BoxMultiPago = ({
       <BuscarUsuario
         setOpenDialog={setShowDialogSelectUser}
         openDialog={showDialogSelectUser}
-        onSelect={(usuario) => {
+        onSelect={(usuario: any) => {
           setUsuario(usuario)
         }}
       />
@@ -446,7 +447,7 @@ const BoxMultiPago = ({
       <PagoTransferencia
         openDialog={openTransferenciaModal}
         setOpenDialog={setOpenTransferenciaModal}
-        onConfirm={(data) => {
+        onConfirm={(data: any) => {
           // console.log("onConfirm ", data)
 
           confirmPagoTransferencia(data)

@@ -67,6 +67,7 @@ class Balanza extends Singleton {
     me.socket.onopen = () => {
       // console.log("Conectado al servidor WebSocket");
       try {
+        console.log("objetoAEnviar a balanza", objetoAEnviar)
         me.socket.send(JSON.stringify(objetoAEnviar));
       } catch (e: any) {
         if (e.message.indexOf("CONNECTING") > -1) {
@@ -171,6 +172,7 @@ class Balanza extends Singleton {
     if (me.socket && me.socket.readyState === WebSocket.OPEN) {
       const objetoAEnviar: any = {}
       objetoAEnviar.accion = "peso"
+      console.log("objetoAEnviar a balanza", objetoAEnviar)
       me.socket.send(JSON.stringify(objetoAEnviar));
       setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);
     } else {
@@ -186,7 +188,7 @@ class Balanza extends Singleton {
         return
       }
 
-
+      console.log("antes de conectar")
       me.socket = new WebSocket(ModelConfig.get("urlServicioDeteccionPeso"));
       me.socket.onopen = () => {
         console.log("Conectado al servidor WebSocket");
@@ -194,6 +196,7 @@ class Balanza extends Singleton {
         if (me.socket && me.socket.readyState === WebSocket.OPEN) {
           const objetoAEnviar: any = {}
           objetoAEnviar.accion = "peso"
+          console.log("objetoAEnviar a balanza", objetoAEnviar)
           me.socket.send(JSON.stringify(objetoAEnviar));
         }
         setTimeout(() => { me.terminoAnterior = true; }, me.ciclarTiempo);

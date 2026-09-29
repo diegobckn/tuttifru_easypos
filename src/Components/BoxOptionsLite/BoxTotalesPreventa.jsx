@@ -405,7 +405,6 @@ const BoxTotales = () => {
               fontSize: "30px",
               textTransform: "uppercase",
               color: "red",
-              color: "#1e368f",
               width: "100%",
             }}>Preventa</Typography>
 

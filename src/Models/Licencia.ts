@@ -8,23 +8,22 @@ import System from '../Helpers/System.ts';
 
 
 class Licencia {
-    sesionLicenciaServer: StorageSesion;
-    sesionLicenciaLocal: StorageSesion;
+    sesionLicencia: StorageSesion;
 
     //cantidad de postergaciones permitidas
     static limitePostergaciones = 0
 
     //en segundos
     // static intervaloRevision = 3 * 60 //60 * 60
-    static intervaloRevision = 30 * 60 //60 * 60
+    // static intervaloRevision = 30 * 60 //60 * 60
+    static intervaloRevision = 3 * 60 * 60
 
 
 
     static intervalRepeat: any = null
 
     constructor() {
-        this.sesionLicenciaServer = new StorageSesion("licenciaServidor");
-        this.sesionLicenciaLocal = new StorageSesion("licenciaLocal");
+        this.sesionLicencia = new StorageSesion("licencia");
     }
 
     static estaVencida(licencia: any) {
@@ -78,10 +77,11 @@ class Licencia {
             "unitName": Env.unidadNegocio
         }
         // console.log("licencia, data a enviar", data)
-        const url = "https://softus.com.ar/easypos/get-licence"
+        // const url = "https://softus.com.ar/easypos/get-licence" //no se usa mas
+        const url = "https://softus.com.ar/easypos/get-first-licence"
         EndPoint.sendPost(url, data, (responseData: any, response: any) => {
+            // console.log("respuesta licencia", responseData)
             if (responseData.license) {
-                // console.log("respuesta licencia", responseData)
                 const licenciaServer = responseData.license
                 this.updateAllWithLicense(licenciaServer, showMessageUser, callbackLicenciaVencida)
                 // callbackOk(responseData, response)
@@ -90,6 +90,7 @@ class Licencia {
             }
         }, () => {
             // revisar si supero el limite de postergaciones
+            // console.log("sin respuesta de licencia")
             this.updateAllWithoutLicense(showMessageUser, callbackLicenciaVencida)
         })
     }
@@ -98,17 +99,26 @@ class Licencia {
     static getLocal = (reset = false) => {
         var licenciaLocal: any = null
         let me = new Licencia()
-        const guardadosLocal = me.sesionLicenciaLocal.cargarGuardados()
+        const guardadosLocal = me.sesionLicencia.cargarGuardados()
         if (guardadosLocal.length < 1 || reset) {
+            // console.log("creando localmente")
+            var datetime = dayjs().add(1, "day")
+            // console.log("datetime", datetime.format("YYYY-MM-DD HH:mm:ss"))
+
+            const ahora = dayjs().format("YYYY-MM-DD HH:mm:ss")
+            const ahoraDia = ahora.split(" ")[0]
+            const ahoraHora = ahora.split(" ")[1]
             licenciaLocal = {
                 id: 1,
-                lastCheckDate: dayjs().format("DD/MM/YYYY"),
+                lastCheckDate: ahoraDia,
                 // lastCheckDate: "02/12/2024",
-                lastCheckTime: dayjs().format("HH:mm"),
-                lastCheckTimeFull: dayjs().format("HH:mm:ss"),
+                lastCheckTime: ahoraHora.substring(0, 5),
+                lastCheckTimeFull: ahoraHora,
+                local: true,
+                expireDateTime: datetime.format("YYYY-MM-DD HH:mm:ss"),
                 postergaciones: 0,
             }
-            me.sesionLicenciaLocal.guardar(licenciaLocal)
+            me.sesionLicencia.guardar(licenciaLocal)
         } else {
             licenciaLocal = guardadosLocal[0]
         }
@@ -121,33 +131,31 @@ class Licencia {
         let me = new Licencia()
 
         var license = null
-        if (me.sesionLicenciaServer.hasOne()) {
-            license = me.sesionLicenciaServer.cargarGuardados()[0]
+        if (me.sesionLicencia.hasOne()) {
+            license = me.sesionLicencia.cargarGuardados()[0]
         } else {
-            license = {
-                expireDateTime: dayjs().format("YYYY-MM-DD HH:mm")
-            }
+            license = this.getLocal()
         }
         // console.log("license", license)
-        me.sesionLicenciaServer.guardar(license)
         me.checkPostergaciones(license, showMessageUser, callbackLicenciaVencida)
     }
 
     static updateAllWithLicense(licenseServidor: any, showMessageUser: any = () => { }, callbackLicenciaVencida: any) {
         // console.log("updateAllWithLicense", licenseServidor)
         let me = new Licencia()
-        if (me.sesionLicenciaServer.hasOne()) {
-            const licenciaGuardada = me.sesionLicenciaServer.cargarGuardados()[0]
-            if (System.tienenAlgoDiferente(licenseServidor,licenciaGuardada)) {
-                me.sesionLicenciaServer.truncate()
-                me.sesionLicenciaServer.guardar(licenseServidor)
-
-                Licencia.getLocal(true)
+        if (me.sesionLicencia.hasOne()) {
+            const licenciaGuardada = me.sesionLicencia.cargarGuardados()[0]
+            if (System.tienenAlgoDiferente(licenseServidor, licenciaGuardada)) {
+                // console.log("tienen algo diferente..")
+                me.sesionLicencia.truncate()
+                // console.log("truncado")
+                me.sesionLicencia.guardar(licenseServidor)
+                // Licencia.getLocal(true)
                 me.checkPostergaciones(licenseServidor, showMessageUser, callbackLicenciaVencida)
                 return
             }
         }
-        me.sesionLicenciaServer.guardar(licenseServidor)
+        me.sesionLicencia.guardar(licenseServidor)
         me.checkPostergaciones(licenseServidor, showMessageUser, callbackLicenciaVencida)
     }
 
@@ -158,14 +166,15 @@ class Licencia {
 
 
         if (Licencia.estaVencida(license)) {
-            const hoy = dayjs().format("DD/MM/YYYY")
+            // console.log("esta vencida")
+            const hoy = dayjs().format("YYYY-MM-DD")
             // const hoy = "08/12/2024"
             if (hoy != licenciaLocal.lastCheckDate) {
                 // console.log("es distinto hoy a lastcheckdate")
-                licenciaLocal.lastCheckDate = dayjs().format("DD/MM/YYYY")
+                licenciaLocal.lastCheckDate = dayjs().format("YYYY-MM-DD")
                 // licenciaLocal.lastCheckDate = "08/12/2024"
                 licenciaLocal.postergaciones++
-                me.sesionLicenciaLocal.guardar(licenciaLocal)
+                me.sesionLicencia.guardar(licenciaLocal)
             }
 
             if (licenciaLocal.postergaciones < Licencia.limitePostergaciones) {
@@ -177,22 +186,31 @@ class Licencia {
             }
         } else {
 
-            const expire = license.expireDateTime.split(" ")[0]
+            // console.log("no esta vencida")
+
+
+            const expire = dayjs(license.expireDateTime, "YYYY-MM-DD HH:mm:ss")
             const hoy = dayjs()
 
             var dif = hoy.diff(expire, 'days') * -1;
 
             // console.log("licencia correcta")
             // console.log("licencia", license)
-            // console.log("expire", expire)
+            // console.log("expire", expire.format("YYYY-MM-DD HH:mm"))
             // console.log("dif", dif)
-            // console.log("hoy", hoy)
+            // console.log("hoy", hoy.format("YYYY-MM-DD HH:mm:ss"))
             if (dif < 5) {
-                Licencia.mostrarVencimiento(dif, showMessageUser)
+                if (license.local) {
+                    showMessageUser("Licencia provisoria. "
+                        + "Revisar el valor en las configuraciones del sistema y su conexion a internet. "
+                        + "El sistema se bloqueará pronto.")
+                } else {
+                    Licencia.mostrarVencimiento(dif, showMessageUser)
+                }
             }
 
             licenciaLocal.postergaciones = 0
-            me.sesionLicenciaLocal.guardar(licenciaLocal)
+            me.sesionLicencia.guardar(licenciaLocal)
 
         }
     }

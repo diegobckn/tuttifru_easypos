@@ -178,6 +178,7 @@ export const SelectedOptionsProvider = ({ children }) => {
   const [ultimoFolioPreventa, setUltimoFolioPreventa] = useState("");
 
   const [tieneInternet, setTieneInternet] = useState(null);
+  const [folioBoletaOk, setFolioBoletaOk] = useState(false)
   // const [conexionesOkInternet, setConexionesOkInternet] = useState(0);
   // const [conexionesMalInternet, setConexionesMalInternet] = useState(0);
 
@@ -316,8 +317,12 @@ export const SelectedOptionsProvider = ({ children }) => {
     setGrandTotal(sales.getTotal() + 0);
     if (tieneInternet === null) {
       checkInternet()
-      setInterval(checkInternet, 10 * 1000);
+      setInterval(checkInternet, 20 * 1000);
     }
+
+    setTimeout(() => {
+      checkInternet()
+    }, 1 * 1000);
   }, [salesData]);
 
   useEffect(() => {
@@ -581,7 +586,7 @@ export const SelectedOptionsProvider = ({ children }) => {
           if (ix != index) {
             // console.log("es distinto index..", ix, "..con..", index)
             if (prodSaled.nroValeDigi) {
-              const valesArr = prodSaled.nroValeDigi.split(",")
+              const valesArr = (prodSaled.nroValeDigi + "").split(",")
               if (valesArr.indexOf(nroVale) > -1) {
                 // console.log("el vale ", nroVale, " esta en", valesArr)
                 alguno = true
@@ -790,7 +795,10 @@ export const SelectedOptionsProvider = ({ children }) => {
         setVerBotonesPanel,
 
         darFocoEnLeerDigi,
-        setDarFocoEnLeerDigi
+        setDarFocoEnLeerDigi,
+
+        folioBoletaOk,
+        setFolioBoletaOk
       }}
     >
       {children}

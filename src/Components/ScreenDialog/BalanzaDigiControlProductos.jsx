@@ -44,7 +44,10 @@ import BalanzaDigi from "../../Models/BalanzaDigi";
 import LogObject from "../../Models/LogObject";
 import SeleccionarProductos from "../BoxOptionsLite/TableSelect/SeleccionarProductos";
 import SmallPrimaryButton from "../Elements/SmallPrimaryButton";
+import SmallSuccessButton from "../Elements/SmallSuccessButton";
 import IngresarTexto from "./IngresarTexto";
+import Product from "../../Models/Product";
+import LoopProperties from "../../Helpers/LoopProperties";
 
 
 export default ({
@@ -107,12 +110,30 @@ export default ({
   }
 
 
-  const getNombre = (prodBal)=>{
-    if(prodBal.nombre){
+  const getNombre = (prodBal) => {
+    if (prodBal.nombre) {
       return prodBal.nombre
-    }else{
+    } else {
       return prodBal.descripcion
     }
+  }
+
+
+  const recibirDeBalanza = () => {
+    setProductosBalanza([])
+    showLoading("Recibiendo de la balanza...")
+    balanza.recibirYLeerProductos((res) => {
+      console.log("res", res)
+      if (res.status && res.info && res.info.length > 0) {
+        setProductosBalanza(res.info)
+        showMessage("Recibido correctamente")
+      }
+      hideLoading()
+    }, (er) => {
+      console.log("error", er)
+      hideLoading()
+      showAlert(er)
+    })
   }
 
   return (
@@ -157,6 +178,7 @@ export default ({
                     </TableCell>
                     <TableCell>Descripción</TableCell>
                     <TableCell>Precio</TableCell>
+                    <TableCell># balanza</TableCell>
                     <TableCell>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
@@ -174,11 +196,14 @@ export default ({
                       }}>{parseInt(prodBalanza.plu)}</TableCell>
                       <TableCell>{getNombre(prodBalanza)}</TableCell>
                       <TableCell>${System.formatMonedaLocal(prodBalanza.precio, false)}</TableCell>
+                      <TableCell>{parseInt(prodBalanza.balanza) + 1}</TableCell>
                       <TableCell>
-                        <SmallButton textButton={"renombrar"} actionButton={() => {
-                          nombrar(ix)
-                          setNombre(getNombre(prodBalanza))
-                        }} />
+                        <SmallButton
+                          textButton={"renombrar"}
+                          actionButton={() => {
+                            nombrar(ix)
+                            setNombre(getNombre(prodBalanza))
+                          }} />
                         <SmallButton textButton={"Detalles"} actionButton={() => {
                           showAlert(<textarea cols={100} rows={50} value={LogObject(prodBalanza)} readOnly />)
                         }} />
@@ -262,22 +287,65 @@ export default ({
 
         <SmallButton
           textButton={"Recibir de la balanza"}
-          actionButton={() => {
-            showLoading("Recibiendo de la balanza...")
-            balanza.recibirYLeerProductos((res) => {
-              if (res.status && res.info.length > 0) {
-                setProductosBalanza(res.info)
-                showMessage("Recibido correctamente")
-              }
-              hideLoading()
-            }, (er) => {
-              console.log("error", er)
-              hideLoading()
-              showAlert(er)
-            })
-          }}
+          actionButton={recibirDeBalanza}
           isDisabled={cambioAlgo}
         />
+
+        <SmallSuccessButton
+          textButton={"Agregar todos al pos"}
+          actionButton={() => {
+            var prodsCorrectos = []
+            var observaciones = ""
+
+            showLoading("Creando los productos...")
+            const prModel = new Product()
+
+            const agregarDescripcion = (desc) => {
+              observaciones += desc + "----"
+            }
+
+            new LoopProperties(productosBalanza, (index, prod, looper) => {
+              if (
+                prod &&
+                (
+                  (prod.nombre && prod.nombre != "")
+                  ||
+                  (prod.descripcion && prod.descripcion != "")
+                )
+                && parseFloat(prod.precio) > 0
+              ) {
+                if (!prod.nombre && prod.descripcion) prod.nombre = prod.descripcion
+                prod.pesable = true
+                console.log("index", index)
+                console.log("prod", prod)
+                prModel.agregarDesdeBalanza(prod, (data) => {
+                  setTimeout(() => {
+                    looper.next()
+                  }, 300);
+                }, (err) => {
+                  agregarDescripcion(prod.plu + " " + prod.nombre + ": " + err)
+                  looper.next()
+                })
+              } else {
+                agregarDescripcion(prod.plu + " " + prod.nombre + ": producto incompleto")
+                looper.next()
+              }
+            }, () => {
+              hideLoading()
+              console.log("finalizo")
+              if (observaciones != "") {
+                setTimeout(() => {
+                  showAlert(observaciones)
+                }, 300);
+              }
+
+              console.log("observaciones", observaciones)
+            })
+          }}
+          isDisabled={productosBalanza.length < 1}
+        />
+
+
         <SmallDangerButton
           textButton={"Vaciar la balanza"}
           actionButton={() => {
@@ -285,6 +353,7 @@ export default ({
             balanza.eliminarProductos((res) => {
               if (res.status) {
                 showAlert("Vaciada correctamente")
+                setProductosBalanza([])
               }
               hideLoading()
             }, (er) => {
@@ -294,7 +363,7 @@ export default ({
           }}
 
           style={{
-            marginRight:"50px"
+            marginRight: "50px"
           }}
           isDisabled={cambioAlgo}
         />

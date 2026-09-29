@@ -178,7 +178,7 @@ const Step3Component = ({ data, onNext,stepData }) => {
       <form onSubmit={handleNext}>
         <Grid container spacing={2} item xs={12} md={12}>
           <Grid item xs={12} md={6}>
-            <InputLabel sx={{ marginBottom: "2%" }}>Unidad de Compra</InputLabel>
+            <InputLabel sx={{ marginBottom: "10px" }}>Unidad de Compra</InputLabel>
             <Grid display="flex" alignItems="center">
               <Select
                 fullWidth

@@ -24,7 +24,8 @@ const InputGeneric = ({
   maxLength = 20,
   required = false,
   vars = null,
-  onEnter = ()=>{}
+  onEnter = () => { },
+  onClick = () => { }
 }) => {
 
   const {
@@ -79,7 +80,7 @@ const InputGeneric = ({
       setKeyPressed(true)
     }
 
-    if(event.key == "Enter"){
+    if (event.key == "Enter") {
       onEnter()
     }
   }
@@ -95,7 +96,7 @@ const InputGeneric = ({
     }
     // if (Validator.isNombre(value)) {
     //   // console.log(value + " es valido")
-      setGeneric(value);
+    setGeneric(value);
     // } else {
     //   // console.log("es incorrecta")
     //   showMessage("Valor erroneo")
@@ -122,7 +123,7 @@ const InputGeneric = ({
   return (
     <>
       {withLabel && (
-        <InputLabel sx={{ marginBottom: "2%" }}>
+        <InputLabel sx={{ marginBottom: "10px" }}>
           {label}
         </InputLabel>
       )}
@@ -137,6 +138,7 @@ const InputGeneric = ({
         onChange={checkChange}
         onBlur={checkChangeBlur}
         onKeyDown={checkKeyDown}
+        onClick={onClick}
       />
     </>
   );

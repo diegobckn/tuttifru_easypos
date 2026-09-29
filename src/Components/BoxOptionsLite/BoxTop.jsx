@@ -11,9 +11,44 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { AddHome, AddHomeOutlined, AddHomeWork, AirplaneTicketOutlined, Autorenew, BuildCircle, Circle, DateRangeOutlined, GMobiledata, Inventory, LocalOffer, LocalPrintshop, Margin, MobileFriendly, Person, Person3, PointOfSale, ProductionQuantityLimits, ProductionQuantityLimitsRounded, Scale, Settings, SettingsSystemDaydream, Shop, Shop2, SupervisedUserCircle, SupervisedUserCircleOutlined, SupervisorAccount, SystemSecurityUpdate, Traffic, VerifiedUserOutlined, WifiOff } from "@mui/icons-material";
+import {
+  AddHome,
+  AddHomeOutlined,
+  AddHomeWork,
+  AirplaneTicketOutlined,
+  Autorenew,
+  BuildCircle,
+  Circle,
+  DateRangeOutlined,
+  GMobiledata,
+  Inventory,
+  LocalOffer,
+  LocalPrintshop,
+  Margin,
+  MobileFriendly,
+  Person,
+  Person3,
+  PointOfSale,
+  ProductionQuantityLimits,
+  ProductionQuantityLimitsRounded,
+  Scale,
+  Settings,
+  SettingsSystemDaydream,
+  Shop,
+  Shop2,
+  SupervisedUserCircle,
+  SupervisedUserCircleOutlined,
+  SupervisorAccount,
+  SystemSecurityUpdate,
+  Traffic,
+  VerifiedUserOutlined,
+  WifiOff,
+  AodSharp
+} from "@mui/icons-material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../Context/ProviderModales";
 import dayjs from "dayjs";
+
 
 import System from "../../Helpers/System";
 import SmallGrayButton from "./../Elements/SmallGrayButton"
@@ -40,6 +75,7 @@ import Ofertas from "../../Models/Ofertas";
 import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
 import Conexion from "../../Models/Conexion";
 import ListarTicketsDigi from "../ScreenDialog/ListarTicketsDigi";
+import TransaccionesPasarelaPago from "../ScreenDialog/TransaccionesPasarelaPago";
 
 const BoxTop = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -68,7 +104,13 @@ const BoxTop = () => {
     // conexionesMalInternet,
     focusSearchInput,
     searchInputRef,
+    folioBoletaOk
   } = useContext(SelectedOptionsContext);
+
+
+  const {
+    pedirSupervision,
+  } = useContext(ProviderModalesContext);
 
   const navigate = useNavigate();
   const [showSalesOffline, setShowSalesOffline] = useState(false);
@@ -94,9 +136,13 @@ const BoxTop = () => {
 
   const [showCloseSessionDialog, setShowCloseSessionDialog] = useState(false);
   const [urlApi, setUrlApi] = useState("");
+
+  const [trabajaConOfertas, setTrabajaConOfertas] = useState(false);
   const [ofertas, setOfertas] = useState([]);
 
   const [showTicketsDigi, setShowTicketsDigi] = useState(false);
+  const [showTransPagos, setShowTransPagos] = useState(false);
+  const [trabajaConPasarela, setTrabajaConPasarela] = useState(false);
 
   const cargarStockCriticoSuperados = () => {
     var superados = 0
@@ -184,9 +230,16 @@ const BoxTop = () => {
     cargarStockCriticoSuperados()
     cargarVentasOfllines()
 
-    Ofertas.cargarSoloCorrectas((ofs) => {
-      setOfertas(ofs)
-    })
+
+    if (ModelConfig.get("checkOfertas")) {
+      setTrabajaConOfertas(true)
+      Ofertas.cargarSoloCorrectas((ofs) => {
+        setOfertas(ofs)
+      })
+    }
+    setTrabajaConPasarela(ModelConfig.get("tienePasarelaPago"))
+    console.log("tiene pasarela de pagos?? ", ModelConfig.get("tienePasarelaPago"))
+
     // console.log("listSalesOffline", listSalesOffline)
   }, [])
 
@@ -206,7 +259,7 @@ const BoxTop = () => {
     } else {
       // const userInfo = User.getInstance().getFromSesion()
       const leidoOffline = OfflineAutoIncrement.getFromSesion()
-      // console.log("leidoOffline", leidoOffline)
+      console.log("leidoOffline", leidoOffline)
       if (ModelConfig.get("verBotonPagarFactura")) {
         setShowFoliosFacturas(true)
 
@@ -367,7 +420,7 @@ const BoxTop = () => {
                   title={"Folios"}
                   text={"Boletas"}
                   icon={<AirplaneTicketOutlined sx={{
-                    color: "#fff"
+                    color: (folioBoletaOk ? "rgb(120, 255, 9)" : "#ff0202")
                   }} fontSize="medium" />}
 
                   actionClick={() => {
@@ -379,6 +432,30 @@ const BoxTop = () => {
               )}
 
               <TarjetaCliente openDialog={verTarjetaCliente} setOpenDialog={setVerTarjetaCliente} />
+
+              {trabajaConPasarela && (
+                <TarjetaMenu
+                  title={"Transacciones"}
+                  text={"Pagos"}
+                  icon={<AodSharp
+                    size={24}
+                    htmlColor="#fff"
+                    fontSize="medium"
+                  />}
+
+                  actionClick={() => {
+                    pedirSupervision("Administrar transacciones de pagos", () => {
+                      setShowTransPagos(true)
+                    })
+
+                  }}
+                />
+              )}
+
+              <TransaccionesPasarelaPago
+                openDialog={showTransPagos}
+                setOpenDialog={setShowTransPagos}
+              />
 
               <VentasOffline
                 openDialog={showSalesOffline}
@@ -467,17 +544,18 @@ const BoxTop = () => {
                 }}
               />
 
+              {trabajaConOfertas && (
+                <TarjetaMenu
+                  title={"Ofertas"}
+                  text={ofertas.length}
+                  icon={<LocalOffer sx={{
+                    color: "#DF9620",
+                  }} fontSize="medium" />}
 
-              <TarjetaMenu
-                title={"Ofertas"}
-                text={ofertas.length}
-                icon={<LocalOffer sx={{
-                  color: "#DF9620",
-                }} fontSize="medium" />}
-
-                actionClick={() => {
-                }}
-              />
+                  actionClick={() => {
+                  }}
+                />
+              )}
 
               <TarjetaMenu
                 title={"Conexion"}
@@ -511,7 +589,6 @@ const BoxTop = () => {
 
               <ListarTicketsDigi openDialog={showTicketsDigi} setOpenDialog={setShowTicketsDigi} />
 
-              {listSalesOffline.length > 0 && (
                 <TarjetaMenu
                   title={"Offline"}
                   text={listSalesOffline.length}
@@ -523,7 +600,6 @@ const BoxTop = () => {
                     setShowSalesOffline(true)
                   }}
                 />
-              )}
 
               <TarjetaMenu
                 title={"Stock critico"}

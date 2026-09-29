@@ -52,6 +52,9 @@ import ModosTrabajoConexion from "../../../definitions/ModosConexion";
 import TouchInputEmail from "../../TouchElements/TouchInputEmail";
 import BoxElegirSucursalYCaja from "../BoxElegirSucursalYCaja";
 import FocosPrincipales from "../../../definitions/FocosPrincipales";
+import SmallPrimaryButton from "../../Elements/SmallPrimaryButton";
+import SmallSecondaryButton from "../../Elements/SmallSecondaryButton";
+import SmallSuccessButton from "../../Elements/SmallSuccessButton";
 
 const TabGeneral = ({
   onFinish = () => { }
@@ -101,6 +104,7 @@ const TabGeneral = ({
   } = useContext(ProviderModalesContext);
 
   const [urlBase, setUrlBase] = useState("");
+  const [urlBase2, setUrlBase2] = useState("");
   const [licencia, setLicencia] = useState("");
 
   const [puntoVenta, setPuntoVenta] = useState("-1")
@@ -145,10 +149,13 @@ const TabGeneral = ({
   const [resetSucursal, setResetSucursal] = useState(false)
 
   const [darFocoPrincipalEn, setDarFocoPrincipalEn] = useState(FocosPrincipales.NINGUNO)
+  const [puedeCambiarPrecio, setPuedeCambiarPrecio] = useState(false)
 
   const loadConfigSesion = () => {
     // console.log("loadConfigSesion")
     setUrlBase(ModelConfig.get("urlBase"))
+    setUrlBase2(ModelConfig.get("urlBase2"))
+
     setLicencia(ModelConfig.get("licencia"))
 
     // setSucursal(ModelConfig.get("sucursal"))
@@ -177,6 +184,7 @@ const TabGeneral = ({
     setEnviarEmailInicioCaja(ModelConfig.get("enviarEmailInicioCaja"))
     setenviarEmailCierreCaja(ModelConfig.get("enviarEmailCierreCaja"))
     setaQuienEnviaEmails(ModelConfig.get("aQuienEnviaEmails"))
+    setPuedeCambiarPrecio(ModelConfig.get("puedeCambiarPrecio"))
 
   }
 
@@ -184,6 +192,7 @@ const TabGeneral = ({
     // console.log("handlerSaveAction")
     var changes = {
       "urlBase": urlBase,
+      "urlBase2": urlBase2,
       "licencia": licencia,
       "pedirDatosTransferencia": pedirDatosTransferencia,
       "pagarConCuentaCorriente": pagarConCuentaCorriente,
@@ -202,6 +211,7 @@ const TabGeneral = ({
       "enviarEmailCierreCaja": enviarEmailCierreCaja,
       "aQuienEnviaEmails": aQuienEnviaEmails,
       "darFocoPrincipalEn": darFocoPrincipalEn,
+      "puedeCambiarPrecio": puedeCambiarPrecio,
     }
 
     const estamosEnPantallaLogin = window.location.href.indexOf("/login") > -1
@@ -290,7 +300,7 @@ const TabGeneral = ({
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} sm={12} md={12} lg={12}>
+      <Grid item xs={12} sm={12} md={6} lg={6}>
         <TouchInputPage
           inputState={[urlBase, setUrlBase]}
           label="url base"
@@ -316,6 +326,21 @@ const TabGeneral = ({
             setTimeout(() => {
               setRecargarSucursales(!recargarSucursales)
             }, 1000);
+          }}
+        />
+      </Grid>
+
+      <Grid item xs={12} sm={12} md={6} lg={6}>
+        <TouchInputPage
+          inputState={[urlBase2, setUrlBase2]}
+          label="url base 2"
+          onEnter={() => {
+            // console.log("onEnter")
+            // handlerSaveAction()
+          }}
+
+          onChangeModal={() => {
+            ModelConfig.change("urlBase2", urlBase2)
           }}
         />
       </Grid>
@@ -622,8 +647,80 @@ const TabGeneral = ({
       </Grid>
 
 
+      <Grid item xs={12} sm={12} md={12} lg={12}>
+        <Box sx={{
+          padding: "10px",
+          border: "1px solid blue",
+          borderRadius: "2px",
+          backgroundColor: "whitesmoke"
+        }}>
+          <Typography>Configuración local en servidor</Typography>
+
+          <SmallSuccessButton textButton="Enviar Configs" actionButton={() => {
+            var data = ModelConfig.getAllMixed()
+            if (data.sucursal == -1 || data.puntoVenta == -1) {
+              showAlert("Debe elegir una sucursal y un punto de venta antes de enviar la configuracion")
+              var sucursal = prompt("Ingrese el id de la sucursal")
+              var puntoVenta = prompt("Ingrese el id del punto de venta")
+              ModelConfig.change("sucursal", sucursal)
+              ModelConfig.change("puntoVenta", puntoVenta)
+              if (data.sucursal == -1 || data.puntoVenta == -1) {
+                return
+              }
+            }
+
+            showConfirm("Enviar la configuracion al servidor?", () => {
+              ModelConfig.sendToServer((a, e) => {
+                showMessage("Enviado correctamente")
+              }, (e) => {
+                showMessage("No se pudo enviar")
+              })
+            })
+          }} />
 
 
+          <SmallSecondaryButton textButton="Recibir Configs" actionButton={() => {
+            var data = ModelConfig.getAllMixed()
+            if (data.sucursal == -1 || data.puntoVenta == -1) {
+              showAlert("Debe elegir una sucursal y un punto de venta antes de recibir la configuracion")
+              var sucursal = prompt("Ingrese el id de la sucursal")
+              var puntoVenta = prompt("Ingrese el id del punto de venta")
+              ModelConfig.change("sucursal", sucursal)
+              ModelConfig.change("puntoVenta", puntoVenta)
+              if (data.sucursal == -1 || data.puntoVenta == -1) {
+                return
+              }
+            }
+
+            showConfirm("Pisar todas las configuraciones locales por las del servidor?", () => {
+              ModelConfig.getFromServer((a, e) => {
+                showMessage("Recibido correctamente")
+                console.log("recibido", a)
+                const mc = ModelConfig.getInstance()
+                mc.sesion.truncate();
+                mc.sesion.guardar(a.info);
+
+                window.location.reload()
+              }, (e) => {
+                showMessage("No se pudo recibir")
+              })
+            })
+          }} />
+
+
+        </Box>
+      </Grid>
+
+      <Grid item xs={12} sm={12} md={12} lg={12}>
+        <InputCheckboxAutorizar
+          inputState={[puedeCambiarPrecio, setPuedeCambiarPrecio]}
+          label={"Permitir cambiar precio"}
+          onAuthorize={() => {
+            setPuedeCambiarPrecio(!puedeCambiarPrecio)
+          }}
+        />
+
+      </Grid>
       <Grid item xs={12} sm={12} md={12} lg={12}>
 
         <AdminStorage

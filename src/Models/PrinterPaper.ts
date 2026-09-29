@@ -9,6 +9,7 @@ import ModelSingleton from './ModelSingleton.ts';
 import User from './User.ts';
 import Comercio from './Comercio.ts';
 import PagoBoleta from './PagoBoleta.ts';
+import Product from './Product.ts';
 
 
 class PrinterPaper extends ModelSingleton {
@@ -109,7 +110,10 @@ class PrinterPaper extends ModelSingleton {
     }
 
     getTemplate(entrada: string) {
+        console.log("getTemplate de ", entrada)
         var enc = ""
+
+        console.log("templates", this.templates)
         this.templates.forEach((temp) => {
             if (temp.entrada == entrada || temp.entrada == "Imprimir" + entrada) {
                 enc = temp.valor
@@ -135,7 +139,26 @@ class PrinterPaper extends ModelSingleton {
         return this.getFilled(entrada)
     }
 
+    getHtmlApertura(entrada: string, datosfinales: any) {
+        var me = this
+        if (!me.width) {
+            me.width = ModelConfig.get("widthPrint")
+            me.width = me.width.replace("mm", "")
+            me.width = me.width.replace("px", "")
+            me.width += "mm"
+        }
 
+        entrada = entrada + me.width
+        // console.log("getHtmlApertura.. de " + entrada, "..datos", datosfinales)
+        var html = me.prepare(entrada)
+        // console.log("html antes de reemplazar", html)
+        html = html.replaceAll("{{Valor}}", datosfinales.monto)
+        html = html.replaceAll("{{FechaHora}}", System.formatDateServer(datosfinales.fechaIngreso))
+        html = html.replaceAll("width: undefined", "width: " + me.width)
+
+        console.log("devuelve html", html)
+        return html
+    }
 
     getHtmlDetalles(entrada: string, datosfinales: any) {
         entrada = entrada + this.width
@@ -267,18 +290,37 @@ class PrinterPaper extends ModelSingleton {
 
             addApp += "</div><div class=\"footer\">";
             html = html.replace("<div class=\"footer\">", addApp)
+
+
         }
 
         html = this.revisarReemplazosDescuentos(datosfinales, html)
+        html = this.revisarReemplazoDescuentoManual(datosfinales, html)
 
         return html
     }
 
+    revisarReemplazoDescuentoManual(datosfinales: any, html: string) {
+        if (datosfinales.descuento < 0) {
+            var totalDescuentos = datosfinales.descuento
+            totalDescuentos = Math.trunc(totalDescuentos)
+            // console.log("totalDescuentos despues de redondear", totalDescuentos + 0)
+
+            var agregadosDescuentos = ""
+            agregadosDescuentos += "<div class=\"total\">\n"
+
+            agregadosDescuentos += "<strong>Descuento especial: $" + Math.abs(datosfinales.descuento) + "</strong>\n"
+            agregadosDescuentos += "</div>\n"
+
+            // LO DE DESCUENTOS
+            html = html.replace("<div class=\"footer\">", agregadosDescuentos + "<div class=\"footer\">")
+            // console.log("agregando descuentos quedas asi", html)
+        }
+        return html
+    }
+
     revisarReemplazosDescuentos(datosfinales: any, html: string) {
-        if (
-            html.indexOf("Descuentos:") == -1
-            && datosfinales.productsConDescuentos
-        ) {
+        if (datosfinales.productsConDescuentos) {
             var totalDescuentos = 0
             datosfinales.productsConDescuentos.forEach((prodDesc: any) => {
                 totalDescuentos += prodDesc.descuento
@@ -440,7 +482,7 @@ class PrinterPaper extends ModelSingleton {
 
         if (datosfinales.esVentaApp && datosfinales.pedidoExtras) {
             var extras = JSON.parse(datosfinales.pedidoExtras)
-            console.log("extras", extras)
+            // console.log("extras", extras)
 
             if (extras.aclaraciones) {
 

@@ -38,6 +38,11 @@ import BoxOptionList from "../BoxOptionList";
 import InputCheckbox from "../../Elements/Compuestos/InputCheckbox";
 import InputCheckboxAutorizar from "../../Elements/Compuestos/InputCheckboxAutorizar";
 import BoxBat from "../BoxBat";
+import TouchInputNumber from "../../TouchElements/TouchInputNumber";
+import BoxFamilias from "../BoxFamilias";
+import ShowFamilies from "../../ScreenDialog/ShowFamilies";
+import SmallGrayButton from "../../Elements/SmallGrayButton";
+import SmallDangerButton from "../../Elements/SmallDangerButton";
 
 const TabBotones = ({
   onFinish = () => { }
@@ -84,6 +89,9 @@ const TabBotones = ({
   const [verBotonPagarFactura, setVerBotonPagarFactura] = useState(false)
 
   const [suspenderYRecuperarx, setSuspenderYRecuperarx] = useState(false)
+  const [cantidadProductosBusquedaRapida, setCantidadProductosBusquedaRapida] = useState(20)
+  const [botonesExtrasBusquedaRapida, setBotonesExtrasBusquedaRapida] = useState([])
+  const [showFamily, setShowFamily] = useState(false)
 
 
   const loadConfigSesion = () => {
@@ -93,6 +101,9 @@ const TabBotones = ({
     setVerBotonEnvases(ModelConfig.get("verBotonEnvases"))
     setVerBotonPagarFactura(ModelConfig.get("verBotonPagarFactura"))
     setSuspenderYRecuperarx(ModelConfig.get("suspenderYRecuperar"))
+
+    setCantidadProductosBusquedaRapida(ModelConfig.get("cantidadProductosBusquedaRapida"))
+    setBotonesExtrasBusquedaRapida(ModelConfig.get("botonesExtrasBusquedaRapida"))
 
   }
 
@@ -111,6 +122,8 @@ const TabBotones = ({
     ModelConfig.change("verBotonEnvases", verBotonEnvases)
     ModelConfig.change("verBotonPagarFactura", verBotonPagarFactura)
     ModelConfig.change("suspenderYRecuperar", suspenderYRecuperarx)
+    ModelConfig.change("cantidadProductosBusquedaRapida", cantidadProductosBusquedaRapida)
+    ModelConfig.change("botonesExtrasBusquedaRapida", botonesExtrasBusquedaRapida)
 
 
     showMessage("Guardado correctamente")
@@ -157,6 +170,113 @@ const TabBotones = ({
       </Grid>
 
       <Grid item xs={12} sm={12} md={12} lg={12}>
+        <Grid container spacing={2} sx={{
+          border: "1px solid #ccc",
+          padding: "10px",
+          marginTop: "20px",
+          marginBottom: "20px",
+          backgroundColor: "whitesmoke"
+        }}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <Typography>
+              Productos Busqueda Rapida
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={12} md={3} lg={3}>
+            <TouchInputNumber
+              inputState={[cantidadProductosBusquedaRapida, setCantidadProductosBusquedaRapida]}
+              label="Cantidad"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <Grid container spacing={2} sx={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginTop: "20px",
+              marginBottom: "20px",
+            }}>
+              <Grid item xs={12} sm={12} md={12} lg={12}>
+                <Typography>
+                  Botones extras
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={12} md={8} lg={8}>
+                <div style={{
+                }}>
+
+                  {botonesExtrasBusquedaRapida.map((item, index) => {
+                    console.log("item:", item)
+                    return (
+                      <SmallGrayButton
+                        key={index}
+                        textButton={(<Typography>
+                          {item.categoria.descripcion}
+                          -
+                          {item.subcategoria.descripcion}
+                          -
+                          {item.familia.descripcion}
+                          -
+                          {item.subfamilia.descripcion}
+                        </Typography>)}
+
+                        actionButton={() => { }}
+                      />
+                    )
+                  })}
+
+
+                </div>
+              </Grid>
+              <Grid item xs={12} sm={12} md={8} lg={8}>
+
+                <ShowFamilies
+                  openDialog={showFamily}
+                  setOpenDialog={setShowFamily}
+                  selectProduct={false}
+                  addDirectoToSales={false}
+                  onSelect={(product, cat, subcat, fam, subfam) => {
+
+                    console.log("product seleccionada:", product)
+                    console.log("cat seleccionada:", cat)
+                    console.log("subcat seleccionada:", subcat)
+                    console.log("familia seleccionada:", fam)
+                    console.log("subfamilia seleccionada:", subfam)
+                    setShowFamily(false)
+
+                    setBotonesExtrasBusquedaRapida([...botonesExtrasBusquedaRapida, {
+                      categoria: cat,
+                      subcategoria: subcat,
+                      familia: fam,
+                      subfamilia: subfam
+                    }])
+                  }}
+                />
+
+                <SmallDangerButton
+                  textButton="Quitar todos los botones"
+                  actionButton={() => {
+                    setBotonesExtrasBusquedaRapida([])
+                  }}
+                />
+
+                 <SmallButton
+                  textButton="Agregar Boton"
+                  actionButton={() => {
+                    setShowFamily(true)
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+          </Grid>
+        </Grid>
+      </Grid>
+
+
+
+
+      <Grid item xs={12} sm={12} md={12} lg={12}>
         <SmallButton textButton="Reiniciar sistema" actionButton={() => {
           window.location.href = window.location.href
         }} style={{
@@ -174,7 +294,7 @@ const TabBotones = ({
       </Grid>
 
 
-    </Grid>
+    </Grid >
   );
 };
 

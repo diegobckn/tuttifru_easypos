@@ -139,6 +139,13 @@ const BoxTotales = () => {
     setShowScreenPagoBoleta(true)
   })
   longBoleta.onLongClick(() => {
+
+    if (!ModelConfig.get("puedeSalirModoAvion")) {
+      showMessage("No se puede cambiar el modo")
+      return
+    }
+
+
     if (modoAvion) {
       showMessage("Cambiado a modo normal")
     } else {

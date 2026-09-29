@@ -4,8 +4,10 @@ import Model from "./Model";
 import ModelConfig from "./ModelConfig.ts";
 import EndPoint from "./EndPoint.ts";
 import System from "../Helpers/System.ts";
+import StorageSesion from "../Helpers/StorageSesion.ts";
 
 class Sucursal extends Model {
+  static sesion = new StorageSesion("sucursales")
 
 
   static instance: Sucursal | null = null;
@@ -42,9 +44,22 @@ class Sucursal extends Model {
   }
 
   static async getAll(callbackOk: any, callbackWrong: any) {
+    if (this.sesion.hasOne()) {
+      callbackOk(this.sesion.cargarGuardados()[0])
+    } else {
+      callbackOk([])
+    }
+  }
+
+
+  static almacenarParaOffline(callbackOk: any, callbackWrong: any) {
+    var me = this
     const url = ModelConfig.get("urlBase") + "/api/Sucursales/GetAllSucursales"
     EndPoint.sendGet(url, (responseData: any, response: any) => {
+      console.log("devuelve servidor sucursales", responseData.sucursals)
       callbackOk(responseData.sucursals, response)
+      me.sesion.guardar(responseData.sucursals)
+
       // console.log("voy a guardar ", System.clone(responseData.sucursals))
     }, (er: any) => {
       callbackWrong(er)

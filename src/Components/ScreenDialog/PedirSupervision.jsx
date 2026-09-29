@@ -50,10 +50,10 @@ const PedirSupervision = ({
   accion,
   infoEnviar = {},
   onConfirm,
+  titulo = "Autorizar accion",
+  mensaje = "",
+  puedeIgnorar = true
 }) => {
-
-
-
 
   const {
     showMessage,
@@ -111,20 +111,30 @@ const PedirSupervision = ({
   }
 
 
+  const cerrarModal = () => {
+    if (!puedeIgnorar) {
+      showMessage("Debe autorizar para continuar")
+      return
+    }
+    console.log("on close del dialog con boton cerrar")
+    setOpenDialog(false)
+  }
+
   return (
-    <Dialog open={openDialog} onClose={() => {
-      setOpenDialog(false)
-      console.log("on close del dialog")
-    }}>
-      <DialogTitle>Autorizar accion</DialogTitle>
+    <Dialog open={openDialog} onClose={cerrarModal}>
+      <DialogTitle>{titulo}</DialogTitle>
       <DialogContent>
 
         <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
+            <Typography>{mensaje}</Typography>
+          </Grid>
           <Grid item xs={12} sm={12} md={12} lg={12}>
             <InputPassword
               inputState={[codigoAutorizacion, setCodigoAutorizacion]}
               fieldName="codigoAutorizacion"
               validationState={null}
+              withLabel={false}
             />
           </Grid>
 
@@ -146,10 +156,7 @@ const PedirSupervision = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => {
-          console.log("on close del dialog con boton cerrar")
-          setOpenDialog(false)
-        }}>Cerrar</Button>
+        <Button onClick={cerrarModal}>Cerrar</Button>
       </DialogActions>
     </Dialog>
   );

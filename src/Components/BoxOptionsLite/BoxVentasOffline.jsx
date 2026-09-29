@@ -125,7 +125,7 @@ const BoxVentasOffline = ({
             actionButton={() => {
               setShowCorreccion(true)
             }}
-            isDisabled={listSalesOffline.length < 1 || SalesOffline.sincronizando}
+            // isDisabled={listSalesOffline.length < 1 || SalesOffline.sincronizando}
           />
 
 

@@ -27,73 +27,75 @@ import TecladoPrecio from "../Teclados/TecladoPrecio";
 
 
 const AsignarPrecio = ({
+  title = "Asignar Precio",
   openDialog,
   setOpenDialog,
   product,
-  onAsignPrice
+  onAsignPrice,
+  cancelButtonLabel = "No asignar",
 }) => {
 
 
   const [precioVenta, setPrecioVenta] = useState(0)
 
-  const checkPrecioVenta = (precio)=>{
-    if(typeof(precio) == "string"){
+  const checkPrecioVenta = (precio) => {
+    if (typeof (precio) == "string") {
       setPrecioVenta(parseFloat(precio))
     }
   }
 
-  const handlerSaveAction = ()=>{
-    if(precioVenta == 0){
+  const handlerSaveAction = () => {
+    if (precioVenta == 0) {
       alert("Debe ingresar un monto inicial");
       return;
     }
-    
+
     onAsignPrice(precioVenta)
     setOpenDialog(false)
   }
-  
+
   return (
-    <Dialog open={openDialog} onClose={()=>{}} maxWidth="lg">
-        <DialogTitle>
-          Asignar Precio
-        </DialogTitle>
-        <DialogContent>
+    <Dialog open={openDialog} onClose={() => { }} maxWidth="lg">
+      <DialogTitle>
+        {title}
+      </DialogTitle>
+      <DialogContent>
 
         <Grid container item xs={12} md={12} lg={12}>
           <Grid item xs={12} md={12} lg={12}>
             <Typography variant="body4" color="black">
-              Ingrese el monto del producto {product? product.nombre : ""}
+              Ingrese el monto del producto {product ? product.nombre : ""}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={12} md={5} lg={5}>
-              <TextField
-                margin="normal"
-                fullWidth
-                label="Monto del ingreso"
-                type="number" // Cambia dinámicamente el tipo del campo de contraseña
-                value={precioVenta}
-                onChange={(e) => checkPrecioVenta(e.target.value)}
-              />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Monto del ingreso"
+              type="number" // Cambia dinámicamente el tipo del campo de contraseña
+              value={precioVenta}
+              onChange={(e) => checkPrecioVenta(e.target.value)}
+            />
           </Grid>
           <Grid item xs={12} sm={12} md={7} lg={7}>
-              <TecladoPrecio
+            <TecladoPrecio
               maxValue={100000}
               showFlag={true}
               varValue={precioVenta}
               varChanger={checkPrecioVenta}
               onEnter={handlerSaveAction}
-              />
+            />
           </Grid>
         </Grid>
 
-        </DialogContent>
-        <DialogActions>
-          <SmallButton textButton="Confirmar" actionButton={handlerSaveAction}/>
-          <Button onClick={()=>{
-            setOpenDialog(false)
-          }}>No agregar</Button>
-        </DialogActions>
-      </Dialog>
+      </DialogContent>
+      <DialogActions>
+        <SmallButton textButton="Confirmar" actionButton={handlerSaveAction} />
+        <Button onClick={() => {
+          setOpenDialog(false)
+        }}>{cancelButtonLabel}</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

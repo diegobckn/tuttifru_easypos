@@ -150,7 +150,7 @@ const SelectComuna = ({
   return (
     <>
       {withLabel && (
-        <InputLabel sx={{ marginBottom: "2%" }}>
+        <InputLabel sx={{ marginBottom: "10px" }}>
           {label}
         </InputLabel>
       )}

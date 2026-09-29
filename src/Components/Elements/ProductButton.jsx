@@ -101,7 +101,7 @@ export default ({
     >
       <div style={{
         width: "110px",
-        height: "110px",
+        height: "50px",
       }}
         data-image={image}>
         {image != "" && (
@@ -115,17 +115,17 @@ export default ({
         display: "-webkit-box",
         WebkitBoxOrient: "vertical",
         WebkitLineClamp: 3,
-        height: "68px",
+        height: "3.4em",
         alignContent: "center",
         overflow: "hidden",
         textOverflow: "ellipsis",
       }}>{product.nombre} </Typography>
       <Typography variant="h7" sx={{
-        display: "-webkit-box",
+        display: "block",
         WebkitBoxOrient: "vertical",
         WebkitLineClamp: 3,
-        height: "23px",
-        alignContent: "center",
+        height: "25px",
+        width: "90%",
         overflow: "hidden",
         textOverflow: "ellipsis",
       }}>

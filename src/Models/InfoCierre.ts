@@ -20,6 +20,10 @@ class InfoCierre extends Model {
     url += "&puntoVenta=" + ModelConfig.get("puntoVenta")
 
     EndPoint.sendGet(url,(responseData:any, response:any)=>{
+      if (responseData.descripcion === "No existe arqueo para el usuario.") {
+        callbackWrong(responseData.descripcion)
+        return
+      }
       callbackOk(responseData,response);
       this.info = response.data;
     },callbackWrong)

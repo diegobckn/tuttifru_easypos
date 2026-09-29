@@ -12,13 +12,13 @@ import {
 } from "@mui/material";
 import { Settings, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { SelectedOptionsContext } from "./../Components/Context/SelectedOptionsProvider";
+import { SelectedOptionsContext } from "../Components/Context/SelectedOptionsProvider";
 import { ProviderModalesContext } from "../Components/Context/ProviderModales";
 
 
 import dayjs from "dayjs";
 
-import System from "./../Helpers/System";
+import System from "../Helpers/System";
 import User from "../Models/User";
 import TecladoUsuario from "../Components/Teclados/TecladoUsuario";
 import TecladoNumerico from "../Components/Teclados/TecladoNumerico";
@@ -121,52 +121,53 @@ const Login = () => {
     const product = Product.getInstance()
     if (!product.sesion.hasOne()) {
       console.log("no hay productos almacenados..")
+
+      product.almacenarParaOffline()
     } else {
       console.log("hay productos almacenados..")
     }
-    product.almacenarParaOffline()
 
     const productRapidos = new ProductFastSearch()
     if (!productRapidos.sesion.hasOne()) {
       console.log("no hay productos de venta rapida almacenados..")
+      productRapidos.almacenarParaOffline()
     } else {
       console.log("hay productos de venta rapida almacenados..")
     }
-    productRapidos.almacenarParaOffline()
 
     const ofers = new Ofertas()
     if (!ofers.sesion.hasOne()) {
       console.log("no hay ofertas almacenadas..")
+      ofers.almacenarParaOffline()
     } else {
       console.log("hay ofertas almacenadas..")
     }
-    ofers.almacenarParaOffline()
 
     const comercio = new Comercio()
     if (!Comercio.sesionServerAllConfig.hasOne()) {
       console.log("no hay info de comercio general almacenada..")
+      comercio.almacenarOfflineGeneral()
     } else {
       console.log("hay info de comercio general almacenada..")
     }
-    comercio.almacenarOfflineGeneral()
 
     if (!Comercio.sesionServerAnchos.hasOne()) {
       console.log("no hay info de comercio anchos almacenada..")
+      comercio.almacenarOfflineAnchos()
     } else {
       console.log("hay info de comercio anchos almacenada..")
     }
-    comercio.almacenarOfflineAnchos()
 
     if (!Comercio.sesionServerImpresion.hasOne()) {
       console.log("no hay info de comercio de impresiones almacenada..")
+      comercio.almacenarOfflineImpresion(() => { }, () => {
+        setTimeout(() => {
+          comercio.almacenarOfflineImpresion()
+        }, 1000);
+      })
     } else {
       console.log("hay info de comercio de impresiones almacenada..")
     }
-    comercio.almacenarOfflineImpresion(() => { }, () => {
-      setTimeout(() => {
-        comercio.almacenarOfflineImpresion()
-      }, 1000);
-    })
 
 
     loadComercioApp()
@@ -178,6 +179,30 @@ const Login = () => {
       }, 1.5 * 1000);
     })
 
+    const checkUsuarios = (usuariosOffline) => {
+      if (usuariosOffline.length < 1) {
+        showAlert("Usuarios no descargados. revisar conexion y recargar el sistema")
+      } else {
+        showMessage("Usuarios cargados en el sistema")
+      }
+    }
+
+    UsersOffline.almacenarParaOffline((users) => {
+      checkUsuarios(users)
+    }, (err) => {
+      checkUsuarios(UsersOffline.users)
+    })
+
+    UsersOffline.almacenarActivosParaOffline((users) => {
+    }, (err) => {
+    })
+
+    Sucursal.almacenarParaOffline(() => {
+      setTimeout(() => {
+        cargarSucursales()
+      }, 3000);
+    }, () => { })
+
     console.log("fin cargarTodoOffline")
   }
 
@@ -188,15 +213,7 @@ const Login = () => {
       info: ""
     })
 
-    Sucursal.almacenarParaOffline(() => {
-      setTimeout(() => {
-        cargarSucursales()
-      }, 3000);
-    }, () => { })
-
-
     Licencia.check(showAlert, () => { navigate("/sin-licencia"); })
-
 
   }, [])
 
@@ -290,7 +307,7 @@ const Login = () => {
 
     var unicaCaja = null
     Sucursal.getAll((responseData) => {
-      // console.log("responseData", responseData)
+      console.log("responseData", responseData)
       responseData.forEach((sucItem, ix) => {
         cantSuc++
 
@@ -418,9 +435,40 @@ const Login = () => {
     }
   }
 
+  // casos 1
+  const dataOfflineOk = () => {
+    showMessage("revisando offline")
+
+
+    const product = Product.getInstance()
+    if (!product.sesion.hasOne()) {
+      console.log("no hay productos almacenados..")
+      showAlert("No se pudo descargar los productos. Revisar si existen y si su conexion a internet esta funcionando correctamente.")
+      return false
+    }
+
+    const users = UsersOffline.usersInSesion.cargarGuardados()
+    if (users.length < 1) {
+      showAlert("No se pudo descargar los usuarios. Revisar si existen y si su conexion a internet esta funcionando correctamente.")
+      return false
+    }
+
+    const sucursales = Sucursal.sesion.cargarGuardados()
+    if (sucursales.length < 1) {
+      showAlert("No se pudo descargar las sucursales. Revisar si existen y si su conexion a internet esta funcionando correctamente.")
+      return false
+    }
+
+    return true
+  }
+
 
   const handleLogin = async () => {
     console.log("handleLogin")
+
+    if (!dataOfflineOk()) return
+
+
     if (!rutOrCode || !password) {
       setError("Por favor, completar ambos campos.");
       return;
@@ -436,85 +484,40 @@ const Login = () => {
       return
     }
 
+    showLoading("Ingresando al sistema...")
+
+    UsersOffline.checkLogin(rutOrCode, password, (userLocal) => {
+      hideLoading()
+      console.log("iniciando sesion con usuario", System.clone(userLocal))
+      updateUserData(userLocal);
+
+      //pedir turno para dejarlo en el objeto OfflineAutoIncrement
+      Conexion.resetEstadoConexiones()
+      if (ModelConfig.get("afterLogin") == TiposPasarela.PREVENTA) {
+        navigate("/pre-venta");
+      } else {
+        navigate("/punto-venta");
+        checkTurnoApp(userLocal)
+      }
+    }, (err) => {
+      hideLoading()
+      setError(err)
+    })
+
+    console.log("comprobacion ofline")
+    return
+
+    /*
+    ##modo online
+    
     var user = new User();
     user.setRutFrom(rutOrCode)
     user.setUserCodeFrom(rutOrCode)
     user.clave = password;
 
-    showLoading("Ingresando al sistema...")
-
-    const callbackWrong = (error) => {
-      hideLoading()
-      console.log("error", error)
-      if (
-        error === "El Usuario tiene una Sesión activa."
-        && !reintentarPorSesionActiva
-      ) {
-        setReintentarPorSesionActiva(true)
-        return
-      } else if (
-        error.indexOf("La Caja tiene un turno iniciado por") > -1
-      ) {
-        setError(error)
-      } else {
-
-        const modoTrabajoConexion = ModelConfig.get("modoTrabajoConexion")
-        if (
-          modoTrabajoConexion == ModosTrabajoConexion.SOLO_OFFLINE
-          || modoTrabajoConexion == ModosTrabajoConexion.OFFLINE_INTENTAR_ENVIAR
-          || modoTrabajoConexion == ModosTrabajoConexion.PREGUNTAR
-        ) {
-          // const ultimoLogueado = user.sesion2.cargar(1)
-          // console.log("ultimoLogueado", ultimoLogueado)
-          UsersOffline.doLoginInLocal(user, (userLocal) => {
-            console.log("iniciando sesion con usuario", System.clone(userLocal))
-            updateUserData(userLocal);
-            // OfflineAutoIncrement.saveIfNotHasInSesion(userLocal)
-            if (ModelConfig.get("afterLogin") == TiposPasarela.PREVENTA) {
-              navigate("/pre-venta");
-            } else {
-              navigate("/punto-venta");
-            }
-            hideLoading()
-          }, (err) => {
-            setError(err)
-          })
-          return
-        }
-
-        setError(error)
-        // hideLoading()
-      }
-    }
-
-    const callbackOk = (info) => {
-      if (info.descripcion.indexOf("La Caja tiene un turno iniciado por") > -1) {
-        callbackWrong(info.descripcion)
-        return
-      }
-
-      // Actualizar userData después del inicio de sesión exitoso
-      updateUserData(info.responseUsuario);
-
-      OfflineAutoIncrement.getInstance().actualizarPropEnSesion("idTurno", info.responseUsuario.idTurno, () => {
-      }, () => {
-      })
-      console.log("OfflineAutoIncrement.loadFromServer..")
-      // OfflineAutoIncrement.saveIfNotHasInSesion(info.responseUsuario)
-      UsersOffline.add({ ...info.responseUsuario, clave: password })
-
-      Conexion.resetEstadoConexiones()
-      // Redirigir a la página de inicio
-      if (ModelConfig.get("afterLogin") == TiposPasarela.PREVENTA) {
-        navigate("/pre-venta");
-      } else {
-        navigate("/punto-venta");
-        checkTurnoApp(info)
-      }
-      hideLoading()
-    }
-
     user.doLoginInServer(callbackOk, callbackWrong)
+    
+    */
   }
 
 

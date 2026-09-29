@@ -36,8 +36,9 @@ class AperturaCierreOffline extends ModelSingleton {
         if (antes) {
             movimientos = antes.movimientos
         }
-        info.sended = !offline
-        info.tipo = "apertura"
+        // info.sended = !offline
+        info.sended = false
+        info.tipoOperacion = "apertura"
         movimientos.push(info)
         me.sesion.guardar({
             id: 1,
@@ -46,7 +47,7 @@ class AperturaCierreOffline extends ModelSingleton {
     }
 
     static sincronizar(callbackCadaEnvio: any, callbackFinalizar: any) {
-        // console.log("sincronizar.. offline")
+        console.log("sincronizar.. offline")
         AperturaCierreOffline.sincronizando = true
         this.sincronizarCiclo(callbackCadaEnvio, callbackFinalizar)
 
@@ -75,21 +76,27 @@ class AperturaCierreOffline extends ModelSingleton {
     }
 
     static sincronizarCiclo(callbackCadaEnvio: any, callbackFinalizar: any) {
-        // console.log("AperturaCierreOffline sincronizarCiclo offline ")
+        console.log("AperturaCierreOffline sincronizarCiclo offline ")
         // console.log("AperturaCierreOffline.enviando", AperturaCierreOffline.enviando)
         // console.log("AperturaCierreOffline.sincronizando", AperturaCierreOffline.sincronizando)
-        if (AperturaCierreOffline.enviando) return
-        if (!AperturaCierreOffline.sincronizando) return
+        if (AperturaCierreOffline.enviando) {
+            console.log("ya esta enviando..salgo")
+            return
+        }
+        if (!AperturaCierreOffline.sincronizando) {
+            console.log("ya esta sincronizando..salgo")
+            return
+        }
 
         var me = new AperturaCierreOffline()
         var ensesion = me.loadFromSesion()
         if (!ensesion || ensesion.movimientos.length < 1) {
-            // console.log("AperturaCierreOffline. nada para sincronizar")
+            console.log("AperturaCierreOffline. nada para sincronizar")
             return
         }
         const ixEnvioItem = this.primeroSinEnviarIndex()
         if (ixEnvioItem === null) {
-            // console.log("AperturaCierreOffline. nada para enviar")
+            console.log("AperturaCierreOffline. nada para enviar..primeroSinEnviarIndex es null")
             AperturaCierreOffline.sincronizando = false
             return
         }
@@ -130,7 +137,7 @@ class AperturaCierreOffline extends ModelSingleton {
         if (soff.listSales.length > 0) {
             const sinItem = soff.listSales[0]
             if (sinItem.fechaIngreso <= info.fechaIngreso) {
-                // console.log("esperando que se envien las ventas anteriores para luego hacer " + info.tipo)
+                // console.log("esperando que se envien las ventas anteriores para luego hacer " + info.tipoOperacion)
                 if (!SalesOffline.sincronizando) {
                     SalesOffline.sincronizar(() => { }, () => {
                         AperturaCierreOffline.sincronizarCiclo(callbackOk, callbackWrong)
@@ -141,11 +148,14 @@ class AperturaCierreOffline extends ModelSingleton {
         }
 
 
-        if (info.tipo == "apertura") {
+        if (info.tipoOperacion == "apertura") {
+            // aca deberia iniciar sesion:
+            // tener en cuenta que el usuario que 
+            // cerro la caja no es el mismo que intento iniciar caja
             var env = new AperturaCaja();
             env.fill(info);
             env.sendToServer(callbackOk, callbackWrong, true)
-        } else if (info.tipo == "cierre") {
+        } else if (info.tipoOperacion == "cierre") {
             var env2 = new CerrarCaja();
             const infoCierreServidor = new InfoCierre()
             const us = new User()
@@ -168,7 +178,7 @@ class AperturaCierreOffline extends ModelSingleton {
         if (antes) {
             movimientos = antes.movimientos
         }
-        info.tipo = "cierre"
+        info.tipoOperacion = "cierre"
         info.sended = !offline
         movimientos.push(info)
         me.sesion.guardar({
@@ -183,7 +193,7 @@ class AperturaCierreOffline extends ModelSingleton {
         if (antes) {
             const lastIndex = antes.movimientos.length - 1
             const last = antes.movimientos[lastIndex]
-            return last.tipo == "apertura"
+            return last.tipoOperacion == "apertura"
         }
         return false
     }

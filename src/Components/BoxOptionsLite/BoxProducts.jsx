@@ -48,6 +48,7 @@ import OrdenListado from "../../definitions/OrdenesListado";
 import ModosTrabajoConexion from "../../definitions/ModosConexion";
 import Ofertas from "../../Models/Ofertas";
 import BalanzaDigi from "../../Models/BalanzaDigi";
+import { ModosLecturaDigi } from "../../definitions/BaseConfig";
 
 const BoxProducts = ({ }) => {
   const {
@@ -96,31 +97,8 @@ const BoxProducts = ({ }) => {
 
   const balanzaDigi = BalanzaDigi.getInstance()
 
-  const cargarValesBalanzaDigi = () => {
-    if (!ModelConfig.get("trabajarConBalanzaDigi")) return
-    // console.log("cargarValesBalanzaDigi")
-    balanzaDigi.estadoVales((res) => {
-      // console.log("resultado estadoVales balanza digi", res)
-      if (res.status && res.info) {
-        // setInfoBalanza(res.info.info51)
-        // console.log("setInfoBalanza1 con ", res.info.info51)
-        balanzaDigi.guardarEnSesionTodos(res.info)
-      } else {
-        // showAlert("No se pudo leer los tickets de la balanza.")
-      }
-      setTimeout(() => {
-        cargarValesBalanzaDigi()
-      }, ModelConfig.get("refreshValeBalanzaDigi") * 1000);
-      // hideLoading()
-    }, () => {
-      setTimeout(() => {
-        cargarValesBalanzaDigi()
-      }, ModelConfig.get("refreshValeBalanzaDigi") * 1000);
-    })
-  }
-
   useEffect(() => {
-    cargarValesBalanzaDigi()
+    BalanzaDigi.cargarVales()
   }, [])
 
 
@@ -171,7 +149,7 @@ const BoxProducts = ({ }) => {
 
     if (codigoBusqueda.length % 13 == 0) {
 
-      showLoading("Cargando los productos de la balanza")
+      // showLoading("Cargando los productos de la balanza")
       var tx = codigoBusqueda.replaceAll("\r", "")
 
       // var partes = tx.split("\n")
@@ -261,145 +239,21 @@ const BoxProducts = ({ }) => {
 
 
   const buscarDigi = (codigoEscaneado) => {
-    if (!ModelConfig.get("trabajarConBalanzaDigi")) {
-      showMessage("Producto No encontrado");
-      procesarNoEncontrado(codigoEscaneado)
-      return
-    }
-
-    var valesBalanzaDigi = []
-    if (balanzaDigi.sesion.hasOne()) {
-      balanzaDigi.obtenerDeSesionTodos((inf) => {
-        // console.log("de sesion digi viene", inf)
-        if (inf && inf.info51) {
-          // console.log("asignando los vales:", inf.info51)
-          valesBalanzaDigi = inf.info51
-        }
+    BalanzaDigi.buscarProductosEnVale(codigoEscaneado, (prods, valeDigiBuscado, balanzaIndex) => {
+      prods.forEach((prod) => {
+        BalanzaDigi.agregarUsadoAProducto(prod, valeDigiBuscado, balanzaIndex)
+        addToSalesData(prod)
       })
-    }
-    // console.log("buscarDigi..valesBalanzaDigi", valesBalanzaDigi)
-
-    const CODBALANZADIGI = parseInt(ModelConfig.get("codigoValeBalanzaDigi"))
-    const codigoBuscado = codigoEscaneado + ""
-    if (codigoBuscado.indexOf(CODBALANZADIGI) !== 0) {
-      // console.log("no es codigo de balanza digi")
-      return
-    }
-
-    if (valesBalanzaDigi.length < 1) {
-      showAlert("No se pudo leer los tickets de la balanza")
-      return
-    }
-
-    var valeDigiBuscado = parseInt(codigoBuscado.substring(2, 6))
-
-    var coinciden = []
-    var noEncontrados = []
-
-    const hay = valesBalanzaDigi.length
-    var va = 0
-
-    const revisarSiTermino = () => {
-      if (va == hay) {
-        // setProductos(coinciden)
-        // console.log("coinciden", coinciden)
-        // console.log("noEncontrados", noEncontrados)
-
-        const fnAlgoIncorrecto = () => {
-          // showMessage("Producto No encontrado");
-          // procesarNoEncontrado(codigoEscaneado)
-        }
-
-        if (noEncontrados.length > 0) {
-          if (noEncontrados.length == 1) {
-            showAlert("El producto con codigo "
-              + noEncontrados[0].pluItem
-              + " no existe en el pos. Crearlo y volver a leer el vale.")
-            fnAlgoIncorrecto()
-            return
-          } else {
-            showAlert("Los productos con los codigos "
-              + noEncontrados.join(", ")
-              + " no existen en el pos. Crearlos y volver a leer el vale.")
-            fnAlgoIncorrecto()
-            return
-          }
-        }
-
-        if (coinciden.length < 1) {
-          showAlert("No se encontro el ticket " + valeDigiBuscado)
-          fnAlgoIncorrecto()
-          return
-        }
-
-        coinciden.forEach((prod) => {
-          prod.nroValeDigi = valeDigiBuscado
-          addToSalesData(prod)
-        })
-
-        balanzaDigi.agregarUsado(valeDigiBuscado)
-      }
-    }
-
-    if (ModelConfig.get("revisarValeRepeditoBalanzaDigi") && balanzaDigi.yaEstaUsado(valeDigiBuscado)) {
-      showAlert("El vale ya fue usado")
-      return
-    }
-
-    // console.log("hay", hay)
-    // console.log("nroValeTicket", nroValeTicket)
-    valesBalanzaDigi.forEach((item) => {
-      // console.log("item.nroVale", item.nroVale)
-      if (parseInt(item.nroVale) == valeDigiBuscado && item.status == "6C40") {
-        // console.log("coincide")
-        // coinciden.push(item)
-
-        Product.getInstance().findByCodigoBarras({
-          codigoProducto: parseInt(item.pluItem)
-        }, (prods) => {
-          // console.log("prods", prods)
-          // console.log("prods.length", prods.length)
-
-          if (prods.length > 0) {
-            // console.log("tiene resultados para", item)
-
-            const prodPos = new ProductSold()
-            prodPos.fill(prods[0])
-            // console.log("tiene resultados2")
-            if (ProductSold.esPesable(prodPos)) {
-              prodPos.cantidad = parseFloat(item.pesoItem) / 1000
-            } else {
-              // console.log("tiene resultados3")
-              prodPos.cantidad = parseFloat(item.cantidadItem)
-            }
-            // console.log("tiene resultados4")
-            prodPos.updateSubtotal()
-            // console.log("tiene resultados5")
-            prodPos.total = parseFloat(item.precioTotalItem)
-            // console.log("tiene resultados6")
-
-            // console.log("haciendo push en coincide", prodPos)
-            coinciden.push(prodPos)
-            // console.log("tiene resultados7")
-          } else {
-            // console.log("no esta en el pos", item)
-            noEncontrados.push(parseInt(item.pluItem))
-          }
-          va++
-          revisarSiTermino()
-        }, (er) => {
-          // console.log("error: no esta en el pos", item)
-          noEncontrados.push(parseInt(item.pluItem))
-          va++
-          revisarSiTermino()
-        })
+    }, (er) => {
+      if (er == "") {
+        showMessage("Producto No encontrado");
       } else {
-        // console.log("no coincide")
-        va++
-        revisarSiTermino()
+        showMessage(er);
+      }
+      if (er != "El vale ya fue usado") {
+        procesarNoEncontrado(codigoEscaneado)
       }
     })
-
   }
 
   const buscarValoresBalanza = (codigoBusqueda) => {
@@ -412,7 +266,7 @@ const BoxProducts = ({ }) => {
 
     if (codigoBusqueda.length % 13 == 0) {
 
-      showLoading("Cargando los productos de la balanza")
+      // showLoading("Cargando los productos de la balanza")
       var tx = codigoBusqueda.replaceAll("\r", "")
 
       // var partes = tx.split("\n")

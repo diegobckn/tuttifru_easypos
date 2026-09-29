@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 
 import {
   TextField,
@@ -13,11 +13,12 @@ import User from "../../Models/User";
 import Validator from "../../Helpers/Validator";
 import IngresarTexto from "../ScreenDialog/IngresarTexto";
 import InputPage from "../Elements/Compuestos/InputPage";
-import IngresarNumeroORut from "../ScreenDialog/IngresarNumeroORut";
-import InputNumber from "../Elements/Compuestos/InputNumber";
+import System from "../../Helpers/System";
+import InputName from "../Elements/Compuestos/InputName";
+import InputGeneric from "../Elements/Compuestos/InputGeneric";
 
 
-const TouchInputNumber = ({
+export default ({
   inputState,
   validationState,
   withLabel = true,
@@ -30,9 +31,6 @@ const TouchInputNumber = ({
   required = false,
   vars = null,
   onEnter = () => { },
-  isDecimal = false,
-  isRut = false,
-  style = {},
 }) => {
 
   const {
@@ -41,15 +39,22 @@ const TouchInputNumber = ({
 
   const [showModalTeclado, setShowModalTeclado] = useState(false)
 
-  const [inputValue, setInputValue] = inputState ? inputState : vars ? vars[0][fieldName] : useState("")
+  const [valueInput, setValueInput] = inputState ? inputState : vars ? vars[0][fieldName] : useState("")
+  const ref = useRef(null)
+
+  // useEffect(()=>{
+  //   if(!showModalTeclado){
+  //     System.intentarFoco(ref)
+  //   }
+  // },[showModalTeclado])
 
   return (
     <>
-      <InputNumber
+      <InputGeneric
         inputState={inputState}
         validationState={validationState}
         withLabel={withLabel}
-        // autoFocus={autoFocus}
+        autoFocus={autoFocus}
         fieldName={fieldName}
         label={label}
         minLength={minLength}
@@ -57,10 +62,11 @@ const TouchInputNumber = ({
         canAutoComplete={canAutoComplete}
         required={required}
         vars={vars}
-        isRut={isRut}
+
+        onEnter={onEnter}
+        onRef={(r) => (ref.current = r.current)}
 
         onClick={() => {
-
           const debeAbrir = ModelConfig.get("abirTecladosTouchSiempre")
           if (debeAbrir) {
             setShowModalTeclado(true)
@@ -68,14 +74,10 @@ const TouchInputNumber = ({
 
         }}
 
-        isDecimal={isDecimal}
-        style={style}
-
-        endAdornment={<InputAdornment
-          position="end"
-        >
+        endAdornment={<InputAdornment position="end">
           <Button onClick={() => {
             setShowModalTeclado(true)
+            return false
           }}>
             <Keyboard sx={{
               color: "#868484",
@@ -87,39 +89,21 @@ const TouchInputNumber = ({
         }
       />
 
-      <IngresarNumeroORut
+      <IngresarTexto
         title={label}
         openDialog={showModalTeclado}
         setOpenDialog={setShowModalTeclado}
         varChanger={(newVal) => {
-          // console.log("varChanger..")
-          if (isDecimal && Validator.isDecimal(newVal)) {
-            setInputValue(newVal);
-            return false
-          }
-
-          if (!isDecimal && Validator.isNumeric(newVal)) {
-            setInputValue(newVal);
-          }
-
-          if (isRut && Validator.isRut(newVal)) {
-            setInputValue(newVal);
-          }
+          setValueInput(newVal)
         }}
-        varValue={inputValue}
+        varValue={valueInput}
 
         onEnter={() => {
           setTimeout(() => {
             setShowModalTeclado(false)
           }, 300);
         }}
-
-        isDecimal={isDecimal}
-        isRut={isRut}
       />
-
     </>
   );
 };
-
-export default TouchInputNumber;

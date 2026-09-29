@@ -68,6 +68,9 @@ export const ProviderModales = ({ children }) => {
 
   const [verPedirSupervision, setVerPedirSupervision] = useState(false)
   const [accionPedirSupervision, setAccionPedirSupervision] = useState("")
+  const [tituloPedirSupervision, setTituloPedirSupervision] = useState("")
+  const [mensajePedirSupervision, setMensajePedirSupervision] = useState("")
+  const [puedeIgnorarPedirSupervision, setPuedeIgnorarPedirSupervision] = useState(true)
   const [handleConfirmarSupervision, setHandleConfirmarSupervision] = useState(null)
   const [datosConfirmarSupervision, setDatosConfirmarSupervision] = useState({})
 
@@ -90,7 +93,14 @@ export const ProviderModales = ({ children }) => {
   }, [showAlertDialog])
 
 
-  const pedirSupervision = (accion, callbackOk, datos) => {
+  const pedirSupervision = (
+    accion,
+    callbackOk,
+    datos,
+    titulo = "Autorizar accion",
+    mensaje = "Se requiere autorizacion para realizar la operacion",
+    puedeIgnorar = true
+  ) => {
     const us = User.getInstance().getFromSesion()
 
     if (us === null) {
@@ -98,6 +108,10 @@ export const ProviderModales = ({ children }) => {
       setShowAlert(true)
       return
     }
+
+    setTituloPedirSupervision(titulo)
+    setMensajePedirSupervision(mensaje)
+    setPuedeIgnorarPedirSupervision(puedeIgnorar)
 
     setAccionPedirSupervision(accion)
     setDatosConfirmarSupervision(datos)
@@ -164,6 +178,11 @@ export const ProviderModales = ({ children }) => {
           accion={accionPedirSupervision}
           infoEnviar={datosConfirmarSupervision}
           setOpenDialog={setVerPedirSupervision}
+
+          titulo={tituloPedirSupervision}
+          mensaje={mensajePedirSupervision}
+          puedeIgnorar={puedeIgnorarPedirSupervision}
+
           onConfirm={() => {
             if (handleConfirmarSupervision) handleConfirmarSupervision()
           }}

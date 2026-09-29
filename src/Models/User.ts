@@ -98,10 +98,9 @@ class User extends ModelSingleton {
                 && response.data.responseUsuario.codigoUsuario != -1
             ) {
                 if (!response.data.responseUsuario.activo) {
+                    callbackOk(responseData);
                     Model.informeInicioSesion(response.data.responseUsuario, () => {
-                        callbackOk(responseData);
                     }, () => {
-                        callbackOk(responseData);
                     })
                 } else {
                     callbackWrong("Usuario activo en otra sesión");

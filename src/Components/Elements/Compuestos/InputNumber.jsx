@@ -27,7 +27,8 @@ const InputNumber = ({
   isRut = false,
   onClick = ()=>{},
 
-  onRef = ()=>{}
+  onRef = ()=>{},
+  style = {},
 }) => {
 
   const {
@@ -166,7 +167,7 @@ const InputNumber = ({
   return (
     <>
       {withLabel && (
-        <InputLabel sx={{ marginBottom: "2%" }}>
+        <InputLabel sx={{ marginBottom: "10px" }}>
           {label}
         </InputLabel>
       )}
@@ -190,6 +191,10 @@ const InputNumber = ({
 
         InputProps={{
           endAdornment: (endAdornment ? endAdornment : null)
+        }}
+
+        sx={{
+          ...style
         }}
       />
     </>

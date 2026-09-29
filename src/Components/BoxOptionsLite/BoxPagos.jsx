@@ -47,12 +47,16 @@ import EditIcon from "@mui/icons-material/Edit";
 import { RemoveCircleOutline } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Product from "../../Models/Product";
+import ModelConfig from "../../Models/ModelConfig";
+import PasarelaPago from "../../Models/PasarelaPago";
+import PagandoPasarela from "../ScreenDialog/PagandoPasarela";
 
 const BoxPagos = ({
-    pagos,  setPagos,
-    totalPagos, setTotalPagos,
-    onRemove = ()=>{}
-  }) => {
+  pagos, setPagos,
+  totalPagos, setTotalPagos,
+  onRemove = () => { },
+  onRequireFinalice = () => { }
+}) => {
   const {
     userData,
     salesData,
@@ -82,6 +86,7 @@ const BoxPagos = ({
     askLastSale,
     setAskLastSale,
     showMessage,
+    showAlert,
     showConfirm,
     showDialogSelectClient,
     setShowDialogSelectClient,
@@ -91,66 +96,85 @@ const BoxPagos = ({
   } = useContext(SelectedOptionsContext);
 
 
-  
-  
+  const [tienePasarelaPago, setTienePasarelaPago] = useState(false)
+
+  const [verPagandoPasarela, setVerPagandoPasarela] = useState(false)
+  const [pagoParaPasarela, setPagoParaPasarela] = useState(null)
   // OBSERVERS
 
   useEffect(() => {
-   
-  }, []);
-  
+    const conPasarela = ModelConfig.get("tienePasarelaPago")
+    setTienePasarelaPago(conPasarela)
+    if (conPasarela) {
+      pagos.forEach((pag, ix) => {
+        if (
+          ix == pagos.length - 1
+          && !pag.pagadoPasarela
+          && pag.metodoPago == "TARJETA"
+          &&
+          (
+            pag.tipoTarjeta == "DEBITO"
+            || pag.tipoTarjeta == "CREDITO")
+        ) {
+          setPagoParaPasarela(pag)
+          setVerPagandoPasarela(true)
+        }
+      })
+    }
+  }, [totalPagos]);
 
-  const esDataUsuario = (pago)=>{
-    return (pago.data && pago.data.codigoUsuario!= undefined)
+
+  const esDataUsuario = (pago) => {
+    return (pago.data && pago.data.codigoUsuario != undefined)
   }
 
-  const esDataCliente = (pago)=>{
-    return (pago.data && pago.data.codigoCliente!= undefined)
+  const esDataCliente = (pago) => {
+    return (pago.data && pago.data.codigoCliente != undefined)
   }
 
-  const esDataTarjetas = (pago)=>{
+  const esDataTarjetas = (pago) => {
     return (pago.metodoPago == "TARJETA")
   }
-  
-  const esDataTarjetaCredito = (pago)=>{
+
+  const esDataTarjetaCredito = (pago) => {
     return (pago.tipoTarjeta && pago.tipoTarjeta == "DEBITO")
   }
-  const esDataTarjetaDebito = (pago)=>{
+  const esDataTarjetaDebito = (pago) => {
     return (pago.tipoTarjeta && pago.tipoTarjeta == "DEBITO")
   }
 
 
-  const esDataTransferencia = (pago)=>{
+  const esDataTransferencia = (pago) => {
     return (pago.metodoPago == "TRANSFERENCIA")
   }
 
 
-  const getDataUsuario = (pago)=>{
-    if(esDataUsuario(pago)){
+  const getDataUsuario = (pago) => {
+    if (esDataUsuario(pago)) {
       return pago.data.nombres + " " + pago.data.apellidos
     }
     return ""
   }
 
-  const getDataCliente = (pago)=>{
-    if(esDataCliente(pago)){
+  const getDataCliente = (pago) => {
+    if (esDataCliente(pago)) {
       return pago.data.nombreResponsable + " " + pago.data.apellidoResponsable
     }
     return ""
   }
 
-  const getDataTarjetas = (pago)=>{
-    if(esDataTarjetas(pago)){
+  const getDataTarjetas = (pago) => {
+    if (esDataTarjetas(pago)) {
       return pago.tipoTarjeta
     }
     return ""
   }
 
-  const getDataTransferencia = (pago)=>{
-    if(esDataTransferencia(pago)){
-      if(pago.transferencia.nombre === "string"){
+  const getDataTransferencia = (pago) => {
+    if (esDataTransferencia(pago)) {
+      if (pago.transferencia.nombre === "string") {
         return "N/D"
-      }else{
+      } else {
         return pago.transferencia.nombre
       }
     }
@@ -159,11 +183,11 @@ const BoxPagos = ({
 
 
 
-  const confirmarEliminarPago = (ix)=>{
-    const pagoEliminado = pagos.splice(ix,1)
+  const confirmarEliminarPago = (ix) => {
+    const pagoEliminado = pagos.splice(ix, 1)
     setPagos([...pagos])
     var total = 0
-    pagos.forEach((pago,ix)=>{
+    pagos.forEach((pago, ix) => {
       total += pago.montoMetodoPago
     })
 
@@ -171,9 +195,9 @@ const BoxPagos = ({
     onRemove(pagoEliminado)
   }
 
-  const eliminarPago = (pago,ix)=>{
-    if(pago.metodoPago == "TRANSFERENCIA"){
-      showConfirm("Eliminar el pago con transferencia?", ()=>{
+  const eliminarPago = (pago, ix) => {
+    if (pago.metodoPago == "TRANSFERENCIA") {
+      showConfirm("Eliminar el pago con transferencia?", () => {
         confirmarEliminarPago(ix)
       })
       return
@@ -181,13 +205,13 @@ const BoxPagos = ({
     confirmarEliminarPago(ix)
   }
 
-  const checkMontoEfectivo = (pago)=>{
-    if(pago.metodoPago !== "EFECTIVO"){
+  const checkMontoEfectivo = (pago) => {
+    if (pago.metodoPago !== "EFECTIVO") {
       return pago.montoMetodoPago
-    }else{
+    } else {
       const redondeo = Product.logicaRedondeoUltimoDigito(pago.montoMetodoPago)
       var res = pago.montoMetodoPago
-      if(redondeo != 0){
+      if (redondeo != 0) {
         res += redondeo
       }
       return res
@@ -199,80 +223,120 @@ const BoxPagos = ({
       textAlign: "left",
       backgroundColor: "#f4f4f4",
       padding: "5px",
-      marginTop:"10px",
-      
+      marginTop: "10px",
+
     }}>
-    {totalPagos > 0 && (
-      <div>
-        <Typography>Pagos</Typography>
-        <TabContainer>
-        <Table>
-          <TableBody sx={{
-            display:"block",
-            maxHeight:"240px",
-            overflow: "auto"
-          }}>
+      {totalPagos > 0 && (
+        <div>
+          <Typography>Pagos</Typography>
+          <TabContainer>
+            <Table>
+              <TableBody sx={{
+                display: "block",
+                maxHeight: "240px",
+                overflow: "auto"
+              }}>
 
-            {pagos.map((pago,ix)=>{
-              // console.log("mostrando pago", pago)
-              return(
-              <TableRow key={ix}>
-                <TableCell>
-                  ${ checkMontoEfectivo(pago) }
-                </TableCell>
+                {pagos.map((pago, ix) => {
+                  return (
+                    <TableRow key={ix}>
+                      <TableCell>
+                        ${checkMontoEfectivo(pago)}
+                      </TableCell>
 
-                <TableCell>
-                  {pago.metodoPago}
-                </TableCell>
-
-
-                <TableCell>
-                  {
-                  getDataUsuario(pago) 
-                  + getDataCliente(pago)
-                  + getDataTarjetas(pago)
-                  + getDataTransferencia(pago)
-                  }
-                </TableCell>
+                      <TableCell>
+                        {pago.metodoPago}
+                      </TableCell>
 
 
-                <TableCell>
-                {/* <IconButton onClick={() =>{
+                      <TableCell>
+                        {
+                          getDataUsuario(pago)
+                          + getDataCliente(pago)
+                          + getDataTarjetas(pago)
+                          + getDataTransferencia(pago)
+                        }
+                      </TableCell>
+
+
+                      <TableCell>
+                        {/* <IconButton onClick={() =>{
                   console.log("editar pago")
                 }}>
                   <EditIcon />
                 </IconButton> */}
 
-                <IconButton
-                sx={{
-                  color:"tomato",
-                  backgroundColor:"whitesmoke",
-                  "&:hover":{
-                    color:"white",
-                    backgroundColor:"red",
-                  },
-                  border:"1px solid tomato",
-                  borderRadius:"2px"
-                }}
-                onClick={() =>{
-                  eliminarPago(pago,ix)
-                }}>
-                  <DeleteIcon />
-                </IconButton>
+                        <IconButton
+                          sx={{
+                            color: "tomato",
+                            backgroundColor: "whitesmoke",
+                            "&:hover": {
+                              color: "white",
+                              backgroundColor: "red",
+                            },
+                            border: "1px solid tomato",
+                            borderRadius: "2px"
+                          }}
+                          onClick={() => {
+                            eliminarPago(pago, ix)
+                          }}>
+                          <DeleteIcon />
+                        </IconButton>
+
+                      </TableCell>
+                      <TableCell>
+
+                        <PagandoPasarela
+                          openDialog={verPagandoPasarela}
+                          setOpenDialog={setVerPagandoPasarela}
+                          pago={pagoParaPasarela}
+                          onPayedOk={() => {
+                            var copiaPagos = []
+                            pagos.forEach((pag) => {
+                              if (!System.tienenAlgoDiferente(pag, pagoParaPasarela)) {
+                                pag.pagadoPasarela = true
+                                copiaPagos.push(pag)
+                              } else {
+                                copiaPagos.push(pag)
+                              }
+                            })
+
+                            setPagos(copiaPagos)
+                            onRequireFinalice()
+                          }}
+                        />
+                        {/* {
+                          tienePasarelaPago
+                          && pago.metodoPago == "TARJETA"
+                          &&
+                          (
+                            pago.tipoTarjeta == "DEBITO"
+                            || pago.tipoTarjeta == "CREDITO")
+                          && (
+                            <SmallButton
+                              textButton={"Enviar a pasarela"}
+                              actionButton={() => {
+                                PasarelaPago.enviarVenta(pago, () => {
+                                  showMessage("enviado correctamente")
+                                }, () => {
+                                  showMessage("No se pudo enviar")
+                                })
+                              }}
+                            />
+                          )} */}
+                      </TableCell>
 
 
-                </TableCell>
-
-
-              </TableRow>
-            )})}
-          </TableBody>
-        </Table>
-        </TabContainer>
-      </div>
-    )
-  }
-  </div>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </TabContainer>
+        </div>
+      )
+      }
+    </div>
   );
 };
 

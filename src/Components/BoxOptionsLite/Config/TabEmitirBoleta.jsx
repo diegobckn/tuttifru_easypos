@@ -40,6 +40,8 @@ import BoxOptionList from "../BoxOptionList";
 import System from "../../../Helpers/System";
 import MetodosPago from "../../../definitions/MetodosPago";
 import EmitirDetalle from "../../../definitions/EmisionesDetalle";
+import ConfigPasarela from "../../ScreenDialog/ConfigPasarela";
+import Recargos from "../../ScreenDialog/Recargos";
 
 const TabEmitirBoleta = ({
   onFinish = () => { }
@@ -94,12 +96,18 @@ const TabEmitirBoleta = ({
 
   const [emitirDetalle, setEmitirDetalle] = useState(false)
 
+  const [verConfigPasarela, setVerConfigPasarela] = useState(false)
+
+  const [puedeSalirModoAvion, setPuedeSalirModoAvion] = useState(false)
+  const [showRecargos, setShowRecargos] = useState(false)
+
   const loadConfigSesion = () => {
     setEmitirBoleta(ModelConfig.get("emitirBoleta"))
     setTienePasarelaPago(ModelConfig.get("tienePasarelaPago"))
     setExcluirMediosEnBoleta(ModelConfig.get("excluirMediosEnBoleta"))
 
     setEmitirDetalle(ModelConfig.get("emitirDetalle"))
+    setPuedeSalirModoAvion(ModelConfig.get("puedeSalirModoAvion"))
   }
 
   const handlerSaveAction = () => {
@@ -112,6 +120,7 @@ const TabEmitirBoleta = ({
     ModelConfig.change("excluirMediosEnBoleta", excluirMediosEnBoleta)
 
     ModelConfig.change("emitirDetalle", emitirDetalle)
+    ModelConfig.change("puedeSalirModoAvion", puedeSalirModoAvion)
 
     showMessage("Guardado correctamente")
     // onFinish()
@@ -140,12 +149,34 @@ const TabEmitirBoleta = ({
         />
       </Grid>
 
-      <Grid item xs={12} md={12} lg={12}>
+
+      <Grid item xs={12} md={6} lg={6}>
         <InputCheckbox
           inputState={[tienePasarelaPago, setTienePasarelaPago]}
           label={"Tiene pasarela de pago"}
         />
       </Grid>
+
+      <Grid item xs={12} md={6} lg={6}>
+        {tienePasarelaPago && (
+          <SmallButton
+            style={{
+              width: "100%"
+            }}
+            textButton={"configurar pasarela"}
+            actionButton={() => {
+              setVerConfigPasarela(true)
+            }}
+          />
+        )}
+
+        <ConfigPasarela
+          openDialog={verConfigPasarela}
+          setOpenDialog={setVerConfigPasarela}
+        />
+      </Grid>
+
+
 
       <Grid item xs={12} md={12} lg={12}>
         <label
@@ -189,6 +220,25 @@ const TabEmitirBoleta = ({
         <br />
         <br />
       </Grid>
+
+      <Grid item xs={12} md={12} lg={12}>
+        <Recargos
+          openDialog={showRecargos}
+          setOpenDialog={setShowRecargos}
+        />
+        <SmallButton
+          textButton="Configurar Recargos"
+          actionButton={() => {
+            setShowRecargos(true)
+          }} />
+      </Grid>
+      <Grid item xs={12} md={12} lg={12}>
+        <InputCheckbox
+          inputState={[puedeSalirModoAvion, setPuedeSalirModoAvion]}
+          label={"Puede salir del modo avion"}
+        />
+      </Grid>
+
 
 
 

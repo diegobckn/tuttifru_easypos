@@ -27,7 +27,7 @@ class Atudepa extends ModelSingleton {
     static nuevoPedidoProgFuncion = (nuevosPedidos: any) => { };
 
     static ultimoIdPedido = 0;
-    static tiempoIntervaloChequeoPedidos = 5;//en segundos
+    static tiempoIntervaloChequeoPedidos = 1 * 60;//en segundos
     static checkNuevosPedidos = true;
     static ultimoTurno: any = null;
     static intervaloFuncion: any = null;

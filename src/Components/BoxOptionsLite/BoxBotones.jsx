@@ -6,6 +6,8 @@ import {
   Box,
 } from "@mui/material";
 import { SelectedOptionsContext } from "../Context/SelectedOptionsProvider";
+import { ProviderModalesContext } from "../Context/ProviderModales";
+
 import MainButton from "../Elements/MainButton";
 import ScreenDialogCreateClient from "../ScreenDialog/CreateClient";
 import ScreenDialogShowFamilies from "../ScreenDialog/ShowFamilies";
@@ -21,6 +23,7 @@ import CierreCaja from "../ScreenDialog/CierreCaja";
 import UserEvent from "../../Models/UserEvent";
 import System from "../../Helpers/System";
 import BusquedaRapidaOfertas from "../ScreenDialog/BusquedaRapidaOfertas";
+import SalesOffline from "../../Models/SalesOffline";
 
 
 const BoxBotones = () => {
@@ -40,6 +43,13 @@ const BoxBotones = () => {
     focusSearchInput,
     suspenderYRecuperar,
   } = useContext(SelectedOptionsContext);
+
+  const {
+    pedirSupervision,
+
+  } = useContext(ProviderModalesContext);
+
+
   const [openScreenCreateClient, setOpenScreenCreateClient] = useState(false);
   const [showFamiliasDialog, setShowFamiliasDialog] = useState(false);
   const [showFastSearchDialog, setShowFastSearchDialog] = useState(false);
@@ -60,37 +70,42 @@ const BoxBotones = () => {
       elevation={3}
       style={{
         backgroundColor: "#859398",
-        padding: "10px",
+        padding: "0",
+        height: "20vh",
         width: "100%",
         // height:"200px"
       }}
     >
 
 
-      <Grid container spacing={2} >
+      <Grid container spacing={0} >
 
         <Grid item xs={12}>
-          <Grid container spacing={2}>
+          <Grid container spacing={0} sx={{
+            padding: "0.25% 0 0 0",
+            height: "10vh",
+          }}>
 
 
             <MainButton textButton="Borrar" actionButton={() => {
+              pedirSupervision("borrar ventas", () => {
+                if (salesData.length < 1) {
+                  showAlert("Borrar ventas", "No hay ventas", () => {
+                    focusSearchInput(searchInputRef)
+                  })
+                  return
+                }
 
-              if (salesData.length < 1) {
-                showAlert("Borrar ventas", "No hay ventas", () => {
+                var txtVentas = "las ventas";
+                if (salesData.length == 1) txtVentas = "la venta"
+                showConfirm("Borrar " + txtVentas + "?", () => {
+                  setShowLoadingDialogWithTitle("Borrando...", true);
+                  clearSalesData();
+                  hideLoadingDialog()
+                  focusSearchInput(searchInputRef)
+                }, () => {
                   focusSearchInput(searchInputRef)
                 })
-                return
-              }
-
-              var txtVentas = "las ventas";
-              if (salesData.length == 1) txtVentas = "la venta"
-              showConfirm("Borrar " + txtVentas + "?", () => {
-                setShowLoadingDialogWithTitle("Borrando...", true);
-                clearSalesData();
-                hideLoadingDialog()
-                focusSearchInput(searchInputRef)
-              }, () => {
-                focusSearchInput(searchInputRef)
               })
             }} />
 
@@ -176,6 +191,12 @@ const BoxBotones = () => {
             />
 
             <MainButton textButton="Cerrar caja" actionButton={() => {
+              const lsOff = SalesOffline.getInstance().loadFromSesion()
+              if (lsOff.length > 0) {
+                showAlert("Para cerrar la caja debe enviar todas las ventas offline.")
+                return
+              }
+
               setShowScreenCierreCaja(true)
             }} />
 
@@ -183,9 +204,13 @@ const BoxBotones = () => {
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} >
+      <Grid container spacing={0} >
         <Grid item xs={12}>
-          <Grid container spacing={2}>
+          <Grid container spacing={0} sx={{
+            padding: "0",
+            height: "10vh",
+          }}>
+
 
 
             <ScreenIngreso openDialog={showScreenIngreso}
@@ -270,7 +295,11 @@ const BoxBotones = () => {
                 }
               }}
             />
-            <MainButton textButton="Config" actionButton={() => { setShowScreenConfig(true) }} />
+            <MainButton textButton="Config" actionButton={() => {
+              pedirSupervision("abrir config", () => {
+                setShowScreenConfig(true)
+              })
+            }} />
 
           </Grid>
         </Grid>

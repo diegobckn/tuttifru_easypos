@@ -10,6 +10,7 @@ import System from '../Helpers/System.ts';
 import Preventa from './Preventa.ts';
 import { extraDefaultLlevar } from '../Types/TExtra.ts';
 import EndPoint from './EndPoint.ts';
+import BalanzaDigi from './BalanzaDigi.ts';
 
 
 class Sales {
@@ -271,29 +272,8 @@ class Sales {
     const productExistente = this.products[indexExist]
     // console.log("productExistente: ", productExistente)
 
-    if (
-      productNew.preVenta
-      && productExistente.preVenta
-      && productNew.preVenta.indexOf(productExistente.preVenta) === -1
-    ) {
-      // console.log("revisamos has preventa")
-      const updatedSalesData = [...this.products];
-      updatedSalesData[indexExist].preVenta += "," + productNew.preVenta
-      this.products = updatedSalesData;
-      // console.log("finc de has preventa")
-    }
+    this.products = BalanzaDigi.agregarNroValeProductoExistente(indexExist,productNew,this.products)
 
-    if (
-      productNew.nroValeDigi
-      && productExistente.nroValeDigi
-      && (productNew.nroValeDigi + "").indexOf(productExistente.nroValeDigi) === -1
-    ) {
-      // console.log("revisamos has preventa")
-      const updatedSalesData = [...this.products];
-      updatedSalesData[indexExist].nroValeDigi += "," + productNew.nroValeDigi
-      this.products = updatedSalesData;
-      // console.log("finc de has preventa")
-    }
     // this.products = this.incrementQuantityByIndex(indexExist, quantity, newPrice);
     // console.log("antes de changeQuantityByIndex")
     this.products = this.changeQuantityByIndex(indexExist, cantNue);

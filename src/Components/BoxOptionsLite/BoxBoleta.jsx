@@ -60,6 +60,7 @@ import PrinterPaper from "../../Models/PrinterPaper";
 import Descuento from "../ScreenDialog/Descuento";
 import ModosTrabajoConexion from "../../definitions/ModosConexion";
 import ParaEnviar from "../../Models/ParaEnviar";
+import TiposDescuentos from "../../definitions/TiposDescuentos";
 
 const BoxBoleta = ({
   onClose,
@@ -139,25 +140,11 @@ const BoxBoleta = ({
   const [descuentoManual, setDescuentoManual] = useState(0);
   const [verModalDescuentos, setVerModalDescuentos] = useState(false);
 
+  const [recargoGeneral, setRecargoGeneral] = useState(0);
+
   useEffect(() => {
 
     if (!openDialog) return
-
-
-    try {
-
-      const salesObj = new Sales()
-
-      UserEvent.send({
-        name: "abre ventana hacer pago ",
-        info: JSON.stringify(salesObj.sesionProducts.cargarGuardados()[0])
-      })
-
-    } catch (er) {
-      console.log("falla el envio de evento abrir ventana de pago")
-    }
-
-
     PrinterPaper.getInstance().loadWidthFromSesion()
 
     const offAI = OfflineAutoIncrement.getInstance()
@@ -282,7 +269,8 @@ const BoxBoleta = ({
       products: [],
       pagos: pagosTruncados,
       preVentaID: algunaPreventa,
-      nombreClienteComanda: nombreClienteComanda
+      nombreClienteComanda: nombreClienteComanda,
+      recargoGeneral: recargoGeneral
     };
 
     //agregamos los productos
@@ -537,6 +525,105 @@ const BoxBoleta = ({
     setTecladoBloqueado(pagoCompleto())
   }, [totalVentas, totalPagos])
 
+  useEffect(() => {
+    const recargosMediosPagos = ModelConfig.get("recargosMediosPagos")
+    const recargoEfectivo = recargosMediosPagos["efectivo"]["valor"] > 0
+    const recargoTransferencia = recargosMediosPagos["transferencia"]["valor"] > 0
+    const recargoTarjetaCredito = recargosMediosPagos["tarjeta_credito"]["valor"] > 0
+    const recargoTarjetaDebito = recargosMediosPagos["tarjeta_debito"]["valor"] > 0
+
+    const algunRecargo = (
+      (recargoEfectivo)
+      || (recargoTransferencia)
+      || (recargoTarjetaCredito)
+      || (recargoTarjetaDebito)
+    )
+
+    console.log("revision de recargo general")
+    console.log("algunRecargo", algunRecargo)
+    console.log("recargoGeneral", recargoGeneral)
+    console.log("pagos.length > 0", pagos.length > 0)
+
+    if (algunRecargo && pagos.length > 0 && recargoGeneral == 0) {
+      var recargoApllicado = false
+      pagos.forEach((pag, ix) => {
+        if (recargoApllicado) return
+        if (
+          (recargoTarjetaCredito && pag.metodoPago == "TARJETA" && pag.tipoTarjeta == "CREDITO")
+        ) {
+          console.log("aplico recargo tarjeta credito")
+          recargoApllicado = true
+          const tipoRecargo = recargosMediosPagos["tarjeta_credito"]["tipo"]
+          const valorRecargo = recargosMediosPagos["tarjeta_credito"]["valor"]
+          var recargo = 0
+          if (tipoRecargo == TiposDescuentos.PORCENTAJE) {
+            recargo = totalYDescuentoYRedondeo * (valorRecargo / 100)
+          } else {
+            recargo = parseFloat(valorRecargo)
+          }
+          console.log("setRecargoGeneral", recargo, "..logica redondeo", Product.logicaRedondeoUltimoDigito(recargo))
+          setRecargoGeneral(recargo + Product.logicaRedondeoUltimoDigito(recargo))
+        }
+
+        if (
+          (recargoTarjetaDebito && pag.metodoPago == "TARJETA" && pag.tipoTarjeta == "DEBITO")
+        ) {
+          console.log("aplico recargo tarjeta debito")
+          recargoApllicado = true
+          const tipoRecargo = recargosMediosPagos["tarjeta_debito"]["tipo"]
+          const valorRecargo = recargosMediosPagos["tarjeta_debito"]["valor"]
+          var recargo = 0
+          if (tipoRecargo == TiposDescuentos.PORCENTAJE) {
+            recargo = totalYDescuentoYRedondeo * (valorRecargo / 100)
+          } else {
+            recargo = parseFloat(valorRecargo)
+          }
+          console.log("setRecargoGeneral", recargo, "..logica redondeo", Product.logicaRedondeoUltimoDigito(recargo))
+          setRecargoGeneral(recargo + Product.logicaRedondeoUltimoDigito(recargo))
+        }
+
+        if (
+          (recargoEfectivo && pag.metodoPago == "EFECTIVO")
+        ) {
+          console.log("aplico recargo efectivo")
+          recargoApllicado = true
+          const tipoRecargo = recargosMediosPagos["efectivo"]["tipo"]
+          const valorRecargo = recargosMediosPagos["efectivo"]["valor"]
+          var recargo = 0
+          if (tipoRecargo == TiposDescuentos.PORCENTAJE) {
+            recargo = totalYDescuentoYRedondeo * (valorRecargo / 100)
+          } else {
+            recargo = parseFloat(valorRecargo)
+          }
+          console.log("setRecargoGeneral", recargo, "..logica redondeo", Product.logicaRedondeoUltimoDigito(recargo))
+          setRecargoGeneral(recargo + Product.logicaRedondeoUltimoDigito(recargo))
+        }
+
+        if (
+          (recargoTransferencia && pag.metodoPago == "TRANSFERENCIA")
+        ) {
+          console.log("aplico recargo transferencia")
+          recargoApllicado = true
+          const tipoRecargo = recargosMediosPagos["transferencia"]["tipo"]
+          const valorRecargo = recargosMediosPagos["transferencia"]["valor"]
+          var recargo = 0
+          if (tipoRecargo == TiposDescuentos.PORCENTAJE) {
+            recargo = totalYDescuentoYRedondeo * (valorRecargo / 100)
+          } else {
+            recargo = parseFloat(valorRecargo)
+          }
+          console.log("setRecargoGeneral", recargo, "..logica redondeo", Product.logicaRedondeoUltimoDigito(recargo))
+          setRecargoGeneral(recargo + Product.logicaRedondeoUltimoDigito(recargo))
+        }
+      })
+    } else {
+      if (!algunRecargo || pagos.length < 1) {
+        setRecargoGeneral(0)
+      }
+
+    }
+  }, [totalPagos]);
+
   // useEffect(() => {
   //   console.log("cambio tecladoBloqueado", tecladoBloqueado)
   // }, [tecladoBloqueado])
@@ -728,6 +815,17 @@ const BoxBoleta = ({
                   ${System.showIfHasDecimal(descuentoManual)}
                 </Typography>
 
+                <Typography style={{
+                  // color:"green",
+                  // fontSize:"25px",
+                  fontSize: "18px",
+                  position: "relative",
+                  top: "1px"
+                }}>
+                  Recargo:
+                  ${System.showIfHasDecimal(recargoGeneral)}
+                </Typography>
+
               </div>
             </Grid>
 
@@ -751,6 +849,10 @@ const BoxBoleta = ({
                 onRemove={() => {
                   console.log("cambia yaApretoPrimeraTecla cuando elimina un pago")
                   setYaApretoPrimerTecla(false)
+                }}
+
+                onRequireFinalice={() => {
+                  handlePagoBoleta()
                 }}
               />
             </Grid>
@@ -823,6 +925,7 @@ const BoxBoleta = ({
               setAplicaRedondeo,
               setFaltaPagar,
               setTotalFinal,
+              recargoGeneral,
               // excluirMetodos:["CUENTACORRIENTE", "DEBITO"]
             }}
           />

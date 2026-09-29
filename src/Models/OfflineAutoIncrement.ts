@@ -146,7 +146,25 @@ class OfflineAutoIncrement extends ModelSingleton {
     infoSesion[prop] = System.getProp(me, prop)
     // console.log("infoSesion antes de guardar", System.clone(infoSesion))
     const rs = OfflineAutoIncrement.saveInSesion(infoSesion)
-    // console.log("rs", rs)
+    console.log("rs", rs)
+    console.log("callbackOk", callbackOk)
+    if (rs) {
+      callbackOk()
+    } else {
+      callbackWrong("No se pudo guardar en sesion")
+    }
+  }
+
+  actualizarPropEnSesion(propName: string, propValue: any, callbackOk: any, callbackWrong: any) {
+    // console.log("this esta asi", me)
+    const infoSesion = OfflineAutoIncrement.getFromSesion()
+    console.log("infoSesion", infoSesion)
+    if (!infoSesion) return callbackWrong("No se pudo cargar la informacion de la sesion")
+    infoSesion[propName] = propValue
+    // console.log("infoSesion antes de guardar", System.clone(infoSesion))
+    const rs = OfflineAutoIncrement.saveInSesion(infoSesion)
+    console.log("rs", rs)
+    console.log("callbackOk", callbackOk)
     if (rs) {
       callbackOk()
     } else {
@@ -195,53 +213,60 @@ class OfflineAutoIncrement extends ModelSingleton {
       if (idTurno !== null) infoGuardar.idTurno = idTurno
 
       const infoBoletas = this.getByDte(responseData, 39)
+
+      var nfolioBoletaOk = false
       if (infoBoletas) {
-        infoGuardar.folioActual = infoBoletas.folioActual
-        infoGuardar.folioHasta = infoBoletas.folioHasta
+        infoGuardar.nFolioBoleta = infoBoletas.folioActual
+        infoGuardar.nFolioBoletaHasta = infoBoletas.
+          nfolioBoletaOk = true
       } else {
-        infoGuardar.folioActual = 0
-        infoGuardar.folioHasta = 1000
+        infoGuardar.nFolioBoleta = 0
+        infoGuardar.nFolioBoletaHasta = 1000
+      }
+
+      if (!nfolioBoletaOk && infoGuardar.nFolioBoleta > 9) {
+        nfolioBoletaOk = true
       }
 
       const infoBoletasExentas = this.getByDte(responseData, 41)
       if (infoBoletasExentas) {
-        infoGuardar.folioActual = infoBoletasExentas.folioActual
-        infoGuardar.folioHasta = infoBoletasExentas.folioHasta
+        infoGuardar.nFolioBoletaExenta = infoBoletasExentas.folioActual
+        infoGuardar.nFolioBoletaExentaHasta = infoBoletasExentas.folioHasta
       } else {
-        infoGuardar.folioActual = 0
-        infoGuardar.folioHasta = 1000
+        infoGuardar.nFolioBoletaExenta = 0
+        infoGuardar.nFolioBoletaExentaHasta = 1000
       }
 
       const infoFacturas = this.getByDte(responseData, 33)
       if (infoFacturas) {
-        infoGuardar.folioActual = infoFacturas.folioActual
-        infoGuardar.folioHasta = infoFacturas.folioHasta
+        infoGuardar.nFolioFactura = infoFacturas.folioActual
+        infoGuardar.nFolioFacturaHasta = infoFacturas.folioHasta
       } else {
-        infoGuardar.folioActual = 0
-        infoGuardar.folioHasta = 1000
+        infoGuardar.nFolioFactura = 0
+        infoGuardar.nFolioFacturaHasta = 1000
       }
 
       const infoTickets = this.getByDte(responseData, 0)
       if (infoTickets) {
-        infoGuardar.folioActual = infoTickets.folioActual
-        infoGuardar.folioHasta = infoTickets.folioHasta
+        infoGuardar.nFolioTicket = infoTickets.folioActual
+        infoGuardar.nFolioTicketHasta = infoTickets.folioHasta
       } else {
-        infoGuardar.folioActual = 0
-        infoGuardar.folioHasta = 1000
+        infoGuardar.nFolioTicket = 0
+        infoGuardar.nFolioTicketHasta = 1000
       }
 
       const infoGuiaDespachos = this.getByDte(responseData, 52)
       if (infoGuiaDespachos) {
-        infoGuardar.folioActual = infoGuiaDespachos.folioActual
-        infoGuardar.folioHasta = infoGuiaDespachos.folioHasta
+        infoGuardar.nFolioGuiaDespacho = infoGuiaDespachos.folioActual
+        infoGuardar.nFolioGuiaDespachoHasta = infoGuiaDespachos.folioHasta
       } else {
-        infoGuardar.folioActual = 0
-        infoGuardar.folioHasta = 1000
+        infoGuardar.nFolioGuiaDespacho = 0
+        infoGuardar.nFolioGuiaDespachoHasta = 1000
       }
 
       console.log("infoGuardar", infoGuardar)
       OfflineAutoIncrement.saveInSesion(infoGuardar)
-      callbackOk(infoGuardar)
+      callbackOk(infoGuardar, nfolioBoletaOk)
       // callbackOk(response.data.categorias, response);
     }, (er: any) => {
       console.log("err", er)

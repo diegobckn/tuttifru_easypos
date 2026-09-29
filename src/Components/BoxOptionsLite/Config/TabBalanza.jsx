@@ -93,11 +93,7 @@ const TabBalanza = ({
   const [urlServicioDeteccionPeso, setUrlServicioDeteccionPeso] = useState("");
   const [detectarPeso, setDetectarPeso] = useState(false);
 
-  const [trabajarConBalanzaDigi, setTrabajarConBalanzaDigi] = useState(false);
   const [verOcr, setVerOcr] = useState(false);
-
-
-  const [verDigi, setVerDigi] = useState(false);
 
   const loadConfigSesion = () => {
     setBalanzaCod(ModelConfig.get("codBalanza"))
@@ -107,7 +103,6 @@ const TabBalanza = ({
 
     setUrlServicioDeteccionPeso(ModelConfig.get("urlServicioDeteccionPeso"))
     setDetectarPeso(ModelConfig.get("detectarPeso"))
-    setTrabajarConBalanzaDigi(ModelConfig.get("trabajarConBalanzaDigi"))
   }
 
   const handlerSaveAction = () => {
@@ -117,7 +112,6 @@ const TabBalanza = ({
     ModelConfig.change("digitosPesoEnterosBalanza", balanzaDigitosPesoEnteros)
     ModelConfig.change("urlServicioDeteccionPeso", urlServicioDeteccionPeso)
     ModelConfig.change("detectarPeso", detectarPeso)
-    ModelConfig.change("trabajarConBalanzaDigi", trabajarConBalanzaDigi)
 
     showMessage("Guardado correctamente")
     // onFinish()
@@ -195,13 +189,6 @@ const TabBalanza = ({
         </Grid>
 
         <Grid item xs={12} md={12} lg={12}>
-          <InputCheckbox
-            inputState={[trabajarConBalanzaDigi, setTrabajarConBalanzaDigi]}
-            label={"Trabajar con Digi"}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={12} lg={12}>
           <SmallButton textButton={"prueba ocr"} actionButton={() => {
             setVerOcr(true)
           }} />
@@ -215,18 +202,7 @@ const TabBalanza = ({
       {/* FIN BALANZA */}
 
 
-      <BalanzaDigiControl openDialog={verDigi} setOpenDialog={setVerDigi} />
-
-
       <Grid item xs={12} sm={12} md={12} lg={12}>
-
-        {trabajarConBalanzaDigi && (
-          <SmallButton textButton="CONTROL PARA BALANZAS DIGI" actionButton={() => {
-            setVerDigi(true)
-          }} style={{
-            backgroundColor: "green",
-          }} />
-        )}
 
         <SmallButton textButton="Reiniciar sistema" actionButton={() => {
           window.location.href = window.location.href

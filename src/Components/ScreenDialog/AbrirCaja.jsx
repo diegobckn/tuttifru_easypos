@@ -28,16 +28,20 @@ import Printer from "../../Models/Printer";
 import UserEvent from "../../Models/UserEvent";
 import User from "../../Models/User";
 import OfflineAutoIncrement from "../../Models/OfflineAutoIncrement";
+import AperturaCierreOffline from "../../Models/AperturaCierreOffline";
 
 
 const AbrirCaja = ({ openDialog, setOpenDialog }) => {
   const {
     userData,
     updateUserData,
-    showMessage
+    showMessage,
+    showAlert,
+    showConfirm
   } = useContext(SelectedOptionsContext);
 
   const [openAmount, setOpenAmount] = useState(0)
+
   const handlerSaveAction = () => {
     if (openAmount == 0) {
       showMessage("Debe ingresar un monto inicial");
@@ -57,15 +61,11 @@ const AbrirCaja = ({ openDialog, setOpenDialog }) => {
     console.log(ac.getFillables());
     ac.sendToServer((res) => {
       console.log("res", res)
+      
       var user2 = userData
-      console.log("user2", System.clone(user2))
-      if (res.debeRecargarIdTurno) {
-        const us = new User()
-        user2 = us.getFromSesion()
-        console.log("user2 leido", System.clone(user2))
-      }
       user2.inicioCaja = true;
       updateUserData(user2)
+      
       setOpenDialog(false)
       Printer.printAll(res)
 
@@ -77,6 +77,7 @@ const AbrirCaja = ({ openDialog, setOpenDialog }) => {
     }, (error) => {
       showMessage(error);
     })
+
 
   }
 

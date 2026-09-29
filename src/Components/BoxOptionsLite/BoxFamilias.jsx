@@ -19,7 +19,8 @@ import SmallDangerButton from "../Elements/SmallDangerButton";
 import MainButton from "../Elements/MainButton";
 
 const BoxFamilias = ({
-  onSelect
+  onSelect,
+  selectProduct = true
 }) => {
 
   const {
@@ -133,9 +134,12 @@ const BoxFamilias = ({
       + "/" + family.descripcion
       + "/" + subfamily.descripcion
     )
-    setShowProduct(true)
     setShowSubfamily(false)
-
+    if (!selectProduct) {
+      onSelect(null, category, subcategory, family, subfamily)
+      return
+    }
+    setShowProduct(true)
   }
 
 
@@ -227,8 +231,8 @@ const BoxFamilias = ({
         onSelect={handleSelectProduct}
 
         excludeIfText={["AGREGA", "SIN"]}
-        // includeOnlyText={["AGREGA"]}
-        // replaceText={["AGREGA ,"]}
+      // includeOnlyText={["AGREGA"]}
+      // replaceText={["AGREGA ,"]}
       />
 
       <br />

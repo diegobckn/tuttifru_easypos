@@ -21,6 +21,7 @@ import SendingButton from "../Elements/SendingButton";
 import { useNavigate } from "react-router-dom";
 import Printer from "../../Models/Printer";
 import UserEvent from "../../Models/UserEvent";
+import PasarelaPago from "../../Models/PasarelaPago";
 
 const CierreCaja = ({ openDialog, setOpenDialog }) => {
 
@@ -152,7 +153,7 @@ const CierreCaja = ({ openDialog, setOpenDialog }) => {
 
     console.log("preparando para hacer cierre")
     console.log("enviando", data)
-    showLoading("Carrando la caja")
+    showLoading("Cerrando la caja...")
     cerrarCaja.enviar(data, (res) => {
       showMessage("Caja cerrada correctamente.");
 
@@ -168,6 +169,16 @@ const CierreCaja = ({ openDialog, setOpenDialog }) => {
       clearSessionData();
       navigate("/login");
       setOpenDialog(false)
+
+      PasarelaPago.hacerCierre(() => {
+        setTimeout(() => {
+          showMessage("cerrada pasarela de pago")
+        }, 5 * 1000);
+      }, () => {
+        setTimeout(() => {
+          showMessage("no se pudo cerrar la pasarela de pago")
+        }, 5 * 1000);
+      })
     }, (error) => {
       hideLoading()
       showMessage(error);

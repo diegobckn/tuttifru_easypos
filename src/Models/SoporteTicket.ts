@@ -14,8 +14,16 @@ class SoporteTicket extends Singleton {
   static reportarError = true
 
   static catchRequest(requestData: any) {
+    // console.log("catchRequest")
     // if (SoporteTicket.reportarError) console.log("capturando request desde SoporteTicket", requestData)
 
+    // if (requestData
+    //   && requestData.config
+    //   && requestData.config.url
+    //   && requestData.config.url.indexOf("Cajas/EstadoApi") > -1
+    // ) {
+    //   return
+    // }
     var data: any = {
       urlCliente: window.location.href,
       usuarioLogueado: User.getInstance().sesion.cargarGuardados()[0],
@@ -56,6 +64,11 @@ class SoporteTicket extends Singleton {
       // console.log("salgo porque no tiene config")
       return
     }
+
+    if(error.config.url && error.config.url.indexOf("Cajas/EstadoApi") > -1){
+      return
+    }
+
     var data: any = {
       urlCliente: window.location.href,
       usuarioLogueado: User.getInstance().sesion.cargarGuardados()[0],
@@ -93,8 +106,11 @@ class SoporteTicket extends Singleton {
   }
 
   static async enviarError(data: any, callbackOk: any, callbackWrong: any) {
+    // console.log("enviarError", data)
+
     if (!SoporteTicket.reportarError) return
-    if (data.configDispositivoCliente.afterLogin && typeof data.configDispositivoCliente.afterLogin === "number") {
+    if (data && data.configDispositivoCliente && data.configDispositivoCliente.afterLogin
+      && typeof data.configDispositivoCliente.afterLogin === "number") {
       const types = Object.keys(TiposPasarela)
       const values = Object.values(TiposPasarela)
 

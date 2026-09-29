@@ -19,9 +19,12 @@ import SmallDangerButton from "../Elements/SmallDangerButton";
 
 
 
-const CreateClient = ({
+const ShowFamilies = ({
   openDialog,
-  setOpenDialog
+  setOpenDialog,
+  selectProduct = true,
+  onSelect = () => { },
+  addDirectoToSales = true
 }) => {
 
   const {
@@ -47,7 +50,13 @@ const CreateClient = ({
         minHeight: "500px",
       }}>
 
-        <BuscarProductoFamilia />
+        <BuscarProductoFamilia
+          selectProduct={selectProduct}
+          addDirectoToSales={addDirectoToSales}
+          onSelect={(product, cat, subcat, fam, subfam) => {
+            onSelect(product, cat, subcat, fam, subfam)
+          }}
+        />
 
       </DialogContent>
       <DialogActions>
@@ -65,4 +74,4 @@ const CreateClient = ({
   );
 };
 
-export default CreateClient;
+export default ShowFamilies;

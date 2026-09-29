@@ -241,10 +241,15 @@ class System {
     static formatDateServer(dateServer: any, withAgo = false) {
         const v1 = dateServer.split("T")
         const dt = v1[0]
-        const hrs = v1[1]
+        var hrs = v1[1]
+
+        var txtHr = ""
+        if (hrs) {
+            const [hr, mn] = hrs.split(":")
+            txtHr = hr + ":" + mn
+        }
 
         const [year, month, day] = dt.split("-")
-        const [hr, mn] = hrs.split(":")
 
         var agos = ""
         if (withAgo) {
@@ -253,7 +258,7 @@ class System {
 
         }
 
-        return day + "/" + month + "/" + year + " " + hr + ":" + mn + agos
+        return day + "/" + month + "/" + year + " " + txtHr + agos
     }
 
     static maxStr(str: string, max: number, completarConPuntos = true) {
@@ -716,6 +721,32 @@ class System {
         // console.log(algoDif ? "son distintos" : "son iguales")
 
         return algoDif
+    }
+
+    static concatObject(objeto1: any, objeto2: any) {
+        const obj1: any = System.clone(objeto1)
+        const obj2: any = System.clone(objeto2)
+        console.log("haciendo concat de objectos..obj1", obj1)
+        console.log("haciendo concat de objectos..obj2", obj2)
+        var keys2 = Object.keys(obj2)
+        keys2.forEach((key2) => {
+            if (!obj1[key2]) {
+                obj1[key2] = obj2[key2]
+            } else {
+                if (Array.isArray(obj1[key2]) && Array.isArray(obj1[key2])) {
+                    obj1[key2] = obj1[key2].concat(obj2[key2])
+                } else if (typeof (obj1[key2]) == "object") {
+                    obj1[key2] = this.concatObject(obj1[key2], obj2[key2])
+                } else if (
+                    (!Array.isArray(obj1[key2]) && typeof (obj1[key2]) != "object")
+                    && (Array.isArray(obj2[key2]) || typeof (obj2[key2]) == "object")
+                ) {
+                    obj1[key2] = obj2[key2]
+                }
+            }
+        })
+
+        return obj1
     }
 
 }

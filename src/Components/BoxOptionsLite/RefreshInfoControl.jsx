@@ -108,7 +108,7 @@ const RefreshInfoControl = ({
         borderRadius: "50%",
         fontWeight: "bold",
         cursor: "pointer",
-        padding: "0",
+        // padding: "0",
         minWidth: "0",
 
         background: "transparent",
