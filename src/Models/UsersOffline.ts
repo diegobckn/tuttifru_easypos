@@ -5,7 +5,6 @@ import SoporteTicket from './SoporteTicket.ts';
 import EndPoint from './EndPoint.ts';
 import User from './User.ts';
 import ModelSingleton from './ModelSingleton.ts';
-import bcrypt from 'bcryptjs'
 import LoopProperties from '../Helpers/LoopProperties.ts';
 import dayjs from 'dayjs';
 
